@@ -14,4 +14,5 @@
 dependencies {
   implementation 'org.web3j:abi'
   implementation 'org.web3j:core'
+  implementation "org.testcontainers:testcontainers"
 }

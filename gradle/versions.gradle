@@ -24,7 +24,11 @@ dependencyManagement {
     dependency 'org.junit.jupiter:junit-jupiter-engine:5.5.0'
     dependency 'org.junit.jupiter:junit-jupiter-api:5.5.0'
 
+    // AssertJ
     dependency 'org.assertj:assertj-core:3.14.0'
+
+    // TestContainers (Docker client wrapper)
+    dependency "org.testcontainers:testcontainers:1.12.3"
 
     // Web3
     dependency 'org.web3j:abi:4.5.1'

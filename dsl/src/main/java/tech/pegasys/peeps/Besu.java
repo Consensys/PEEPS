@@ -14,6 +14,8 @@ package tech.pegasys.peeps;
 
 public class Besu {
 
+  public Besu() {}
+
   public void awaitConnectivity(final Besu peer) {
     // TODO assert that connection to peer within say 10s occurs
   }
