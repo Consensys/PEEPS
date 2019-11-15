@@ -12,6 +12,8 @@
  */
 package tech.pegasys.peeps;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import tech.pegasys.peeps.contract.SimpleStorage;
 
 import org.junit.jupiter.api.Test;
@@ -45,6 +47,7 @@ public class DrivingDevelopmentTest {
     final String receipt = signerB.getTransactionReceipt(receiptHash);
 
     // TODO verify receipt is valid, contains a contract address
+    assertThat(receipt).isNull();
 
     // TODO verify the state of the Orions & state of each Besu - side effects
   }
