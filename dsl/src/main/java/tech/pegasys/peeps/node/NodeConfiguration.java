@@ -10,13 +10,25 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package tech.pegasys.peeps;
+package tech.pegasys.peeps.node;
 
-public class Besu {
+import java.util.Optional;
 
-  public Besu() {}
+public class NodeConfiguration {
 
-  public void awaitConnectivity(final Besu peer) {
-    // TODO assert that connection to peer within say 10s occurs
+  private final String genesisFilePath;
+  private final Optional<String> cors;
+
+  public NodeConfiguration(final String genesisFilePath, final String cors) {
+    this.genesisFilePath = genesisFilePath;
+    this.cors = Optional.ofNullable(cors);
+  }
+
+  public String getGenesisFilePath() {
+    return genesisFilePath;
+  }
+
+  public Optional<String> getCors() {
+    return cors;
   }
 }
