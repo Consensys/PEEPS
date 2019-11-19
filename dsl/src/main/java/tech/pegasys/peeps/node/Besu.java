@@ -34,6 +34,7 @@ public class Besu {
   private static final String BESU_IMAGE = "hyperledger/besu:latest";
   private static final int CONTAINER_HTTP_RPC_PORT = 8545;
   private static final int CONTAINER_WS_RPC_PORT = 8546;
+  private static final int CONTAINER_P2P_PORT = 30303;
   private static final String CONTAINER_GENESIS_FILE = "/etc/besu/genesis.json";
   private static final String CONTAINER_PRIVACY_PUBLIC_KEY_FILE =
       "/etc/besu/privacy_public_key.pub";
@@ -56,7 +57,7 @@ public class Besu {
             "--rpc-http-enabled",
             "--rpc-ws-enabled",
             "--rpc-http-apis",
-            "ETH,NET,WEB3,EEA",
+            "ADMIN,ETH,NET,WEB3,EEA",
             "--privacy-enabled",
             "--privacy-public-key-file",
             CONTAINER_PRIVACY_PUBLIC_KEY_FILE);
@@ -86,6 +87,7 @@ public class Besu {
       besu.start();
       logHttpRpcPortMapping();
       logWsRpcPortMapping();
+      logPeerToPeerPortMapping();
     } catch (final ContainerLaunchException e) {
       LOG.error(besu.getLogs(OutputType.STDERR));
       throw e;
@@ -98,6 +100,8 @@ public class Besu {
 
   public void awaitConnectivity(final Besu peer) {
     // TODO assert that connection to peer within say 10s occurs
+
+    final int i = 1;
   }
 
   private HttpWaitStrategy liveliness() {
@@ -116,9 +120,17 @@ public class Besu {
 
   private void logWsRpcPortMapping() {
     LOG.info(
-        "Container {},  WS RPC Port {} -> {}",
+        "Container {}, WS RPC Port {} -> {}",
         besu.getContainerId(),
         CONTAINER_WS_RPC_PORT,
         besu.getMappedPort(CONTAINER_WS_RPC_PORT));
+  }
+
+  private void logPeerToPeerPortMapping() {
+    LOG.info(
+        "Container {}, p2p Port {} -> {}",
+        besu.getContainerId(),
+        CONTAINER_P2P_PORT,
+        besu.getMappedPort(CONTAINER_P2P_PORT));
   }
 }
