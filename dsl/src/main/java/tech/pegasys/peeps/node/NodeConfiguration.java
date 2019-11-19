@@ -19,18 +19,25 @@ import java.util.Optional;
 public class NodeConfiguration {
 
   private final String genesisFilePath;
-  private final Optional<String> cors;
+  private final String enclavePublicKeyPath;
+  private final String cors;
 
-  public NodeConfiguration(final String genesisFilePath, final String cors) {
+  public NodeConfiguration(
+      final String genesisFilePath, final String enclavePublicKeyPath, final String cors) {
     this.genesisFilePath = Resources.getCanonicalPath(genesisFilePath);
-    this.cors = Optional.ofNullable(cors);
+    this.enclavePublicKeyPath = Resources.getCanonicalPath(enclavePublicKeyPath);
+    this.cors = cors;
   }
 
   public String getGenesisFilePath() {
     return genesisFilePath;
   }
 
+  public String getEnclavePublicKeyPath() {
+    return enclavePublicKeyPath;
+  }
+
   public Optional<String> getCors() {
-    return cors;
+    return Optional.ofNullable(cors);
   }
 }

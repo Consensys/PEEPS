@@ -16,11 +16,16 @@ public class NodeConfigurationBuilder {
 
   private static final String DEFAULT_GENESIS_FILE = "genesis/eth_hash_4004.json";
 
+  // TODO enclave key to be passed (without default)
+  private static final String DEFAULT_ENCLAVE_PUBLIC_KEY_FILE = "node/enclave_key.pub";
+
   private String genesis;
+  private String enclaveKey;
   private String cors;
 
   public NodeConfigurationBuilder() {
     this.genesis = DEFAULT_GENESIS_FILE;
+    this.enclaveKey = DEFAULT_ENCLAVE_PUBLIC_KEY_FILE;
   }
 
   public NodeConfigurationBuilder withGenesis(final String genesisFile) {
@@ -35,6 +40,6 @@ public class NodeConfigurationBuilder {
 
   public NodeConfiguration build() {
 
-    return new NodeConfiguration(genesis, cors);
+    return new NodeConfiguration(genesis, enclaveKey, cors);
   }
 }

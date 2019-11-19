@@ -25,6 +25,9 @@ import org.testcontainers.containers.wait.strategy.Wait;
 
 public class Besu {
 
+  private static final String AM_I_ALIVE_ENDPOINT = "/liveness";
+  private static final int ALIVE_STATUS_CODE = 200;
+
   // TODO refactor?
   private static final int DEFAULT_HTTP_RPC_PORT = 8545;
   private static final int DEFAULT_WS_RPC_PORT = 8546;
@@ -33,15 +36,12 @@ public class Besu {
   private static final String BESU_IMAGE = "hyperledger/besu:latest";
 
   private static final String CONTAINER_GENESIS_FILE = "/etc/besu/genesis.json";
+  private static final String CONTAINER_PRIVACY_PUBLIC_KEY_FILE =
+      "/etc/besu/privacy_public_key.pub";
 
   private final GenericContainer<?> besu;
 
-  private static final String CONTAINER_PRIVACY_PUBLIC_KEY_FILE = "/etc/besu/privacy_public_key";
-
   public Besu(final NodeConfiguration config) {
-
-    // TODO enclave key to config
-    final String privacyPublicKeyFile = "enclave_key.pub";
 
     final List<String> commandLineOptions =
         Lists.newArrayList(
@@ -69,7 +69,6 @@ public class Besu {
 
     LOG.debug("besu command line {}", config);
 
-    // TODO no magic strings or status codes
     this.besu =
         new GenericContainer<>(BESU_IMAGE)
             .withCommand(commandLineOptions.toArray(new String[0]))
@@ -77,9 +76,13 @@ public class Besu {
             .withFileSystemBind(
                 config.getGenesisFilePath(), CONTAINER_GENESIS_FILE, BindMode.READ_ONLY)
             .withFileSystemBind(
-                privacyPublicKeyFile, CONTAINER_PRIVACY_PUBLIC_KEY_FILE, BindMode.READ_ONLY)
+                config.getEnclavePublicKeyPath(),
+                CONTAINER_PRIVACY_PUBLIC_KEY_FILE,
+                BindMode.READ_ONLY)
             .waitingFor(
-                Wait.forHttp("/liveness").forStatusCode(200).forPort(DEFAULT_HTTP_RPC_PORT));
+                Wait.forHttp(AM_I_ALIVE_ENDPOINT)
+                    .forStatusCode(ALIVE_STATUS_CODE)
+                    .forPort(DEFAULT_HTTP_RPC_PORT));
   }
 
   public void start() {
