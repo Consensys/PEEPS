@@ -14,7 +14,7 @@ package tech.pegasys.peeps.node;
 
 public class NodeConfigurationBuilder {
 
-  private static final String DEFAULT_GENESIS_FILE = "eth_hash_4004.json";
+  private static final String DEFAULT_GENESIS_FILE = "genesis/eth_hash_4004.json";
 
   private String genesis;
   private String cors;

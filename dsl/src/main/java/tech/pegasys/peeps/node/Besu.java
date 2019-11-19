@@ -12,17 +12,15 @@
  */
 package tech.pegasys.peeps.node;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URL;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import com.google.common.collect.Lists;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.testcontainers.containers.BindMode;
+import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.output.OutputFrame.OutputType;
 import org.testcontainers.containers.wait.strategy.Wait;
 
 public class Besu {
@@ -41,7 +39,6 @@ public class Besu {
   private static final String CONTAINER_PRIVACY_PUBLIC_KEY_FILE = "/etc/besu/privacy_public_key";
 
   public Besu(final NodeConfiguration config) {
-    final String genesisFilePath = genesisFilePath(config.getGenesisFilePath());
 
     // TODO enclave key to config
     final String privacyPublicKeyFile = "enclave_key.pub";
@@ -77,7 +74,8 @@ public class Besu {
         new GenericContainer<>(BESU_IMAGE)
             .withCommand(commandLineOptions.toArray(new String[0]))
             .withExposedPorts(DEFAULT_HTTP_RPC_PORT, DEFAULT_WS_RPC_PORT)
-            .withFileSystemBind(genesisFilePath, CONTAINER_GENESIS_FILE, BindMode.READ_ONLY)
+            .withFileSystemBind(
+                config.getGenesisFilePath(), CONTAINER_GENESIS_FILE, BindMode.READ_ONLY)
             .withFileSystemBind(
                 privacyPublicKeyFile, CONTAINER_PRIVACY_PUBLIC_KEY_FILE, BindMode.READ_ONLY)
             .waitingFor(
@@ -85,7 +83,12 @@ public class Besu {
   }
 
   public void start() {
-    besu.start();
+    try {
+      besu.start();
+    } catch (final ContainerLaunchException e) {
+      LOG.error(besu.getLogs(OutputType.STDERR));
+      throw e;
+    }
   }
 
   public void stop() {
@@ -94,27 +97,5 @@ public class Besu {
 
   public void awaitConnectivity(final Besu peer) {
     // TODO assert that connection to peer within say 10s occurs
-  }
-
-  // TODO file handling stuff should be in a util class
-  private String genesisFilePath(final String filename) {
-    final URL resource = Besu.class.getResource(filename);
-
-    if (resource == null) {
-      final String message = String.format("File '%s' not found on classpath", filename);
-      LOG.error(message);
-      throw new IllegalArgumentException(message);
-    }
-
-    return resourceFileName(resource);
-  }
-
-  private String resourceFileName(final URL resource) {
-    try {
-      return URLDecoder.decode(resource.getPath(), StandardCharsets.UTF_8.name());
-    } catch (final UnsupportedEncodingException ex) {
-      LOG.error("Unsupported encoding used to decode {}, filepath.", resource);
-      throw new RuntimeException("Illegal string decoding");
-    }
   }
 }
