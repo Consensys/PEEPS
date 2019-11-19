@@ -12,43 +12,17 @@
  */
 package tech.pegasys.peeps.node;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URL;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
+import tech.pegasys.peeps.util.Resources;
+
 import java.util.Optional;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 public class NodeConfiguration {
-
-  private static final Logger LOG = LogManager.getLogger();
 
   private final String genesisFilePath;
   private final Optional<String> cors;
 
   public NodeConfiguration(final String genesisFilePath, final String cors) {
-
-    // TODO move this elsewhere
-    final URL resource =
-        Thread.currentThread().getContextClassLoader().getResource(genesisFilePath);
-
-    //    final URL resource = Resources.getResource(genesisFilePath);
-
-    if (resource == null) {
-      final String message = String.format("File '%s' not found on classpath", genesisFilePath);
-      LOG.error(message);
-      throw new IllegalArgumentException(message);
-    }
-
-    try {
-      this.genesisFilePath = URLDecoder.decode(resource.getPath(), StandardCharsets.UTF_8.name());
-    } catch (final UnsupportedEncodingException ex) {
-      LOG.error("Unsupported encoding used to decode {}, filepath.", resource);
-      throw new RuntimeException("Illegal string decoding");
-    }
-
+    this.genesisFilePath = Resources.getCanonicalPath(genesisFilePath);
     this.cors = Optional.ofNullable(cors);
   }
 
