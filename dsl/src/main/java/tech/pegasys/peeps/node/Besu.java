@@ -21,20 +21,19 @@ import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.OutputFrame.OutputType;
+import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.containers.wait.strategy.Wait;
 
 public class Besu {
 
+  private static final Logger LOG = LogManager.getLogger();
+
   private static final String AM_I_ALIVE_ENDPOINT = "/liveness";
   private static final int ALIVE_STATUS_CODE = 200;
 
-  // TODO refactor?
-  private static final int DEFAULT_HTTP_RPC_PORT = 8545;
-  private static final int DEFAULT_WS_RPC_PORT = 8546;
-
-  private static final Logger LOG = LogManager.getLogger();
   private static final String BESU_IMAGE = "hyperledger/besu:latest";
-
+  private static final int CONTAINER_HTTP_RPC_PORT = 8545;
+  private static final int CONTAINER_WS_RPC_PORT = 8546;
   private static final String CONTAINER_GENESIS_FILE = "/etc/besu/genesis.json";
   private static final String CONTAINER_PRIVACY_PUBLIC_KEY_FILE =
       "/etc/besu/privacy_public_key.pub";
@@ -72,22 +71,21 @@ public class Besu {
     this.besu =
         new GenericContainer<>(BESU_IMAGE)
             .withCommand(commandLineOptions.toArray(new String[0]))
-            .withExposedPorts(DEFAULT_HTTP_RPC_PORT, DEFAULT_WS_RPC_PORT)
+            .withExposedPorts(CONTAINER_HTTP_RPC_PORT, CONTAINER_WS_RPC_PORT)
             .withFileSystemBind(
                 config.getGenesisFilePath(), CONTAINER_GENESIS_FILE, BindMode.READ_ONLY)
             .withFileSystemBind(
                 config.getEnclavePublicKeyPath(),
                 CONTAINER_PRIVACY_PUBLIC_KEY_FILE,
                 BindMode.READ_ONLY)
-            .waitingFor(
-                Wait.forHttp(AM_I_ALIVE_ENDPOINT)
-                    .forStatusCode(ALIVE_STATUS_CODE)
-                    .forPort(DEFAULT_HTTP_RPC_PORT));
+            .waitingFor(liveliness());
   }
 
   public void start() {
     try {
       besu.start();
+      logHttpRpcPortMapping();
+      logWsRpcPortMapping();
     } catch (final ContainerLaunchException e) {
       LOG.error(besu.getLogs(OutputType.STDERR));
       throw e;
@@ -100,5 +98,27 @@ public class Besu {
 
   public void awaitConnectivity(final Besu peer) {
     // TODO assert that connection to peer within say 10s occurs
+  }
+
+  private HttpWaitStrategy liveliness() {
+    return Wait.forHttp(AM_I_ALIVE_ENDPOINT)
+        .forStatusCode(ALIVE_STATUS_CODE)
+        .forPort(CONTAINER_HTTP_RPC_PORT);
+  }
+
+  private void logHttpRpcPortMapping() {
+    LOG.info(
+        "Container {}, HTTP RPC Port {} -> {}",
+        besu.getContainerId(),
+        CONTAINER_HTTP_RPC_PORT,
+        besu.getMappedPort(CONTAINER_HTTP_RPC_PORT));
+  }
+
+  private void logWsRpcPortMapping() {
+    LOG.info(
+        "Container {},  WS RPC Port {} -> {}",
+        besu.getContainerId(),
+        CONTAINER_WS_RPC_PORT,
+        besu.getMappedPort(CONTAINER_WS_RPC_PORT));
   }
 }
