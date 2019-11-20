@@ -77,6 +77,7 @@ public class Besu {
   private GenericContainer<?> besuContainer(final NodeConfiguration config) {
     return new GenericContainer<>(BESU_IMAGE)
         .withNetwork(config.getContainerNetwork().orElse(null))
+        .withNetworkMode("bridge")
         .withExposedPorts(CONTAINER_HTTP_RPC_PORT, CONTAINER_WS_RPC_PORT, CONTAINER_P2P_PORT)
         .withFileSystemBind(config.getGenesisFilePath(), CONTAINER_GENESIS_FILE, BindMode.READ_ONLY)
         .withFileSystemBind(
@@ -91,6 +92,7 @@ public class Besu {
       logHttpRpcPortMapping();
       logWsRpcPortMapping();
       logPeerToPeerPortMapping();
+      logContainerNetworkDetails();
     } catch (final ContainerLaunchException e) {
       LOG.error(besu.getLogs());
       throw e;
@@ -115,7 +117,7 @@ public class Besu {
 
   private void logHttpRpcPortMapping() {
     LOG.info(
-        "Container {}, HTTP RPC Port {} -> {}",
+        "Container {}, Exposed HTTP RPC port {} -> {}",
         besu.getContainerId(),
         CONTAINER_HTTP_RPC_PORT,
         besu.getMappedPort(CONTAINER_HTTP_RPC_PORT));
@@ -123,7 +125,7 @@ public class Besu {
 
   private void logWsRpcPortMapping() {
     LOG.info(
-        "Container {}, WS RPC Port {} -> {}",
+        "Container {}, Exposed WS RPC port {} -> {}",
         besu.getContainerId(),
         CONTAINER_WS_RPC_PORT,
         besu.getMappedPort(CONTAINER_WS_RPC_PORT));
@@ -131,9 +133,22 @@ public class Besu {
 
   private void logPeerToPeerPortMapping() {
     LOG.info(
-        "Container {}, p2p Port {} -> {}",
+        "Container {}, Exposed p2p port {} -> {}",
         besu.getContainerId(),
         CONTAINER_P2P_PORT,
         besu.getMappedPort(CONTAINER_P2P_PORT));
+  }
+
+  private void logContainerNetworkDetails() {
+    if (besu.getNetwork() == null) {
+      LOG.info("Container {} has no network", besu.getContainerId());
+    } else {
+      LOG.info(
+          "Container {}, Network {}, Mode {}, Aliases {}",
+          besu.getContainerId(),
+          besu.getNetwork().getId(),
+          besu.getNetworkMode(),
+          besu.getNetworkAliases());
+    }
   }
 }
