@@ -117,7 +117,7 @@ public class Besu {
 
   private void logHttpRpcPortMapping() {
     LOG.info(
-        "Container {}, Exposed HTTP RPC port {} -> {}",
+        "Container {}, HTTP RPC port mapping: {} -> {}",
         besu.getContainerId(),
         CONTAINER_HTTP_RPC_PORT,
         besu.getMappedPort(CONTAINER_HTTP_RPC_PORT));
@@ -125,7 +125,7 @@ public class Besu {
 
   private void logWsRpcPortMapping() {
     LOG.info(
-        "Container {}, Exposed WS RPC port {} -> {}",
+        "Container {}, WS RPC port mapping: {} -> {}",
         besu.getContainerId(),
         CONTAINER_WS_RPC_PORT,
         besu.getMappedPort(CONTAINER_WS_RPC_PORT));
@@ -133,7 +133,7 @@ public class Besu {
 
   private void logPeerToPeerPortMapping() {
     LOG.info(
-        "Container {}, Exposed p2p port {} -> {}",
+        "Container {}, p2p port mapping: {} -> {}",
         besu.getContainerId(),
         CONTAINER_P2P_PORT,
         besu.getMappedPort(CONTAINER_P2P_PORT));
@@ -144,7 +144,7 @@ public class Besu {
       LOG.info("Container {} has no network", besu.getContainerId());
     } else {
       LOG.info(
-          "Container {}, Network {}, Mode {}, Aliases {}",
+          "Container {}, Network: {}, Mode: {}, Aliases: {}",
           besu.getContainerId(),
           besu.getNetwork().getId(),
           besu.getNetworkMode(),
