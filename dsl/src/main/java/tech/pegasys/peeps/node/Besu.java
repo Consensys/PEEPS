@@ -69,16 +69,20 @@ public class Besu {
     LOG.debug("besu command line {}", config);
 
     this.besu =
-        new GenericContainer<>(BESU_IMAGE)
+        besuContainer(config)
             .withCommand(commandLineOptions.toArray(new String[0]))
-            .withExposedPorts(CONTAINER_HTTP_RPC_PORT, CONTAINER_WS_RPC_PORT)
-            .withFileSystemBind(
-                config.getGenesisFilePath(), CONTAINER_GENESIS_FILE, BindMode.READ_ONLY)
-            .withFileSystemBind(
-                config.getEnclavePublicKeyPath(),
-                CONTAINER_PRIVACY_PUBLIC_KEY_FILE,
-                BindMode.READ_ONLY)
             .waitingFor(liveliness());
+  }
+
+  private GenericContainer<?> besuContainer(final NodeConfiguration config) {
+    return new GenericContainer<>(BESU_IMAGE)
+        .withNetwork(config.getContainerNetwork().orElse(null))
+        .withExposedPorts(CONTAINER_HTTP_RPC_PORT, CONTAINER_WS_RPC_PORT, CONTAINER_P2P_PORT)
+        .withFileSystemBind(config.getGenesisFilePath(), CONTAINER_GENESIS_FILE, BindMode.READ_ONLY)
+        .withFileSystemBind(
+            config.getEnclavePublicKeyPath(),
+            CONTAINER_PRIVACY_PUBLIC_KEY_FILE,
+            BindMode.READ_ONLY);
   }
 
   public void start() {

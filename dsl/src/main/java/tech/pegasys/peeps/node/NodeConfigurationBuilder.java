@@ -12,6 +12,8 @@
  */
 package tech.pegasys.peeps.node;
 
+import org.testcontainers.containers.Network;
+
 public class NodeConfigurationBuilder {
 
   private static final String DEFAULT_GENESIS_FILE = "genesis/eth_hash_4004.json";
@@ -22,6 +24,7 @@ public class NodeConfigurationBuilder {
   private String genesis;
   private String enclaveKey;
   private String cors;
+  private Network containerNetwork;
 
   public NodeConfigurationBuilder() {
     this.genesis = DEFAULT_GENESIS_FILE;
@@ -33,13 +36,18 @@ public class NodeConfigurationBuilder {
     return this;
   }
 
-  public NodeConfigurationBuilder cors(final String cors) {
+  public NodeConfigurationBuilder withCors(final String cors) {
     this.cors = cors;
+    return this;
+  }
+
+  public NodeConfigurationBuilder withContainerNetwork(final Network containerNetwork) {
+    this.containerNetwork = containerNetwork;
     return this;
   }
 
   public NodeConfiguration build() {
 
-    return new NodeConfiguration(genesis, enclaveKey, cors);
+    return new NodeConfiguration(genesis, enclaveKey, cors, containerNetwork);
   }
 }

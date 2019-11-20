@@ -16,17 +16,24 @@ import tech.pegasys.peeps.util.Resources;
 
 import java.util.Optional;
 
+import org.testcontainers.containers.Network;
+
 public class NodeConfiguration {
 
   private final String genesisFilePath;
   private final String enclavePublicKeyPath;
   private final String cors;
+  private final Network containerNetwork;
 
   public NodeConfiguration(
-      final String genesisFilePath, final String enclavePublicKeyPath, final String cors) {
+      final String genesisFilePath,
+      final String enclavePublicKeyPath,
+      final String cors,
+      final Network containerNetwork) {
     this.genesisFilePath = Resources.getCanonicalPath(genesisFilePath);
     this.enclavePublicKeyPath = Resources.getCanonicalPath(enclavePublicKeyPath);
     this.cors = cors;
+    this.containerNetwork = containerNetwork;
   }
 
   public String getGenesisFilePath() {
@@ -39,5 +46,9 @@ public class NodeConfiguration {
 
   public Optional<String> getCors() {
     return Optional.ofNullable(cors);
+  }
+
+  public Optional<Network> getContainerNetwork() {
+    return Optional.ofNullable(containerNetwork);
   }
 }
