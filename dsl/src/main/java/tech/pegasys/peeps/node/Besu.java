@@ -20,7 +20,6 @@ import org.apache.logging.log4j.Logger;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.output.OutputFrame.OutputType;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.containers.wait.strategy.Wait;
 
@@ -89,7 +88,7 @@ public class Besu {
       logWsRpcPortMapping();
       logPeerToPeerPortMapping();
     } catch (final ContainerLaunchException e) {
-      LOG.error(besu.getLogs(OutputType.STDERR));
+      LOG.error(besu.getLogs());
       throw e;
     }
   }
