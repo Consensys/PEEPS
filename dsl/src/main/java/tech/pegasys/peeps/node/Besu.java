@@ -61,29 +61,33 @@ public class Besu {
             "--privacy-public-key-file",
             CONTAINER_PRIVACY_PUBLIC_KEY_FILE);
 
+    // TODO refactor these into private helpers
     config
         .getCors()
         .ifPresent(
             cors -> commandLineOptions.addAll(Lists.newArrayList("--rpc-http-cors-origins", cors)));
 
+    config
+        .getBootnodeEnodeAddress()
+        .ifPresent(enode -> commandLineOptions.addAll(Lists.newArrayList("--bootnodes", enode)));
+
     LOG.debug("besu command line {}", config);
 
     this.besu =
         besuContainer(config)
+            .withCreateContainerCmdModifier(
+                modifier -> modifier.withIpv4Address(config.getIpAddress()))
             .withCommand(commandLineOptions.toArray(new String[0]))
             .waitingFor(liveliness());
   }
 
-  private GenericContainer<?> besuContainer(final NodeConfiguration config) {
-    return new GenericContainer<>(BESU_IMAGE)
-        .withNetwork(config.getContainerNetwork().orElse(null))
-        .withNetworkMode("bridge")
-        .withExposedPorts(CONTAINER_HTTP_RPC_PORT, CONTAINER_WS_RPC_PORT, CONTAINER_P2P_PORT)
-        .withFileSystemBind(config.getGenesisFilePath(), CONTAINER_GENESIS_FILE, BindMode.READ_ONLY)
-        .withFileSystemBind(
-            config.getEnclavePublicKeyPath(),
-            CONTAINER_PRIVACY_PUBLIC_KEY_FILE,
-            BindMode.READ_ONLY);
+  public String getEnodeAddress() {
+    // TODO get the enode with 'magic'
+    // TODO IP - static IP
+    // TODO port - 30303
+    // TODO public key - getNodeInfo JSON-RPC
+
+    return null;
   }
 
   public void start() {
@@ -105,8 +109,18 @@ public class Besu {
 
   public void awaitConnectivity(final Besu peer) {
     // TODO assert that connection to peer within say 10s occurs
+  }
 
-    final int i = 1;
+  // TODO reduce the args - exposed ports maybe not needed
+  private GenericContainer<?> besuContainer(final NodeConfiguration config) {
+    return new GenericContainer<>(BESU_IMAGE)
+        .withNetwork(config.getContainerNetwork().orElse(null))
+        .withExposedPorts(CONTAINER_HTTP_RPC_PORT, CONTAINER_WS_RPC_PORT, CONTAINER_P2P_PORT)
+        .withFileSystemBind(config.getGenesisFilePath(), CONTAINER_GENESIS_FILE, BindMode.READ_ONLY)
+        .withFileSystemBind(
+            config.getEnclavePublicKeyPath(),
+            CONTAINER_PRIVACY_PUBLIC_KEY_FILE,
+            BindMode.READ_ONLY);
   }
 
   private HttpWaitStrategy liveliness() {
@@ -115,6 +129,7 @@ public class Besu {
         .forPort(CONTAINER_HTTP_RPC_PORT);
   }
 
+  // TODO a single log line with all details!
   private void logHttpRpcPortMapping() {
     LOG.info(
         "Container {}, HTTP RPC port mapping: {} -> {}",
@@ -144,11 +159,10 @@ public class Besu {
       LOG.info("Container {} has no network", besu.getContainerId());
     } else {
       LOG.info(
-          "Container {}, Network: {}, Mode: {}, Aliases: {}",
+          "Container {}, IP address: {}, Network: {}",
           besu.getContainerId(),
-          besu.getNetwork().getId(),
-          besu.getNetworkMode(),
-          besu.getNetworkAliases());
+          besu.getContainerIpAddress(),
+          besu.getNetwork().getId());
     }
   }
 }

@@ -25,6 +25,8 @@ public class NodeConfigurationBuilder {
   private String enclaveKey;
   private String cors;
   private Network containerNetwork;
+  private String ipAddress;
+  private String bootnodeEnodeAddress;
 
   public NodeConfigurationBuilder() {
     this.genesis = DEFAULT_GENESIS_FILE;
@@ -46,8 +48,20 @@ public class NodeConfigurationBuilder {
     return this;
   }
 
-  public NodeConfiguration build() {
+  public NodeConfigurationBuilder withIpAddress(final String ipAddress) {
+    this.ipAddress = ipAddress;
+    return this;
+  }
 
-    return new NodeConfiguration(genesis, enclaveKey, cors, containerNetwork);
+  public NodeConfigurationBuilder withBootnodeEnodeAddress(final String bootnodeEnodeAddress) {
+    this.bootnodeEnodeAddress = bootnodeEnodeAddress;
+    return this;
+  }
+
+  public NodeConfiguration build() {
+    // TODO assert mandatory parameters are not null
+
+    return new NodeConfiguration(
+        genesis, enclaveKey, cors, containerNetwork, ipAddress, bootnodeEnodeAddress);
   }
 }

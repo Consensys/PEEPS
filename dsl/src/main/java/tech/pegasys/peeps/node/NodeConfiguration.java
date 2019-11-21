@@ -24,16 +24,22 @@ public class NodeConfiguration {
   private final String enclavePublicKeyPath;
   private final String cors;
   private final Network containerNetwork;
+  private final String bootnodeEnodeAddress;
+  private final String ipAddress;
 
   public NodeConfiguration(
       final String genesisFilePath,
       final String enclavePublicKeyPath,
       final String cors,
-      final Network containerNetwork) {
+      final Network containerNetwork,
+      final String ipAddress,
+      final String bootnodeEnodeAddress) {
     this.genesisFilePath = Resources.getCanonicalPath(genesisFilePath);
     this.enclavePublicKeyPath = Resources.getCanonicalPath(enclavePublicKeyPath);
     this.cors = cors;
     this.containerNetwork = containerNetwork;
+    this.ipAddress = ipAddress;
+    this.bootnodeEnodeAddress = bootnodeEnodeAddress;
   }
 
   public String getGenesisFilePath() {
@@ -50,5 +56,13 @@ public class NodeConfiguration {
 
   public Optional<Network> getContainerNetwork() {
     return Optional.ofNullable(containerNetwork);
+  }
+
+  public String getIpAddress() {
+    return ipAddress;
+  }
+
+  public Optional<String> getBootnodeEnodeAddress() {
+    return Optional.ofNullable(bootnodeEnodeAddress);
   }
 }

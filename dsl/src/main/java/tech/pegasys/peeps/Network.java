@@ -15,6 +15,9 @@ package tech.pegasys.peeps;
 import tech.pegasys.peeps.node.Besu;
 import tech.pegasys.peeps.node.NodeConfigurationBuilder;
 
+import com.github.dockerjava.api.model.Network.Ipam;
+import com.github.dockerjava.api.model.Network.Ipam.Config;
+
 public class Network {
 
   // TODO do not be hard coded as two nodes - flexibility in nodes & stack
@@ -29,12 +32,32 @@ public class Network {
   private final EthSigner signerB = new EthSigner();
   private final Orion orionB = new Orion();
 
+  // TODO IP management
+
   public Network() {
     final org.testcontainers.containers.Network network =
-        org.testcontainers.containers.Network.newNetwork();
+        org.testcontainers.containers.Network.builder()
+            .createNetworkCmdModifier(
+                modifier ->
+                    modifier.withIpam(
+                        new Ipam().withConfig(new Config().withSubnet("172.20.0.0/24"))))
+            .build();
 
-    besuA = new Besu(new NodeConfigurationBuilder().withContainerNetwork(network).build());
-    besuB = new Besu(new NodeConfigurationBuilder().withContainerNetwork(network).build());
+    // TODO 0.1 seems to be used, maybe assigned by the network container?
+
+    besuA =
+        new Besu(
+            new NodeConfigurationBuilder()
+                .withContainerNetwork(network)
+                .withIpAddress("172.20.0.5")
+                .build());
+    besuB =
+        new Besu(
+            new NodeConfigurationBuilder()
+                .withContainerNetwork(network)
+                .withIpAddress("172.20.0.6")
+                .withBootnodeEnodeAddress(besuA.getEnodeAddress())
+                .build());
   }
 
   public void start() {
