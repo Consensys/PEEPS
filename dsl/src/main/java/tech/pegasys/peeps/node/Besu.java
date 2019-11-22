@@ -12,9 +12,23 @@
  */
 package tech.pegasys.peeps.node;
 
+import tech.pegasys.peeps.node.rpc.JsonRpcRequest;
+import tech.pegasys.peeps.node.rpc.JsonRpcRequestId;
+
+import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import com.google.common.collect.Lists;
+import io.vertx.core.Vertx;
+import io.vertx.ext.web.client.WebClient;
+import io.vertx.ext.web.client.WebClientOptions;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.testcontainers.containers.BindMode;
@@ -31,6 +45,7 @@ public class Besu {
   private static final int ALIVE_STATUS_CODE = 200;
 
   private static final String BESU_IMAGE = "hyperledger/besu:latest";
+  private static final String LOCALHOST = "localhost";
   private static final int CONTAINER_HTTP_RPC_PORT = 8545;
   private static final int CONTAINER_WS_RPC_PORT = 8546;
   private static final int CONTAINER_P2P_PORT = 30303;
@@ -40,6 +55,7 @@ public class Besu {
   private static final String CONTAINER_NODE_PRIVATE_KEY_FILE = "/etc/besu/keys/key.priv";
 
   private final GenericContainer<?> besu;
+  private WebClient jsonRpc;
 
   public Besu(final NodeConfiguration config) {
 
@@ -117,6 +133,96 @@ public class Besu {
 
   public void awaitConnectivity(final Besu peer) {
     // TODO assert that connection to peer within say 10s occurs
+
+    final String info = nodeInfo();
+
+    //   final String info = nodeInfoOkHttp();
+  }
+
+  // TODO no more magic strings!
+  private String nodeInfo() {
+    final JsonRpcRequest request =
+        new JsonRpcRequest("2.0", "admin_nodeInfo", new Object[0], new JsonRpcRequestId(1));
+
+    CompletableFuture<String> info = new CompletableFuture<String>();
+
+    final String json =
+        "{\"jsonrpc\":\"2.0\",\"method\":\"admin_nodeInfo\",\"params\":[],\"id\":1}";
+
+    //    final String json = Json.encode(request);
+    LOG.info("Request: {}", json);
+
+    // TODO the setChunking(false) might be doing in vs the HttpClient exmaples
+
+    // TODO Json mapper instance
+    jsonRpcWebClient()
+        .post("/")
+        .sendJson(
+            json,
+            result -> {
+              if (result.succeeded()) {
+                final String body = result.result().bodyAsString();
+                LOG.info("Got back: {}, {}", result.result().statusCode(), body);
+                info.complete(body);
+              } else {
+                LOG.error("Querying 'admin_nodInfo failed", result.cause());
+                info.completeExceptionally(result.cause());
+              }
+            });
+
+    try {
+      return info.get();
+    } catch (InterruptedException | ExecutionException e) {
+      e.printStackTrace();
+
+      throw new RuntimeException("Failed to receive a response from `admin_nodeInfo`", e);
+    }
+  }
+
+  public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+
+  private String nodeInfoOkHttp() {
+
+    OkHttpClient client = new OkHttpClient();
+
+    final String json =
+        "{\"jsonrpc\":\"2.0\",\"method\":\"admin_nodeInfo\",\"params\":[],\"id\":1}";
+
+    try {
+      Response response =
+          client
+              .newCall(
+                  new Request.Builder()
+                      .url(
+                          String.format(
+                              "http://%s:%s/",
+                              besu.getContainerIpAddress(),
+                              besu.getMappedPort(CONTAINER_HTTP_RPC_PORT)))
+                      .post(RequestBody.create(JSON, json))
+                      .build())
+              .execute();
+
+      LOG.info(response.body().string());
+
+      return response.body().string();
+    } catch (IOException e) {
+      LOG.error("Querying 'admin_nodInfo failed", e);
+      throw new RuntimeException(e);
+    }
+  }
+
+  private WebClient jsonRpcWebClient() {
+    if (jsonRpc == null) {
+      // TODO move the vertx to network & close on stop()
+      jsonRpc =
+          WebClient.create(
+              Vertx.vertx(),
+              new WebClientOptions()
+                  .setDefaultPort(besu.getMappedPort(CONTAINER_HTTP_RPC_PORT))
+                  .setDefaultHost(besu.getContainerIpAddress()));
+    }
+
+    return jsonRpc;
   }
 
   // TODO reduce the args - exposed ports maybe not needed
