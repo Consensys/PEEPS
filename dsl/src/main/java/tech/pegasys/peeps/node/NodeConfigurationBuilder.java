@@ -18,23 +18,24 @@ public class NodeConfigurationBuilder {
 
   private static final String DEFAULT_GENESIS_FILE = "genesis/eth_hash_4004.json";
 
-  // TODO enclave key to be passed (without default)
+  // TODO enclave key.priv to be passed (without default)
   private static final String DEFAULT_ENCLAVE_PUBLIC_KEY_FILE = "node/enclave_key.pub";
 
-  private String genesis;
-  private String enclaveKey;
+  private String genesisFile;
+  private String enclaveKeyFile;
   private String cors;
   private Network containerNetwork;
   private String ipAddress;
+  private String nodePrivateKeyFile;
   private String bootnodeEnodeAddress;
 
   public NodeConfigurationBuilder() {
-    this.genesis = DEFAULT_GENESIS_FILE;
-    this.enclaveKey = DEFAULT_ENCLAVE_PUBLIC_KEY_FILE;
+    this.genesisFile = DEFAULT_GENESIS_FILE;
+    this.enclaveKeyFile = DEFAULT_ENCLAVE_PUBLIC_KEY_FILE;
   }
 
-  public NodeConfigurationBuilder withGenesis(final String genesisFile) {
-    this.genesis = genesisFile;
+  public NodeConfigurationBuilder withGenesisFile(final String genesisFile) {
+    this.genesisFile = genesisFile;
     return this;
   }
 
@@ -58,10 +59,21 @@ public class NodeConfigurationBuilder {
     return this;
   }
 
+  public NodeConfigurationBuilder withNodePrivateKeyFile(final String nodePrivateKeyFile) {
+    this.nodePrivateKeyFile = nodePrivateKeyFile;
+    return this;
+  }
+
   public NodeConfiguration build() {
     // TODO assert mandatory parameters are not null
 
     return new NodeConfiguration(
-        genesis, enclaveKey, cors, containerNetwork, ipAddress, bootnodeEnodeAddress);
+        genesisFile,
+        enclaveKeyFile,
+        cors,
+        containerNetwork,
+        ipAddress,
+        nodePrivateKeyFile,
+        bootnodeEnodeAddress);
   }
 }

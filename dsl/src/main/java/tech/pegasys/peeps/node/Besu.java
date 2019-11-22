@@ -37,6 +37,7 @@ public class Besu {
   private static final String CONTAINER_GENESIS_FILE = "/etc/besu/genesis.json";
   private static final String CONTAINER_PRIVACY_PUBLIC_KEY_FILE =
       "/etc/besu/privacy_public_key.pub";
+  private static final String CONTAINER_NODE_PRIVATE_KEY_FILE = "/etc/besu/keys/key.priv";
 
   private final GenericContainer<?> besu;
 
@@ -53,6 +54,8 @@ public class Besu {
             "1b23ba34ca45bb56aa67bc78be89ac00ca00da00",
             "--host-whitelist",
             "*",
+            "--p2p-host",
+            config.getIpAddress(),
             "--rpc-http-enabled",
             "--rpc-ws-enabled",
             "--rpc-http-apis",
@@ -61,11 +64,25 @@ public class Besu {
             "--privacy-public-key-file",
             CONTAINER_PRIVACY_PUBLIC_KEY_FILE);
 
+    GenericContainer<?> container = besuContainer(config);
+
+    // TODO move the other bonds & args out e.g. genesis & encalve
+
     // TODO refactor these into private helpers
     config
         .getCors()
         .ifPresent(
             cors -> commandLineOptions.addAll(Lists.newArrayList("--rpc-http-cors-origins", cors)));
+
+    config
+        .getNodePrivateKeyFile()
+        .ifPresent(
+            file -> {
+              container.withFileSystemBind(
+                  file, CONTAINER_NODE_PRIVATE_KEY_FILE, BindMode.READ_ONLY);
+              commandLineOptions.addAll(
+                  Lists.newArrayList("--node-private-key-file", CONTAINER_NODE_PRIVATE_KEY_FILE));
+            });
 
     config
         .getBootnodeEnodeAddress()
@@ -74,20 +91,11 @@ public class Besu {
     LOG.debug("besu command line {}", config);
 
     this.besu =
-        besuContainer(config)
+        container
             .withCreateContainerCmdModifier(
                 modifier -> modifier.withIpv4Address(config.getIpAddress()))
             .withCommand(commandLineOptions.toArray(new String[0]))
             .waitingFor(liveliness());
-  }
-
-  public String getEnodeAddress() {
-    // TODO get the enode with 'magic'
-    // TODO IP - static IP
-    // TODO port - 30303
-    // TODO public key - getNodeInfo JSON-RPC
-
-    return null;
   }
 
   public void start() {
@@ -116,13 +124,15 @@ public class Besu {
     return new GenericContainer<>(BESU_IMAGE)
         .withNetwork(config.getContainerNetwork().orElse(null))
         .withExposedPorts(CONTAINER_HTTP_RPC_PORT, CONTAINER_WS_RPC_PORT, CONTAINER_P2P_PORT)
-        .withFileSystemBind(config.getGenesisFilePath(), CONTAINER_GENESIS_FILE, BindMode.READ_ONLY)
+        .withFileSystemBind(config.getGenesisFile(), CONTAINER_GENESIS_FILE, BindMode.READ_ONLY)
         .withFileSystemBind(
-            config.getEnclavePublicKeyPath(),
+            config.getEnclavePublicKeyFile(),
             CONTAINER_PRIVACY_PUBLIC_KEY_FILE,
             BindMode.READ_ONLY);
   }
 
+  // TODO liveliness should be move to network or configurable to allow parallel besu container
+  // startups
   private HttpWaitStrategy liveliness() {
     return Wait.forHttp(AM_I_ALIVE_ENDPOINT)
         .forStatusCode(ALIVE_STATUS_CODE)

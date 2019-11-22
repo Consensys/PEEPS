@@ -20,34 +20,37 @@ import org.testcontainers.containers.Network;
 
 public class NodeConfiguration {
 
-  private final String genesisFilePath;
-  private final String enclavePublicKeyPath;
+  private final String genesisFile;
+  private final String enclavePublicKeyFile;
   private final String cors;
   private final Network containerNetwork;
-  private final String bootnodeEnodeAddress;
   private final String ipAddress;
+  private final String nodePrivateKeyFile;
+  private final String bootnodeEnodeAddress;
 
   public NodeConfiguration(
-      final String genesisFilePath,
-      final String enclavePublicKeyPath,
+      final String genesisFile,
+      final String enclavePublicKeyFile,
       final String cors,
       final Network containerNetwork,
       final String ipAddress,
+      final String nodePrivateKeyFile,
       final String bootnodeEnodeAddress) {
-    this.genesisFilePath = Resources.getCanonicalPath(genesisFilePath);
-    this.enclavePublicKeyPath = Resources.getCanonicalPath(enclavePublicKeyPath);
+    this.genesisFile = Resources.getCanonicalPath(genesisFile);
+    this.enclavePublicKeyFile = Resources.getCanonicalPath(enclavePublicKeyFile);
     this.cors = cors;
     this.containerNetwork = containerNetwork;
     this.ipAddress = ipAddress;
+    this.nodePrivateKeyFile = nodePrivateKeyFile;
     this.bootnodeEnodeAddress = bootnodeEnodeAddress;
   }
 
-  public String getGenesisFilePath() {
-    return genesisFilePath;
+  public String getGenesisFile() {
+    return genesisFile;
   }
 
-  public String getEnclavePublicKeyPath() {
-    return enclavePublicKeyPath;
+  public String getEnclavePublicKeyFile() {
+    return enclavePublicKeyFile;
   }
 
   public Optional<String> getCors() {
@@ -60,6 +63,10 @@ public class NodeConfiguration {
 
   public String getIpAddress() {
     return ipAddress;
+  }
+
+  public Optional<String> getNodePrivateKeyFile() {
+    return Optional.ofNullable(nodePrivateKeyFile);
   }
 
   public Optional<String> getBootnodeEnodeAddress() {

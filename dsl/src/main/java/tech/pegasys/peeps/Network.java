@@ -45,18 +45,27 @@ public class Network {
 
     // TODO 0.1 seems to be used, maybe assigned by the network container?
 
+    // TODO no magic string!?!?
+
     besuA =
         new Besu(
             new NodeConfigurationBuilder()
                 .withContainerNetwork(network)
                 .withIpAddress("172.20.0.5")
+                .withNodePrivateKeyFile(NodeKeys.BOOTNODE.getPrivateKeyFile())
                 .build());
+
+    // TODO move this into besu; can figure out if these parts are defined in construction or is
+    // after starting
+    // TODO can fail otherwise - runtime exception
+    final String bootnodeEnodeAddress = NodeKeys.BOOTNODE.getEnodeAddress("172.20.0.5", "30303");
+
     besuB =
         new Besu(
             new NodeConfigurationBuilder()
                 .withContainerNetwork(network)
                 .withIpAddress("172.20.0.6")
-                .withBootnodeEnodeAddress(besuA.getEnodeAddress())
+                .withBootnodeEnodeAddress(bootnodeEnodeAddress)
                 .build());
   }
 
