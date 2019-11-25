@@ -12,26 +12,18 @@
  */
 package tech.pegasys.peeps.node.rpc;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class NodeInfo {
+  private final String id;
 
-  private final NodeInfoResult result;
-
-  private final Object protocols;
-
-  @JsonCreator
-  public NodeInfo(
-      @JsonProperty("result") final NodeInfoResult result,
-      @JsonProperty("protocols") final Object protocols) {
-    this.result = result;
-    this.protocols = protocols;
+  public NodeInfo(@JsonProperty("result") final String id) {
+    this.id = id;
   }
 
-  public NodeInfoResult getResult() {
-    return result;
+  public String getId() {
+    return id;
   }
 }

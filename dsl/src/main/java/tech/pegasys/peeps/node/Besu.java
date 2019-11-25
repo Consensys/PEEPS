@@ -12,8 +12,11 @@
  */
 package tech.pegasys.peeps.node;
 
+import tech.pegasys.peeps.node.rpc.ConnectedPeer;
+import tech.pegasys.peeps.node.rpc.ConnectedPeersResponse;
 import tech.pegasys.peeps.node.rpc.JsonRpcRequest;
 import tech.pegasys.peeps.node.rpc.JsonRpcRequestId;
+import tech.pegasys.peeps.node.rpc.NodeInfoResponse;
 import tech.pegasys.peeps.node.rpc.NodeInfo;
 
 import java.util.List;
@@ -138,6 +141,59 @@ public class Besu {
 
   public void awaitConnectivity(final Besu peer) {
     // TODO assert that connection to peer within say 10s occurs
+
+    //TODO admin_peer
+
+    final ConnectedPeer[] peers = connectedPeers();
+
+    //TODO check the peers
+    //TODO var-arge for input - all the peers at once
+    //TODO exclude onself from peers list (if present)
+
+  }
+
+  //TODO common - post, generics, method name
+  // TODO no more magic strings!
+  // TODO rewrite to take advantage od async - many nodes performing simultaneously
+  public ConnectedPeer[] connectedPeers(){
+
+    final JsonRpcRequest jsonRpcRequest =
+        new JsonRpcRequest("2.0", "admin_peers", new Object[0], new JsonRpcRequestId(1));
+
+    CompletableFuture<ConnectedPeersResponse> info = new CompletableFuture<>();
+
+    final String json = Json.encode(jsonRpcRequest);
+
+    // TODO use a configured Json mapper instance - enforce creation parameters
+    final HttpClientRequest request =
+        jsonRpcClient()
+            .post(
+                "/",
+                result -> {
+                  if (result.statusCode() == 200) {
+                    result.bodyHandler(
+                        body -> {
+                          LOG.info("Container {}, admin_peers: {}", besu.getContainerId(), body);
+                          info.complete(Json.decodeValue(body, ConnectedPeersResponse.class));
+                        });
+                  } else {
+                    final String errorMessage =
+                        String.format(
+                            "Querying 'admin_peers failed: %s, %s",
+                            result.statusCode(), result.statusMessage());
+                    LOG.error(errorMessage);
+                    info.completeExceptionally(new IllegalStateException(errorMessage));
+                  }
+                });
+
+    request.setChunked(false);
+    request.end(json);
+
+    try {
+      return  info.get().getResult();
+    } catch (InterruptedException | ExecutionException e) {
+      throw new RuntimeException("Failed to receive a response from `admin_nodeInfo`", e);
+    }
   }
 
   // TODO no more magic strings!
@@ -146,7 +202,7 @@ public class Besu {
     final JsonRpcRequest jsonRpcRequest =
         new JsonRpcRequest("2.0", "admin_nodeInfo", new Object[0], new JsonRpcRequestId(1));
 
-    CompletableFuture<NodeInfo> info = new CompletableFuture<NodeInfo>();
+    CompletableFuture<NodeInfoResponse> info = new CompletableFuture<>();
 
     final String json = Json.encode(jsonRpcRequest);
 
@@ -160,7 +216,7 @@ public class Besu {
                     result.bodyHandler(
                         body -> {
                           LOG.info("Container {}, admin_nodeInfo: {}", besu.getContainerId(), body);
-                          info.complete(Json.decodeValue(body, NodeInfo.class));
+                          info.complete(Json.decodeValue(body, NodeInfoResponse.class));
                         });
                   } else {
                     final String errorMessage =
@@ -176,7 +232,7 @@ public class Besu {
     request.end(json);
 
     try {
-      return info.get();
+      return  info.get().getResult();
     } catch (InterruptedException | ExecutionException e) {
       throw new RuntimeException("Failed to receive a response from `admin_nodeInfo`", e);
     }
