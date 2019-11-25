@@ -12,16 +12,24 @@
  */
 package tech.pegasys.peeps.node;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import static org.assertj.core.api.Assertions.assertThat;
+import static tech.pegasys.peeps.util.HexFormatter.ensureHexPrefix;
+
 import tech.pegasys.peeps.node.rpc.ConnectedPeer;
 import tech.pegasys.peeps.node.rpc.ConnectedPeersResponse;
 import tech.pegasys.peeps.node.rpc.JsonRpcRequest;
 import tech.pegasys.peeps.node.rpc.JsonRpcRequestId;
-import tech.pegasys.peeps.node.rpc.NodeInfoResponse;
 import tech.pegasys.peeps.node.rpc.NodeInfo;
+import tech.pegasys.peeps.node.rpc.NodeInfoResponse;
+import tech.pegasys.peeps.util.Await;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
 import io.vertx.core.Vertx;
@@ -45,7 +53,6 @@ public class Besu {
   private static final int ALIVE_STATUS_CODE = 200;
 
   private static final String BESU_IMAGE = "hyperledger/besu:latest";
-  private static final String LOCALHOST = "localhost";
   private static final int CONTAINER_HTTP_RPC_PORT = 8545;
   private static final int CONTAINER_WS_RPC_PORT = 8546;
   private static final int CONTAINER_P2P_PORT = 30303;
@@ -56,6 +63,7 @@ public class Besu {
 
   private final GenericContainer<?> besu;
   private HttpClient jsonRpc;
+  private String nodeId;
 
   public Besu(final NodeConfiguration config) {
 
@@ -121,6 +129,7 @@ public class Besu {
       // TODO get the node info & store
 
       final NodeInfo info = nodeInfo();
+      nodeId = info.getId();
 
       // TODO validate the node has the expected state, e.g. consensus, genesis, networkId,
       // protocol(s), ports, listen address
@@ -139,23 +148,35 @@ public class Besu {
     besu.stop();
   }
 
-  public void awaitConnectivity(final Besu peer) {
-    // TODO assert that connection to peer within say 10s occurs
-
-    //TODO admin_peer
-
-    final ConnectedPeer[] peers = connectedPeers();
-
-    //TODO check the peers
-    //TODO var-arge for input - all the peers at once
-    //TODO exclude onself from peers list (if present)
-
+  public void awaitConnectivity(final Besu... peers) {
+    awaitPeerIdConnections(expectedPeerIds(peers));
   }
 
-  //TODO common - post, generics, method name
+  private String getNodeId() {
+    checkNotNull(nodeId, "NodeId only exists after the node has started");
+    return nodeId;
+  }
+
+  private void awaitPeerIdConnections(final Set<String> peerIds) {
+    Await.await(
+        () -> assertThat(connectedPeerIds().containsAll(peerIds)).isTrue(),
+        String.format("Failed to connect in time to peers: %s", peerIds));
+  }
+
+  private Set<String> expectedPeerIds(final Besu... peers) {
+    return Arrays.stream(peers)
+        .map(node -> ensureHexPrefix(node.getNodeId()))
+        .collect(Collectors.toSet());
+  }
+
+  private Set<String> connectedPeerIds() {
+    return Arrays.stream(connectedPeers()).map(ConnectedPeer::getId).collect(Collectors.toSet());
+  }
+
+  // TODO common - post, generics, method name
   // TODO no more magic strings!
   // TODO rewrite to take advantage od async - many nodes performing simultaneously
-  public ConnectedPeer[] connectedPeers(){
+  private ConnectedPeer[] connectedPeers() {
 
     final JsonRpcRequest jsonRpcRequest =
         new JsonRpcRequest("2.0", "admin_peers", new Object[0], new JsonRpcRequestId(1));
@@ -173,7 +194,6 @@ public class Besu {
                   if (result.statusCode() == 200) {
                     result.bodyHandler(
                         body -> {
-                          LOG.info("Container {}, admin_peers: {}", besu.getContainerId(), body);
                           info.complete(Json.decodeValue(body, ConnectedPeersResponse.class));
                         });
                   } else {
@@ -181,7 +201,6 @@ public class Besu {
                         String.format(
                             "Querying 'admin_peers failed: %s, %s",
                             result.statusCode(), result.statusMessage());
-                    LOG.error(errorMessage);
                     info.completeExceptionally(new IllegalStateException(errorMessage));
                   }
                 });
@@ -190,7 +209,7 @@ public class Besu {
     request.end(json);
 
     try {
-      return  info.get().getResult();
+      return info.get().getResult();
     } catch (InterruptedException | ExecutionException e) {
       throw new RuntimeException("Failed to receive a response from `admin_nodeInfo`", e);
     }
@@ -232,7 +251,7 @@ public class Besu {
     request.end(json);
 
     try {
-      return  info.get().getResult();
+      return info.get().getResult();
     } catch (InterruptedException | ExecutionException e) {
       throw new RuntimeException("Failed to receive a response from `admin_nodeInfo`", e);
     }
