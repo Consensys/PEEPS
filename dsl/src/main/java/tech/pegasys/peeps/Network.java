@@ -32,7 +32,7 @@ public class Network {
   private final EthSigner signerB = new EthSigner();
   private final Orion orionB = new Orion();
 
-  final org.testcontainers.containers.Network network;
+  private final org.testcontainers.containers.Network network;
 
   // TODO IP management
 
