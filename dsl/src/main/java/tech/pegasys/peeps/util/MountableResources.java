@@ -23,6 +23,8 @@ import java.nio.file.Path;
 
 public class MountableResources {
 
+  // TODO move knowledge of the path to the MountableResources into here
+
   public static String getCanonicalPath(final String path) {
     final File resource = new File(path);
     checkState(resource.exists(), String.format("'%s' is not found", resource.getAbsolutePath()));
