@@ -56,6 +56,7 @@ jobs:
   build:
     executor: executor_large
     steps:
+      - setup_remote_docker
       - prepare
       - run:
           name: Build
