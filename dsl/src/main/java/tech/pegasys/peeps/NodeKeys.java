@@ -27,7 +27,7 @@ public enum NodeKeys {
 
   NodeKeys(final String keysDirectory) {
 
-    this.pubKey = Resources.readHexDroppingPrefix(keysDirectory + PUBLIC_KEY_FILENAME);
+    this.pubKey = Resources.readHexDroppingAnyPrefix(keysDirectory + PUBLIC_KEY_FILENAME);
     this.privKeyFile = Resources.getCanonicalPath(keysDirectory + PRIVATE_KEY_FILENAME);
   }
 

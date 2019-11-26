@@ -41,7 +41,7 @@ public class Resources {
     }
   }
 
-  public static String readHexDroppingPrefix(final String path) {
+  public static String readHexDroppingAnyPrefix(final String path) {
     final URL resource = getResource(path);
 
     try {
