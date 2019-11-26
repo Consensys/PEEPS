@@ -40,7 +40,7 @@ public class Network {
             .createNetworkCmdModifier(
                 modifier ->
                     modifier.withIpam(
-                        new Ipam().withConfig(new Config().withSubnet("172.20.0.0/24"))))
+                        new Ipam().withConfig(new Config().withSubnet("172.22.0.0/24"))))
             .build();
 
     // TODO 0.1 seems to be used, maybe assigned by the network container?
