@@ -12,7 +12,7 @@
  */
 package tech.pegasys.peeps;
 
-import tech.pegasys.peeps.util.WorkingDirectoryResources;
+import tech.pegasys.peeps.util.MountableResources;
 
 // TODO comment expectations of how directories/files under resources are structured
 // TODO may don't use an enum?
@@ -27,10 +27,8 @@ public enum NodeKeys {
 
   NodeKeys(final String keysDirectory) {
 
-    this.pubKey =
-        WorkingDirectoryResources.readHexDroppingAnyPrefix(keysDirectory + PUBLIC_KEY_FILENAME);
-    this.privKeyFile =
-        WorkingDirectoryResources.getCanonicalPath(keysDirectory + PRIVATE_KEY_FILENAME);
+    this.pubKey = MountableResources.readHexDroppingAnyPrefix(keysDirectory + PUBLIC_KEY_FILENAME);
+    this.privKeyFile = MountableResources.getCanonicalPath(keysDirectory + PRIVATE_KEY_FILENAME);
   }
 
   public String getEnodeAddress(final String hostIp, final String port) {
