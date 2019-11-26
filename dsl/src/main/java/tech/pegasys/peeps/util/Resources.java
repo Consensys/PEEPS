@@ -15,7 +15,6 @@ package tech.pegasys.peeps.util;
 import static tech.pegasys.peeps.util.HexFormatter.removeAnyHexPrefix;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -33,12 +32,7 @@ public class Resources {
   public static String getCanonicalPath(final String path) {
     final URL resource = getResource(path);
 
-    try {
-      return URLDecoder.decode(resource.getPath(), StandardCharsets.UTF_8.name());
-    } catch (final UnsupportedEncodingException e) {
-      LOG.error("Unsupported encoding found when decoding: {}.", resource);
-      throw new RuntimeException(e);
-    }
+    return URLDecoder.decode(resource.getPath(), StandardCharsets.UTF_8);
   }
 
   public static String readHexDroppingAnyPrefix(final String path) {
