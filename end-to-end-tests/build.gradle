@@ -24,7 +24,7 @@ test.enabled = false
 
 task endToEndTest(type: Test) {
   mustRunAfter rootProject.subprojects*.test
-  description = 'Runs End to End tests.'
+  description = 'Runs the End to End tests.'
   group = 'verification'
 
   useJUnitPlatform()
