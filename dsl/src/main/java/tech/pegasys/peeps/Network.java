@@ -39,7 +39,7 @@ public class Network {
   public Network() {
 
     // TODO subnet with substitution for static IPs
-     network =
+    network =
         org.testcontainers.containers.Network.builder()
             .createNetworkCmdModifier(
                 modifier ->
@@ -50,7 +50,6 @@ public class Network {
     // TODO 0.1 seems to be used, maybe assigned by the network container?
 
     // TODO no magic string!?!?
-
 
     besuA =
         new Besu(
@@ -81,6 +80,11 @@ public class Network {
   }
 
   public void stop() {
+    besuA.stop();
+    besuB.stop();
+  }
+
+  public void close() {
     besuA.stop();
     besuB.stop();
     network.close();

@@ -42,7 +42,7 @@ public class DrivingDevelopmentTest {
   @AfterAll
   public static void tearDownOnce() {
     // TODO wrap up elsewhere
-    network.stop();
+    network.close();
   }
 
   @Test
