@@ -101,4 +101,6 @@ workflows:
   default:
     jobs:
       - build
-      - endToEndTests
+      - endToEndTests:
+          requires:
+            - build
