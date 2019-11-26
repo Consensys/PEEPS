@@ -41,7 +41,7 @@ public class Resources {
     final URL resource = Thread.currentThread().getContextClassLoader().getResource(path);
 
     if (resource == null) {
-      final String message = String.format("File '%s' not found on classpath", path);
+      final String message = String.format("File '%s' is not found on classpath", path);
       LOG.error(message);
       throw new IllegalArgumentException(message);
     }
