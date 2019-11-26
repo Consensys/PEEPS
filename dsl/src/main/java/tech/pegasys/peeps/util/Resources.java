@@ -30,23 +30,14 @@ public class Resources {
   private static final Logger LOG = LogManager.getLogger();
 
   public static String getCanonicalPath(final String path) {
-    final URL resource = getResource(path);
-
-    return URLDecoder.decode(resource.getPath(), StandardCharsets.UTF_8);
+    return decodePath(existentResourceUrl(path));
   }
 
   public static String readHexDroppingAnyPrefix(final String path) {
-    final URL resource = getResource(path);
-
-    try {
-      return removeAnyHexPrefix(
-          Files.readString(Path.of(resource.toURI()), StandardCharsets.UTF_8));
-    } catch (final IOException | URISyntaxException e) {
-      throw new RuntimeException("Problem reading file: " + path, e);
-    }
+    return removeAnyHexPrefix(readString(existentResourceUrl(path)));
   }
 
-  private static URL getResource(final String path) {
+  private static URL existentResourceUrl(final String path) {
     final URL resource = Thread.currentThread().getContextClassLoader().getResource(path);
 
     if (resource == null) {
@@ -56,5 +47,17 @@ public class Resources {
     }
 
     return resource;
+  }
+
+  private static String decodePath(final URL resource) {
+    return URLDecoder.decode(resource.getPath(), StandardCharsets.UTF_8);
+  }
+
+  private static String readString(final URL resource) {
+    try {
+      return Files.readString(Path.of(resource.toURI()), StandardCharsets.UTF_8);
+    } catch (final IOException | URISyntaxException e) {
+      throw new IllegalArgumentException("Cannot read file: " + resource, e);
+    }
   }
 }
