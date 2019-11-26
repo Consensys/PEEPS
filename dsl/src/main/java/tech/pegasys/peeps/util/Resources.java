@@ -12,6 +12,8 @@
  */
 package tech.pegasys.peeps.util;
 
+import static tech.pegasys.peeps.util.HexFormatter.removeAnyHexPrefix;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
@@ -25,9 +27,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class Resources {
-
-  // TODO split into two classes, one for resources, the other for hex / strings
-  private static final String HEX_PREFIX = "0x";
 
   private static final Logger LOG = LogManager.getLogger();
 
@@ -46,35 +45,10 @@ public class Resources {
     final URL resource = getResource(path);
 
     try {
-      final String hex = Files.readString(Path.of(resource.toURI()), StandardCharsets.UTF_8);
-      return hex.startsWith(HEX_PREFIX) ? hex.substring(HEX_PREFIX.length()) : hex;
+      return removeAnyHexPrefix(
+          Files.readString(Path.of(resource.toURI()), StandardCharsets.UTF_8));
     } catch (final IOException | URISyntaxException e) {
       throw new RuntimeException("Problem reading file: " + path, e);
-    }
-  }
-
-  public static String readString(final String path) {
-    final URL resource = getResource(path);
-
-    try {
-      return Files.readString(Path.of(resource.toURI()), StandardCharsets.UTF_8);
-    } catch (final IOException | URISyntaxException e) {
-      throw new RuntimeException("Problem reading file: " + path, e);
-    }
-  }
-
-  public static boolean notExist(final String path) {
-    return !exists(path);
-  }
-
-  public static boolean exists(final String path) {
-    final URL resource = getResource(path);
-
-    try {
-      return Files.exists(Path.of(resource.toURI()));
-    } catch (URISyntaxException e) {
-      LOG.error("Illegal URI syntax for relative resource: {}", resource);
-      throw new RuntimeException(e);
     }
   }
 
