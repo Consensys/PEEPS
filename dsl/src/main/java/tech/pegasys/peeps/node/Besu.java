@@ -111,14 +111,16 @@ public class Besu {
             .waitingFor(liveliness());
 
     // TODO move the vertx to network & close on stop() - all use the same Vertx instance
-    this.jsonRpc = new BesuRpcClient(besu.getContainerId(), Vertx.vertx());
+    this.jsonRpc = new BesuRpcClient(Vertx.vertx());
   }
 
   public void start() {
     try {
       besu.start();
       jsonRpc.besuStarted(
-          besu.getContainerIpAddress(), besu.getMappedPort(CONTAINER_HTTP_RPC_PORT));
+          besu.getContainerId(),
+          besu.getContainerIpAddress(),
+          besu.getMappedPort(CONTAINER_HTTP_RPC_PORT));
 
       // TODO get the node info & store
 
