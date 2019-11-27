@@ -23,7 +23,7 @@ public class JsonEncoder {
     this.mapper = mapper;
   }
 
-  public String json(final Object pojo) {
+  public String convert(final Object pojo) {
 
     try {
       return mapper.writeValueAsString(pojo);

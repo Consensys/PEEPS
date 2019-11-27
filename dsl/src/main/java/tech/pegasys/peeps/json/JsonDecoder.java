@@ -28,7 +28,7 @@ public class JsonDecoder {
     this.mapper = mapper;
   }
 
-  public <T> T json(final Buffer buf, final Class<T> clazz) throws DecodeException {
+  public <T> T read(final Buffer buf, final Class<T> clazz) throws DecodeException {
     try {
       return mapper.readValue((InputStream) new ByteBufInputStream(buf.getByteBuf()), clazz);
     } catch (final IOException e) {

@@ -15,8 +15,7 @@ package tech.pegasys.peeps.node;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
-import tech.pegasys.peeps.json.JsonDecoder;
-import tech.pegasys.peeps.json.JsonEncoder;
+import tech.pegasys.peeps.json.Json;
 import tech.pegasys.peeps.node.rpc.ConnectedPeer;
 import tech.pegasys.peeps.node.rpc.ConnectedPeersResponse;
 import tech.pegasys.peeps.node.rpc.JsonRpcRequest;
@@ -30,8 +29,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientRequest;
@@ -46,18 +43,6 @@ public class BesuRpcClient {
   private static final String JSON_RPC_CONTEXT_PATH = "/";
   private static final String JSON_RPC_VERSION = "2.0";
   private static int HTTP_STATUS_OK = 200;
-  private static final JsonEncoder ENCODE;
-  private static final JsonDecoder DECODE;
-
-  static {
-    final ObjectMapper mapper = new ObjectMapper();
-    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    mapper.configure(DeserializationFeature.FAIL_ON_NULL_CREATOR_PROPERTIES, true);
-    mapper.configure(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES, true);
-
-    ENCODE = new JsonEncoder(mapper);
-    DECODE = new JsonDecoder(mapper);
-  }
 
   private final Vertx vertx;
 
@@ -87,7 +72,7 @@ public class BesuRpcClient {
     final JsonRpcRequest jsonRpcRequest =
         new JsonRpcRequest(JSON_RPC_VERSION, method, new Object[0], new JsonRpcRequestId(1));
     final CompletableFuture<T> future = new CompletableFuture<>();
-    final String json = ENCODE.json(jsonRpcRequest);
+    final String json = Json.encode(jsonRpcRequest);
 
     final HttpClientRequest request =
         jsonRpcClient()
@@ -98,7 +83,7 @@ public class BesuRpcClient {
                     result.bodyHandler(
                         body -> {
                           LOG.info("Container {}, {}: {}", besuId, method, body);
-                          future.complete(DECODE.json(body, clazz));
+                          future.complete(Json.decode(body, clazz));
                         });
                   } else {
                     final String errorMessage =
