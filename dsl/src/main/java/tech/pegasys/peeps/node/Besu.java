@@ -205,7 +205,7 @@ public class Besu {
                   }
                 });
 
-    request.setChunked(false);
+    request.setChunked(true);
     request.end(json);
 
     try {
@@ -247,7 +247,7 @@ public class Besu {
                   }
                 });
 
-    request.setChunked(false);
+    request.setChunked(true);
     request.end(json);
 
     try {
