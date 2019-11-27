@@ -173,56 +173,20 @@ public class Besu {
     return Arrays.stream(connectedPeers()).map(ConnectedPeer::getId).collect(Collectors.toSet());
   }
 
-  // TODO common - post, generics, method name
-  // TODO no more magic strings!
-  // TODO rewrite to take advantage od async - many nodes performing simultaneously
   private ConnectedPeer[] connectedPeers() {
+    return post("admin_peers", ConnectedPeersResponse.class).getResult();
+  }
 
-    final JsonRpcRequest jsonRpcRequest =
-        new JsonRpcRequest("2.0", "admin_peers", new Object[0], new JsonRpcRequestId(1));
-
-    CompletableFuture<ConnectedPeersResponse> info = new CompletableFuture<>();
-
-    final String json = Json.encode(jsonRpcRequest);
-
-    // TODO use a configured Json mapper instance - enforce creation parameters
-    final HttpClientRequest request =
-        jsonRpcClient()
-            .post(
-                "/",
-                result -> {
-                  if (result.statusCode() == 200) {
-                    result.bodyHandler(
-                        body -> {
-                          info.complete(Json.decodeValue(body, ConnectedPeersResponse.class));
-                        });
-                  } else {
-                    final String errorMessage =
-                        String.format(
-                            "Querying 'admin_peers failed: %s, %s",
-                            result.statusCode(), result.statusMessage());
-                    info.completeExceptionally(new IllegalStateException(errorMessage));
-                  }
-                });
-
-    request.setChunked(true);
-    request.end(json);
-
-    try {
-      return info.get().getResult();
-    } catch (InterruptedException | ExecutionException e) {
-      throw new RuntimeException("Failed to receive a response from `admin_nodeInfo`", e);
-    }
+  private NodeInfo nodeInfo() {
+    return post("admin_nodeInfo", NodeInfoResponse.class).getResult();
   }
 
   // TODO no more magic strings!
   // TODO rewrite to take advantage od async - many nodes performing simultaneously
-  private NodeInfo nodeInfo() {
+  private <T> T post(final String method, final Class<T> clazz) {
     final JsonRpcRequest jsonRpcRequest =
-        new JsonRpcRequest("2.0", "admin_nodeInfo", new Object[0], new JsonRpcRequestId(1));
-
-    CompletableFuture<NodeInfoResponse> info = new CompletableFuture<>();
-
+        new JsonRpcRequest("2.0", method, new Object[0], new JsonRpcRequestId(1));
+    final CompletableFuture<T> future = new CompletableFuture<>();
     final String json = Json.encode(jsonRpcRequest);
 
     // TODO use a configured Json mapper instance - enforce creation parameters
@@ -234,16 +198,16 @@ public class Besu {
                   if (result.statusCode() == 200) {
                     result.bodyHandler(
                         body -> {
-                          LOG.info("Container {}, admin_nodeInfo: {}", besu.getContainerId(), body);
-                          info.complete(Json.decodeValue(body, NodeInfoResponse.class));
+                          LOG.info("Container {}, {}}: {}", besu.getContainerId(), method, body);
+                          future.complete(Json.decodeValue(body, clazz));
                         });
                   } else {
                     final String errorMessage =
                         String.format(
-                            "Querying 'admin_nodInfo failed: %s, %s",
-                            result.statusCode(), result.statusMessage());
+                            "Querying %s failed: %s, %s",
+                            method, result.statusCode(), result.statusMessage());
                     LOG.error(errorMessage);
-                    info.completeExceptionally(new IllegalStateException(errorMessage));
+                    future.completeExceptionally(new IllegalStateException(errorMessage));
                   }
                 });
 
@@ -251,7 +215,7 @@ public class Besu {
     request.end(json);
 
     try {
-      return info.get().getResult();
+      return future.get();
     } catch (InterruptedException | ExecutionException e) {
       throw new RuntimeException("Failed to receive a response from `admin_nodeInfo`", e);
     }
