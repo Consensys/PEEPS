@@ -16,27 +16,16 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static org.assertj.core.api.Assertions.assertThat;
 import static tech.pegasys.peeps.util.HexFormatter.ensureHexPrefix;
 
-import tech.pegasys.peeps.node.rpc.ConnectedPeer;
-import tech.pegasys.peeps.node.rpc.ConnectedPeersResponse;
-import tech.pegasys.peeps.node.rpc.JsonRpcRequest;
-import tech.pegasys.peeps.node.rpc.JsonRpcRequestId;
 import tech.pegasys.peeps.node.rpc.NodeInfo;
-import tech.pegasys.peeps.node.rpc.NodeInfoResponse;
 import tech.pegasys.peeps.util.Await;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
 import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.HttpClientRequest;
-import io.vertx.core.json.Json;
-import io.vertx.ext.web.client.WebClientOptions;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.testcontainers.containers.BindMode;
@@ -62,7 +51,7 @@ public class Besu {
   private static final String CONTAINER_NODE_PRIVATE_KEY_FILE = "/etc/besu/keys/key.priv";
 
   private final GenericContainer<?> besu;
-  private HttpClient jsonRpc;
+  private final BesuRpcClient jsonRpc;
   private String nodeId;
 
   public Besu(final NodeConfiguration config) {
@@ -120,15 +109,20 @@ public class Besu {
                 modifier -> modifier.withIpv4Address(config.getIpAddress()))
             .withCommand(commandLineOptions.toArray(new String[0]))
             .waitingFor(liveliness());
+
+    // TODO move the vertx to network & close on stop() - all use the same Vertx instance
+    this.jsonRpc = new BesuRpcClient(besu.getContainerId(), Vertx.vertx());
   }
 
   public void start() {
     try {
       besu.start();
+      jsonRpc.besuStarted(
+          besu.getContainerIpAddress(), besu.getMappedPort(CONTAINER_HTTP_RPC_PORT));
 
       // TODO get the node info & store
 
-      final NodeInfo info = nodeInfo();
+      final NodeInfo info = jsonRpc.nodeInfo();
       nodeId = info.getId();
 
       // TODO validate the node has the expected state, e.g. consensus, genesis, networkId,
@@ -159,7 +153,7 @@ public class Besu {
 
   private void awaitPeerIdConnections(final Set<String> peerIds) {
     Await.await(
-        () -> assertThat(connectedPeerIds().containsAll(peerIds)).isTrue(),
+        () -> assertThat(jsonRpc.connectedPeerIds().containsAll(peerIds)).isTrue(),
         String.format("Failed to connect in time to peers: %s", peerIds));
   }
 
@@ -167,72 +161,6 @@ public class Besu {
     return Arrays.stream(peers)
         .map(node -> ensureHexPrefix(node.getNodeId()))
         .collect(Collectors.toSet());
-  }
-
-  private Set<String> connectedPeerIds() {
-    return Arrays.stream(connectedPeers()).map(ConnectedPeer::getId).collect(Collectors.toSet());
-  }
-
-  private ConnectedPeer[] connectedPeers() {
-    return post("admin_peers", ConnectedPeersResponse.class).getResult();
-  }
-
-  private NodeInfo nodeInfo() {
-    return post("admin_nodeInfo", NodeInfoResponse.class).getResult();
-  }
-
-  // TODO no more magic strings!
-  // TODO rewrite to take advantage od async - many nodes performing simultaneously
-  private <T> T post(final String method, final Class<T> clazz) {
-    final JsonRpcRequest jsonRpcRequest =
-        new JsonRpcRequest("2.0", method, new Object[0], new JsonRpcRequestId(1));
-    final CompletableFuture<T> future = new CompletableFuture<>();
-    final String json = Json.encode(jsonRpcRequest);
-
-    // TODO use a configured Json mapper instance - enforce creation parameters
-    final HttpClientRequest request =
-        jsonRpcClient()
-            .post(
-                "/",
-                result -> {
-                  if (result.statusCode() == 200) {
-                    result.bodyHandler(
-                        body -> {
-                          LOG.info("Container {}, {}}: {}", besu.getContainerId(), method, body);
-                          future.complete(Json.decodeValue(body, clazz));
-                        });
-                  } else {
-                    final String errorMessage =
-                        String.format(
-                            "Querying %s failed: %s, %s",
-                            method, result.statusCode(), result.statusMessage());
-                    LOG.error(errorMessage);
-                    future.completeExceptionally(new IllegalStateException(errorMessage));
-                  }
-                });
-
-    request.setChunked(true);
-    request.end(json);
-
-    try {
-      return future.get();
-    } catch (InterruptedException | ExecutionException e) {
-      throw new RuntimeException("Failed to receive a response from `admin_nodeInfo`", e);
-    }
-  }
-
-  private HttpClient jsonRpcClient() {
-    if (jsonRpc == null) {
-      // TODO move the vertx to network & close on stop()
-      jsonRpc =
-          Vertx.vertx()
-              .createHttpClient(
-                  new WebClientOptions()
-                      .setDefaultPort(besu.getMappedPort(CONTAINER_HTTP_RPC_PORT))
-                      .setDefaultHost(besu.getContainerIpAddress()));
-    }
-
-    return jsonRpc;
   }
 
   // TODO reduce the args - exposed ports maybe not needed
