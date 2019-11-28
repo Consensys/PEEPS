@@ -58,10 +58,8 @@ public class Besu {
 
     final List<String> commandLineOptions =
         Lists.newArrayList(
-            "--genesis-file",
-            CONTAINER_GENESIS_FILE,
             "--logging",
-            "DEBUG",
+            "INFO",
             "--miner-enabled",
             "--miner-coinbase",
             "1b23ba34ca45bb56aa67bc78be89ac00ca00da00",
@@ -72,12 +70,9 @@ public class Besu {
             "--rpc-http-enabled",
             "--rpc-ws-enabled",
             "--rpc-http-apis",
-            "ADMIN,ETH,NET,WEB3,EEA",
-            "--privacy-enabled",
-            "--privacy-public-key-file",
-            CONTAINER_PRIVACY_PUBLIC_KEY_FILE);
+            "ADMIN,ETH,NET,WEB3,EEA");
 
-    GenericContainer<?> container = besuContainer(config);
+    final GenericContainer<?> container = besuContainer(config);
 
     // TODO move the other bonds & args out e.g. genesis & encalve
 
@@ -100,6 +95,19 @@ public class Besu {
     config
         .getBootnodeEnodeAddress()
         .ifPresent(enode -> commandLineOptions.addAll(Lists.newArrayList("--bootnodes", enode)));
+
+    // TODO genesis - private method
+    commandLineOptions.add("--genesis-file");
+    commandLineOptions.add(CONTAINER_GENESIS_FILE);
+    container.withClasspathResourceMapping(
+        config.getGenesisFile(), CONTAINER_GENESIS_FILE, BindMode.READ_ONLY);
+
+    // TODO enclave - private method
+    commandLineOptions.add("--privacy-enabled");
+    commandLineOptions.add("--privacy-public-key-file");
+    commandLineOptions.add(CONTAINER_PRIVACY_PUBLIC_KEY_FILE);
+    container.withClasspathResourceMapping(
+        config.getEnclavePublicKeyFile(), CONTAINER_PRIVACY_PUBLIC_KEY_FILE, BindMode.READ_ONLY);
 
     LOG.debug("besu command line {}", config);
 
@@ -168,14 +176,7 @@ public class Besu {
   // TODO reduce the args - exposed ports maybe not needed
   private GenericContainer<?> besuContainer(final NodeConfiguration config) {
     return new GenericContainer<>(BESU_IMAGE)
-        .withNetwork(config.getContainerNetwork().orElse(null))
-        .withExposedPorts(CONTAINER_HTTP_RPC_PORT, CONTAINER_WS_RPC_PORT, CONTAINER_P2P_PORT)
-        .withClasspathResourceMapping(
-            config.getGenesisFile(), CONTAINER_GENESIS_FILE, BindMode.READ_ONLY)
-        .withClasspathResourceMapping(
-            config.getEnclavePublicKeyFile(),
-            CONTAINER_PRIVACY_PUBLIC_KEY_FILE,
-            BindMode.READ_ONLY);
+        .withNetwork(config.getContainerNetwork().orElse(null));
   }
 
   // TODO liveliness should be move to network or configurable to allow parallel besu container
