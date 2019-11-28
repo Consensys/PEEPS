@@ -56,6 +56,8 @@ public class Besu {
 
   public Besu(final NodeConfiguration config) {
 
+    final GenericContainer<?> container = new GenericContainer<>(BESU_IMAGE);
+
     final List<String> commandLineOptions =
         Lists.newArrayList(
             "--logging",
@@ -72,8 +74,6 @@ public class Besu {
             "--rpc-http-apis",
             "ADMIN,ETH,NET,WEB3,EEA");
 
-    final GenericContainer<?> container = new GenericContainer<>(BESU_IMAGE);
-
     // TODO move the other bonds & args out e.g. genesis & encalve
 
     // TODO refactor these into private helpers
@@ -81,6 +81,10 @@ public class Besu {
         .getCors()
         .ifPresent(
             cors -> commandLineOptions.addAll(Lists.newArrayList("--rpc-http-cors-origins", cors)));
+
+    config
+        .getBootnodeEnodeAddress()
+        .ifPresent(enode -> commandLineOptions.addAll(Lists.newArrayList("--bootnodes", enode)));
 
     config.getContainerNetwork().ifPresent(container::withNetwork);
 
@@ -94,17 +98,11 @@ public class Besu {
                   Lists.newArrayList("--node-private-key-file", CONTAINER_NODE_PRIVATE_KEY_FILE));
             });
 
-    config
-        .getBootnodeEnodeAddress()
-        .ifPresent(enode -> commandLineOptions.addAll(Lists.newArrayList("--bootnodes", enode)));
-
-    // TODO genesis - private method
     commandLineOptions.add("--genesis-file");
     commandLineOptions.add(CONTAINER_GENESIS_FILE);
     container.withClasspathResourceMapping(
         config.getGenesisFile(), CONTAINER_GENESIS_FILE, BindMode.READ_ONLY);
 
-    // TODO enclave - private method
     commandLineOptions.add("--privacy-enabled");
     commandLineOptions.add("--privacy-public-key-file");
     commandLineOptions.add(CONTAINER_PRIVACY_PUBLIC_KEY_FILE);
@@ -126,12 +124,11 @@ public class Besu {
   public void start() {
     try {
       besu.start();
+
       jsonRpc.bind(
           besu.getContainerId(),
           besu.getContainerIpAddress(),
           besu.getMappedPort(CONTAINER_HTTP_RPC_PORT));
-
-      // TODO get the node info & store
 
       final NodeInfo info = jsonRpc.nodeInfo();
       nodeId = info.getId();
@@ -139,9 +136,7 @@ public class Besu {
       // TODO validate the node has the expected state, e.g. consensus, genesis, networkId,
       // protocol(s), ports, listen address
 
-      logHttpRpcPortMapping();
-      logWsRpcPortMapping();
-      logPeerToPeerPortMapping();
+      logPortMappings();
       logContainerNetworkDetails();
     } catch (final ContainerLaunchException e) {
       LOG.error(besu.getLogs());
@@ -151,6 +146,7 @@ public class Besu {
 
   public void stop() {
     besu.stop();
+    jsonRpc.close();
   }
 
   public void awaitConnectivity(final Besu... peers) {
@@ -182,27 +178,14 @@ public class Besu {
         .forPort(CONTAINER_HTTP_RPC_PORT);
   }
 
-  // TODO a single log line with all details!
-  private void logHttpRpcPortMapping() {
+  private void logPortMappings() {
     LOG.info(
-        "Container {}, HTTP RPC port mapping: {} -> {}",
+        "Container {}, HTTP RPC port mapping: {} -> {}, WS RPC port mapping: {} -> {}, p2p port mapping: {} -> {}",
         besu.getContainerId(),
         CONTAINER_HTTP_RPC_PORT,
-        besu.getMappedPort(CONTAINER_HTTP_RPC_PORT));
-  }
-
-  private void logWsRpcPortMapping() {
-    LOG.info(
-        "Container {}, WS RPC port mapping: {} -> {}",
-        besu.getContainerId(),
+        besu.getMappedPort(CONTAINER_HTTP_RPC_PORT),
         CONTAINER_WS_RPC_PORT,
-        besu.getMappedPort(CONTAINER_WS_RPC_PORT));
-  }
-
-  private void logPeerToPeerPortMapping() {
-    LOG.info(
-        "Container {}, p2p port mapping: {} -> {}",
-        besu.getContainerId(),
+        besu.getMappedPort(CONTAINER_WS_RPC_PORT),
         CONTAINER_P2P_PORT,
         besu.getMappedPort(CONTAINER_P2P_PORT));
   }

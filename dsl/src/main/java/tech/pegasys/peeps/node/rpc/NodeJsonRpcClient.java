@@ -110,6 +110,12 @@ public class NodeJsonRpcClient {
             new WebClientOptions().setDefaultPort(httpJsonRpcPort).setDefaultHost(ipAddress));
   }
 
+  public void close() {
+    if (jsonRpc != null) {
+      jsonRpc.close();
+    }
+  }
+
   private ConnectedPeer[] connectedPeers() {
     return post("admin_peers", ConnectedPeersResponse.class).getResult();
   }
