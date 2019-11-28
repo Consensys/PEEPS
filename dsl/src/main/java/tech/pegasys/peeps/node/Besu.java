@@ -16,7 +16,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static org.assertj.core.api.Assertions.assertThat;
 import static tech.pegasys.peeps.util.HexFormatter.ensureHexPrefix;
 
-import tech.pegasys.peeps.node.rpc.NodeInfo;
+import tech.pegasys.peeps.node.rpc.NodeJsonRpcClient;
+import tech.pegasys.peeps.node.rpc.admin.NodeInfo;
 import tech.pegasys.peeps.util.Await;
 
 import java.util.Arrays;
@@ -25,7 +26,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
-import io.vertx.core.Vertx;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.testcontainers.containers.BindMode;
@@ -51,7 +51,7 @@ public class Besu {
   private static final String CONTAINER_NODE_PRIVATE_KEY_FILE = "/etc/besu/keys/key.priv";
 
   private final GenericContainer<?> besu;
-  private final BesuRpcClient jsonRpc;
+  private final NodeJsonRpcClient jsonRpc;
   private String nodeId;
 
   public Besu(final NodeConfiguration config) {
@@ -72,7 +72,7 @@ public class Besu {
             "--rpc-http-apis",
             "ADMIN,ETH,NET,WEB3,EEA");
 
-    final GenericContainer<?> container = besuContainer(config);
+    final GenericContainer<?> container = new GenericContainer<>(BESU_IMAGE);
 
     // TODO move the other bonds & args out e.g. genesis & encalve
 
@@ -81,6 +81,8 @@ public class Besu {
         .getCors()
         .ifPresent(
             cors -> commandLineOptions.addAll(Lists.newArrayList("--rpc-http-cors-origins", cors)));
+
+    config.getContainerNetwork().ifPresent(container::withNetwork);
 
     config
         .getNodePrivateKeyFile()
@@ -118,14 +120,13 @@ public class Besu {
             .withCommand(commandLineOptions.toArray(new String[0]))
             .waitingFor(liveliness());
 
-    // TODO move the vertx to network & close on stop() - all use the same Vertx instance
-    this.jsonRpc = new BesuRpcClient(Vertx.vertx());
+    this.jsonRpc = new NodeJsonRpcClient(config.getVertx());
   }
 
   public void start() {
     try {
       besu.start();
-      jsonRpc.besuStarted(
+      jsonRpc.bind(
           besu.getContainerId(),
           besu.getContainerIpAddress(),
           besu.getMappedPort(CONTAINER_HTTP_RPC_PORT));
@@ -171,12 +172,6 @@ public class Besu {
     return Arrays.stream(peers)
         .map(node -> ensureHexPrefix(node.getNodeId()))
         .collect(Collectors.toSet());
-  }
-
-  // TODO reduce the args - exposed ports maybe not needed
-  private GenericContainer<?> besuContainer(final NodeConfiguration config) {
-    return new GenericContainer<>(BESU_IMAGE)
-        .withNetwork(config.getContainerNetwork().orElse(null));
   }
 
   // TODO liveliness should be move to network or configurable to allow parallel besu container
