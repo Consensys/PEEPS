@@ -57,66 +57,21 @@ public class Besu {
   public Besu(final NodeConfiguration config) {
 
     final GenericContainer<?> container = new GenericContainer<>(BESU_IMAGE);
+    final List<String> commandLineOptions = standardCommandLineOptions();
 
-    final List<String> commandLineOptions =
-        Lists.newArrayList(
-            "--logging",
-            "INFO",
-            "--miner-enabled",
-            "--miner-coinbase",
-            "1b23ba34ca45bb56aa67bc78be89ac00ca00da00",
-            "--host-whitelist",
-            "*",
-            "--p2p-host",
-            config.getIpAddress(),
-            "--rpc-http-enabled",
-            "--rpc-ws-enabled",
-            "--rpc-http-apis",
-            "ADMIN,ETH,NET,WEB3,EEA");
+    addPeerToPeerHost(config, commandLineOptions);
+    addCorsOrigins(config, commandLineOptions);
+    addBootnodeAddress(config, commandLineOptions);
+    addContainerNetwork(config, container);
+    addContainerIpAddress(config, container);
+    addNodePrivateKey(config, commandLineOptions, container);
+    addGenesisFile(config, commandLineOptions, container);
+    addPrivacy(config, commandLineOptions, container);
 
-    // TODO move the other bonds & args out e.g. genesis & encalve
-
-    // TODO refactor these into private helpers
-    config
-        .getCors()
-        .ifPresent(
-            cors -> commandLineOptions.addAll(Lists.newArrayList("--rpc-http-cors-origins", cors)));
-
-    config
-        .getBootnodeEnodeAddress()
-        .ifPresent(enode -> commandLineOptions.addAll(Lists.newArrayList("--bootnodes", enode)));
-
-    config.getContainerNetwork().ifPresent(container::withNetwork);
-
-    config
-        .getNodePrivateKeyFile()
-        .ifPresent(
-            file -> {
-              container.withClasspathResourceMapping(
-                  file, CONTAINER_NODE_PRIVATE_KEY_FILE, BindMode.READ_ONLY);
-              commandLineOptions.addAll(
-                  Lists.newArrayList("--node-private-key-file", CONTAINER_NODE_PRIVATE_KEY_FILE));
-            });
-
-    commandLineOptions.add("--genesis-file");
-    commandLineOptions.add(CONTAINER_GENESIS_FILE);
-    container.withClasspathResourceMapping(
-        config.getGenesisFile(), CONTAINER_GENESIS_FILE, BindMode.READ_ONLY);
-
-    commandLineOptions.add("--privacy-enabled");
-    commandLineOptions.add("--privacy-public-key-file");
-    commandLineOptions.add(CONTAINER_PRIVACY_PUBLIC_KEY_FILE);
-    container.withClasspathResourceMapping(
-        config.getEnclavePublicKeyFile(), CONTAINER_PRIVACY_PUBLIC_KEY_FILE, BindMode.READ_ONLY);
-
-    LOG.debug("besu command line {}", config);
+    LOG.debug("besu command line {}", commandLineOptions);
 
     this.besu =
-        container
-            .withCreateContainerCmdModifier(
-                modifier -> modifier.withIpv4Address(config.getIpAddress()))
-            .withCommand(commandLineOptions.toArray(new String[0]))
-            .waitingFor(liveliness());
+        container.withCommand(commandLineOptions.toArray(new String[0])).waitingFor(liveliness());
 
     this.jsonRpc = new NodeJsonRpcClient(config.getVertx());
   }
@@ -200,5 +155,89 @@ public class Besu {
           besu.getContainerIpAddress(),
           besu.getNetwork().getId());
     }
+  }
+
+  private List<String> standardCommandLineOptions() {
+    return Lists.newArrayList(
+        "--logging",
+        "INFO",
+        "--miner-enabled",
+        "--miner-coinbase",
+        "1b23ba34ca45bb56aa67bc78be89ac00ca00da00",
+        "--host-whitelist",
+        "*",
+        "--rpc-http-enabled",
+        "--rpc-ws-enabled",
+        "--rpc-http-apis",
+        "ADMIN,ETH,NET,WEB3,EEA");
+  }
+
+  private void addPeerToPeerHost(
+      final NodeConfiguration config, final List<String> commandLineOptions) {
+    commandLineOptions.add("--p2p-host");
+    commandLineOptions.add(config.getIpAddress());
+  }
+
+  private void addBootnodeAddress(
+      final NodeConfiguration config, final List<String> commandLineOptions) {
+    config
+        .getBootnodeEnodeAddress()
+        .ifPresent(enode -> commandLineOptions.addAll(Lists.newArrayList("--bootnodes", enode)));
+  }
+
+  private void addContainerNetwork(
+      final NodeConfiguration config, final GenericContainer<?> container) {
+    config.getContainerNetwork().ifPresent(container::withNetwork);
+  }
+
+  private void addCorsOrigins(
+      final NodeConfiguration config, final List<String> commandLineOptions) {
+
+    config
+        .getCors()
+        .ifPresent(
+            cors -> commandLineOptions.addAll(Lists.newArrayList("--rpc-http-cors-origins", cors)));
+  }
+
+  private void addNodePrivateKey(
+      final NodeConfiguration config,
+      final List<String> commandLineOptions,
+      final GenericContainer<?> container) {
+    config
+        .getNodePrivateKeyFile()
+        .ifPresent(
+            file -> {
+              container.withClasspathResourceMapping(
+                  file, CONTAINER_NODE_PRIVATE_KEY_FILE, BindMode.READ_ONLY);
+              commandLineOptions.addAll(
+                  Lists.newArrayList("--node-private-key-file", CONTAINER_NODE_PRIVATE_KEY_FILE));
+            });
+  }
+
+  private void addGenesisFile(
+      final NodeConfiguration config,
+      final List<String> commandLineOptions,
+      final GenericContainer<?> container) {
+    commandLineOptions.add("--genesis-file");
+    commandLineOptions.add(CONTAINER_GENESIS_FILE);
+    container.withClasspathResourceMapping(
+        config.getGenesisFile(), CONTAINER_GENESIS_FILE, BindMode.READ_ONLY);
+  }
+
+  private void addPrivacy(
+      final NodeConfiguration config,
+      final List<String> commandLineOptions,
+      final GenericContainer<?> container) {
+    commandLineOptions.add("--privacy-enabled");
+    commandLineOptions.add("--privacy-public-key-file");
+    commandLineOptions.add(CONTAINER_PRIVACY_PUBLIC_KEY_FILE);
+    container.withClasspathResourceMapping(
+        config.getEnclavePublicKeyFile(), CONTAINER_PRIVACY_PUBLIC_KEY_FILE, BindMode.READ_ONLY);
+  }
+
+  private void addContainerIpAddress(
+      final NodeConfiguration config, final GenericContainer<?> container) {
+    container.withCreateContainerCmdModifier(
+        modifier -> modifier.withIpv4Address(config.getIpAddress()));
   }
 }
