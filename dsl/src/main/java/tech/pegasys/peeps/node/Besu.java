@@ -125,8 +125,6 @@ public class Besu {
         .collect(Collectors.toSet());
   }
 
-  // TODO liveliness should be move to network or configurable to allow parallel besu container
-  // startups
   private HttpWaitStrategy liveliness() {
     return Wait.forHttp(AM_I_ALIVE_ENDPOINT)
         .forStatusCode(ALIVE_STATUS_CODE)
