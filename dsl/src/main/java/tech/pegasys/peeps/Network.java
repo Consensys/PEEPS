@@ -26,12 +26,12 @@ public class Network {
   // TODO cater for one-many for Besu/EthSigner
 
   private final Besu besuA;
-  private final Orion orionA = new Orion();
+  private final Orion orionA;
   private final EthSigner signerA = new EthSigner();
 
   private final Besu besuB;
   private final EthSigner signerB = new EthSigner();
-  private final Orion orionB = new Orion();
+  private final Orion orionB;
 
   private final org.testcontainers.containers.Network network;
 
@@ -55,6 +55,8 @@ public class Network {
 
     // TODO no magic string!?!?
 
+    this.orionA = new Orion();
+
     this.besuA =
         new Besu(
             new NodeConfigurationBuilder()
@@ -69,6 +71,8 @@ public class Network {
     // TODO can fail otherwise - runtime exception
     final String bootnodeEnodeAddress = NodeKeys.BOOTNODE.getEnodeAddress("172.20.0.5", "30303");
 
+    this.orionB = new Orion();
+
     this.besuB =
         new Besu(
             new NodeConfigurationBuilder()
@@ -80,20 +84,22 @@ public class Network {
   }
 
   public void start() {
+    orionA.start();
     besuA.start();
+    orionB.start();
     besuB.start();
     awaitConnectivity();
   }
 
   public void stop() {
+    orionA.start();
     besuA.stop();
+    orionB.start();
     besuB.stop();
   }
 
   public void close() {
-    besuA.stop();
-    besuB.stop();
-    network.close();
+    stop();
     vertx.close();
   }
 
