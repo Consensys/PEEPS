@@ -59,7 +59,30 @@ public class NodeJsonRpcClient {
     return post("admin_nodeInfo", NodeInfoResponse.class).getResult();
   }
 
-  // TODO rewrite to take advantage od async - many nodes performing simultaneously
+  public void bind(final String containerId, final String ipAddress, final int httpJsonRpcPort) {
+    this.containerId = containerId;
+
+    if (jsonRpc != null) {
+      jsonRpc.close();
+    }
+
+    checkNotNull(ipAddress, "Container IP address must be set");
+    checkState(httpJsonRpcPort > 0, "Container HTTP PRC port must be set");
+    jsonRpc =
+        vertx.createHttpClient(
+            new WebClientOptions().setDefaultPort(httpJsonRpcPort).setDefaultHost(ipAddress));
+  }
+
+  public void close() {
+    if (jsonRpc != null) {
+      jsonRpc.close();
+    }
+  }
+
+  private ConnectedPeer[] connectedPeers() {
+    return post("admin_peers", ConnectedPeersResponse.class).getResult();
+  }
+
   private <T> T post(final String method, final Class<T> clazz) {
     final JsonRpcRequest jsonRpcRequest =
         new JsonRpcRequest(JSON_RPC_VERSION, method, new Object[0], new JsonRpcRequestId(1));
@@ -94,29 +117,5 @@ public class NodeJsonRpcClient {
     } catch (InterruptedException | ExecutionException e) {
       throw new RuntimeException("Failed to receive a response from `admin_nodeInfo`", e);
     }
-  }
-
-  public void bind(final String containerId, final String ipAddress, final int httpJsonRpcPort) {
-    this.containerId = containerId;
-
-    if (jsonRpc != null) {
-      jsonRpc.close();
-    }
-
-    checkNotNull(ipAddress, "Container IP address must be set");
-    checkState(httpJsonRpcPort > 0, "Container HTTP PRC port must be set");
-    jsonRpc =
-        vertx.createHttpClient(
-            new WebClientOptions().setDefaultPort(httpJsonRpcPort).setDefaultHost(ipAddress));
-  }
-
-  public void close() {
-    if (jsonRpc != null) {
-      jsonRpc.close();
-    }
-  }
-
-  private ConnectedPeer[] connectedPeers() {
-    return post("admin_peers", ConnectedPeersResponse.class).getResult();
   }
 }
