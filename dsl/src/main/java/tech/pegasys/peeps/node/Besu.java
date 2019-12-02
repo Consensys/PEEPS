@@ -133,7 +133,7 @@ public class Besu {
 
   private void logPortMappings() {
     LOG.info(
-        "Container {}, HTTP RPC port mapping: {} -> {}, WS RPC port mapping: {} -> {}, p2p port mapping: {} -> {}",
+        "Besu Container {}, HTTP RPC port mapping: {} -> {}, WS RPC port mapping: {} -> {}, p2p port mapping: {} -> {}",
         besu.getContainerId(),
         CONTAINER_HTTP_RPC_PORT,
         besu.getMappedPort(CONTAINER_HTTP_RPC_PORT),
@@ -185,7 +185,7 @@ public class Besu {
 
   private void addContainerNetwork(
       final NodeConfiguration config, final GenericContainer<?> container) {
-    config.getContainerNetwork().ifPresent(container::withNetwork);
+    container.withNetwork(config.getContainerNetwork());
   }
 
   private void addCorsOrigins(

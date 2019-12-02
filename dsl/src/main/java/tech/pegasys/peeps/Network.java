@@ -12,12 +12,20 @@
  */
 package tech.pegasys.peeps;
 
-import tech.pegasys.peeps.node.Besu;
-import tech.pegasys.peeps.node.NodeConfigurationBuilder;
-
 import com.github.dockerjava.api.model.Network.Ipam;
 import com.github.dockerjava.api.model.Network.Ipam.Config;
 import io.vertx.core.Vertx;
+import java.io.File;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import tech.pegasys.peeps.node.Besu;
+import tech.pegasys.peeps.node.NodeConfigurationBuilder;
+import tech.pegasys.peeps.node.NodeKeys;
+import tech.pegasys.peeps.privacy.Orion;
+import tech.pegasys.peeps.privacy.OrionConfigurationBuilder;
+import tech.pegasys.peeps.privacy.OrionKeys;
 
 public class Network {
 
@@ -36,11 +44,13 @@ public class Network {
   private final org.testcontainers.containers.Network network;
 
   private final Vertx vertx;
+  private final Path workingDirectory;
 
   // TODO IP management
 
-  public Network() {
+  public Network(final Path workingDirectory) {
     this.vertx = Vertx.vertx();
+    this.workingDirectory = workingDirectory;
 
     // TODO subnet with substitution for static IPs
     this.network =
@@ -55,35 +65,51 @@ public class Network {
 
     // TODO no magic string!?!?
 
-    this.orionA = new Orion();
+    //TODO File or Path
+
+    this.orionA = new Orion(
+        new OrionConfigurationBuilder().withContainerNetwork(network).withIpAddress("172.20.0.5")
+            .withPrivateKeys(Collections.singletonList(OrionKeys.ONE.getPrivateKey()))
+            .withPublicKeys(Collections.singletonList(OrionKeys.ONE.getPublicKey()))
+            .withFileSystemConfigurationFile(
+                new File(workingDirectory.toFile(), "orionA.conf").toPath()).build());
 
     this.besuA =
         new Besu(
             new NodeConfigurationBuilder()
                 .withContainerNetwork(network)
                 .withVertx(vertx)
-                .withIpAddress("172.20.0.5")
+                .withIpAddress("172.20.0.6")
                 .withNodePrivateKeyFile(NodeKeys.BOOTNODE.getPrivateKeyFile())
                 .build());
 
-    // TODO move this into besu; can figure out if these parts are defined in construction or is
-    // after starting
+    //TODO File or Path
+    final List<String> orionBootnodes = new ArrayList<>();
+    orionBootnodes.add(orionA.getNetworkAddress());
+
+    this.orionB = new Orion(
+        new OrionConfigurationBuilder().withContainerNetwork(network).withIpAddress("172.20.0.7")
+            .withPrivateKeys(Collections.singletonList(OrionKeys.TWO.getPrivateKey()))
+            .withPublicKeys(Collections.singletonList(OrionKeys.TWO.getPublicKey()))
+            .withBootnodeUrls(orionBootnodes)
+            .withFileSystemConfigurationFile(
+                new File(workingDirectory.toFile(), "orionB.conf").toPath()).build());
+
     // TODO can fail otherwise - runtime exception
     final String bootnodeEnodeAddress = NodeKeys.BOOTNODE.getEnodeAddress("172.20.0.5", "30303");
-
-    this.orionB = new Orion();
 
     this.besuB =
         new Besu(
             new NodeConfigurationBuilder()
                 .withContainerNetwork(network)
                 .withVertx(vertx)
-                .withIpAddress("172.20.0.6")
+                .withIpAddress("172.20.0.8")
                 .withBootnodeEnodeAddress(bootnodeEnodeAddress)
                 .build());
   }
 
   public void start() {
+    //TODO multi-thread the blocking start ops, using await connectivity as the sync point
     orionA.start();
     besuA.start();
     orionB.start();
@@ -92,9 +118,9 @@ public class Network {
   }
 
   public void stop() {
-    orionA.start();
+    orionA.stop();
     besuA.stop();
-    orionB.start();
+    orionB.stop();
     besuB.stop();
   }
 

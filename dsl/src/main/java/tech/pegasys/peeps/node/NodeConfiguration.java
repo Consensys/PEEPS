@@ -12,9 +12,8 @@
  */
 package tech.pegasys.peeps.node;
 
-import java.util.Optional;
-
 import io.vertx.core.Vertx;
+import java.util.Optional;
 import org.testcontainers.containers.Network;
 
 public class NodeConfiguration {
@@ -61,8 +60,8 @@ public class NodeConfiguration {
     return Optional.ofNullable(cors);
   }
 
-  public Optional<Network> getContainerNetwork() {
-    return Optional.ofNullable(containerNetwork);
+  public Network getContainerNetwork() {
+    return containerNetwork;
   }
 
   public String getIpAddress() {
