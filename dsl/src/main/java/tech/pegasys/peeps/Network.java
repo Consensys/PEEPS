@@ -46,13 +46,11 @@ public class Network {
   private final org.testcontainers.containers.Network network;
 
   private final Vertx vertx;
-  private final Path workingDirectory;
 
   // TODO IP management
 
   public Network(final Path workingDirectory) {
     this.vertx = Vertx.vertx();
-    this.workingDirectory = workingDirectory;
 
     // TODO subnet with substitution for static IPs
     this.network =
