@@ -19,8 +19,8 @@ import tech.pegasys.peeps.contract.SimpleStorage;
 import java.io.File;
 import java.nio.file.Path;
 
-import org.junit.After;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 // TODO rename & move after
@@ -37,12 +37,12 @@ public class DrivingDevelopmentTest {
 
   private final Network network = new Network(workingDirectory);
 
-  @Before
+  @BeforeEach
   public void startUp() {
     Runtime.getRuntime().addShutdownHook(new Thread(this::tearDown));
   }
 
-  @After
+  @AfterEach
   public void tearDown() {
     network.close();
 
