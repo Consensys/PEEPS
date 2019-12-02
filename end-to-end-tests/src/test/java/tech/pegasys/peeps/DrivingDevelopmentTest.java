@@ -14,17 +14,19 @@ package tech.pegasys.peeps;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import tech.pegasys.peeps.contract.SimpleStorage;
+
 import java.io.File;
 import java.nio.file.Path;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.jupiter.api.Test;
-import tech.pegasys.peeps.contract.SimpleStorage;
 
 // TODO rename & move after
 public class DrivingDevelopmentTest {
 
-  //TODO have Orion use command line parameters, not only a config file
+  // TODO have Orion use command line parameters, not only a config file
   private final Path workingDirectory = new File(System.getProperty("user.dir")).toPath();
 
   // TODO start node A
@@ -44,9 +46,8 @@ public class DrivingDevelopmentTest {
   public void tearDown() {
     network.close();
 
-    //TODO ensure deletion for exception & stopping in debugger
+    // TODO ensure deletion for exception & stopping in debugger
     workingDirectory.toFile().deleteOnExit();
-
   }
 
   @Test

@@ -12,8 +12,9 @@
  */
 package tech.pegasys.peeps.node;
 
-import io.vertx.core.Vertx;
 import java.util.Optional;
+
+import io.vertx.core.Vertx;
 import org.testcontainers.containers.Network;
 
 public class NodeConfiguration {

@@ -13,6 +13,7 @@
 package tech.pegasys.peeps.privacy;
 
 import java.io.IOException;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.testcontainers.containers.BindMode;
@@ -40,7 +41,6 @@ public class Orion {
   private final GenericContainer<?> orion;
   private final String orionNetworkAddress;
 
-
   public Orion(final OrionConfiguration config) {
 
     final GenericContainer<?> container = new GenericContainer<>(ORION_IMAGE);
@@ -52,8 +52,9 @@ public class Orion {
     try {
       config.write();
     } catch (final IOException e) {
-      final String message = String
-          .format("Problem creating the Orion config file in the file system: %s, %s",
+      final String message =
+          String.format(
+              "Problem creating the Orion config file in the file system: %s, %s",
               config.getFileSystemConfigurationFile(), e.getLocalizedMessage());
       LOG.error(message);
       throw new IllegalStateException(message);
@@ -62,12 +63,13 @@ public class Orion {
     // TODO write out & bind to the container
 
     this.orion =
-        container.withCommand(CONTAINER_CONFIG_FILE)
+        container
+            .withCommand(CONTAINER_CONFIG_FILE)
             .withFileSystemBind(config.getFileSystemConfigurationFile(), CONTAINER_CONFIG_FILE)
             .waitingFor(liveliness());
 
-    this.orionNetworkAddress = String
-        .format("http://%s:%s", config.getIpAddress(), CONTAINER_PEER_TO_PEER_PORT);
+    this.orionNetworkAddress =
+        String.format("http://%s:%s", config.getIpAddress(), CONTAINER_PEER_TO_PEER_PORT);
   }
 
   public void awaitConnectivity(final Orion peer) {
@@ -98,20 +100,17 @@ public class Orion {
   }
 
   private void addPrivateKeys(
-      final OrionConfiguration config,
-      final GenericContainer<?> container) {
+      final OrionConfiguration config, final GenericContainer<?> container) {
     for (final String key : config.getPrivateKeys()) {
-      container
-          .withClasspathResourceMapping(key, containerWorkingDirectory(key), BindMode.READ_ONLY);
+      container.withClasspathResourceMapping(
+          key, containerWorkingDirectory(key), BindMode.READ_ONLY);
     }
   }
 
-  private void addPublicKeys(
-      final OrionConfiguration config,
-      final GenericContainer<?> container) {
+  private void addPublicKeys(final OrionConfiguration config, final GenericContainer<?> container) {
     for (final String key : config.getPublicKeys()) {
-      container
-          .withClasspathResourceMapping(key, containerWorkingDirectory(key), BindMode.READ_ONLY);
+      container.withClasspathResourceMapping(
+          key, containerWorkingDirectory(key), BindMode.READ_ONLY);
     }
   }
 
@@ -121,10 +120,10 @@ public class Orion {
 
   private void logContainerNetworkDetails() {
     if (orion.getNetwork() == null) {
-      LOG.info("Container {} has no network", orion.getContainerId());
+      LOG.info("Orion Container {} has no network", orion.getContainerId());
     } else {
       LOG.info(
-          "Container {}, IP address: {}, Network: {}",
+          "Orion Container {}, IP address: {}, Network: {}",
           orion.getContainerId(),
           orion.getContainerIpAddress(),
           orion.getNetwork().getId());
@@ -140,7 +139,6 @@ public class Orion {
         CONTAINER_PEER_TO_PEER_PORT,
         orion.getMappedPort(CONTAINER_PEER_TO_PEER_PORT));
   }
-
 
   private HttpWaitStrategy liveliness() {
     return Wait.forHttp(AM_I_ALIVE_ENDPOINT)

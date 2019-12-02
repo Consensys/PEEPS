@@ -20,6 +20,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.stream.Collectors;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.testcontainers.containers.Network;
@@ -87,13 +88,18 @@ public class OrionConfiguration {
     content.append(String.format("publickeys = [%s]\n", flatten(pubKeys)));
     content.append(String.format("privatekeys = [%s]\n", flatten(privKeys)));
 
+    content.append("nodenetworkinterface = \"0.0.0.0\"\n");
+    content.append("clientnetworkinterface = \"0.0.0.0\"\n");
+
     if (bootnodeUrls != null) {
       content.append(String.format("othernodes  = [%s]\n", flatten(bootnodeUrls)));
     }
 
-    //TODO move to utils?
-    LOG.info("Writing Orion config:\n{}\n\ndestination: {}\n",
-        content.toString(), fileSystemConfigurationFile);
+    // TODO move to utils?
+    LOG.info(
+        "Creating Orion config at: {}, with contents:\n{}",
+        content.toString(),
+        fileSystemConfigurationFile);
     Files.write(
         fileSystemConfigurationFile,
         content.toString().getBytes(StandardCharsets.UTF_8),

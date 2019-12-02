@@ -145,10 +145,10 @@ public class Besu {
 
   private void logContainerNetworkDetails() {
     if (besu.getNetwork() == null) {
-      LOG.info("Container {} has no network", besu.getContainerId());
+      LOG.info("Besu Container {} has no network", besu.getContainerId());
     } else {
       LOG.info(
-          "Container {}, IP address: {}, Network: {}",
+          "Besu Container {}, IP address: {}, Network: {}",
           besu.getContainerId(),
           besu.getContainerIpAddress(),
           besu.getNetwork().getId());
