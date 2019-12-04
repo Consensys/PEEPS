@@ -100,8 +100,12 @@ public class Besu {
   }
 
   public void stop() {
-    besu.stop();
-    jsonRpc.close();
+    if (besu != null) {
+      besu.stop();
+    }
+    if (jsonRpc != null) {
+      jsonRpc.close();
+    }
   }
 
   public void awaitConnectivity(final Besu... peers) {

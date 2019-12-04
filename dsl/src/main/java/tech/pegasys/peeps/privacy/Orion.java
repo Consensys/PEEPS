@@ -12,7 +12,13 @@
  */
 package tech.pegasys.peeps.privacy;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import tech.pegasys.peeps.privacy.rpc.OrionRpcClient;
+import tech.pegasys.peeps.util.ClasspathResources;
+
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -38,8 +44,13 @@ public class Orion {
 
   private static final String CONTAINER_WORKING_DIRECTORY_PREFIX = "/opt/orion/";
 
+  private static final AtomicLong UNIQUEIFIER = new AtomicLong();
+
   private final GenericContainer<?> orion;
   private final String orionNetworkAddress;
+  private final OrionRpcClient jsonRpc;
+
+  private final String nodePublicKey;
 
   public Orion(final OrionConfiguration config) {
 
@@ -70,15 +81,33 @@ public class Orion {
 
     this.orionNetworkAddress =
         String.format("http://%s:%s", config.getIpAddress(), CONTAINER_PEER_TO_PEER_PORT);
+
+    // TODO just using the first key, selecting the identity could be an option for multi-key Orion
+    this.nodePublicKey = ClasspathResources.read(config.getPublicKeys().get(0));
+    this.jsonRpc = new OrionRpcClient(config.getVertx(), nodePublicKey);
   }
 
   public void awaitConnectivity(final Orion peer) {
-    // TODO assert that connection to peer within say 10s occurs
+
+    // TODO port this into the rpc client as a test payload
+    final String sentMessage = "Test payload " + UNIQUEIFIER.getAndIncrement();
+
+    final String receipt = jsonRpc.send(peer.nodePublicKey, sentMessage);
+    assertThat(receipt).isNotBlank();
+
+    final String receivedMessage = peer.jsonRpc.receive(receipt);
+
+    assertThat(receivedMessage).isEqualTo(sentMessage);
   }
 
   public void start() {
     try {
       orion.start();
+
+      jsonRpc.bind(
+          orion.getContainerId(),
+          orion.getContainerIpAddress(),
+          orion.getMappedPort(CONTAINER_HTTP_RPC_PORT));
 
       // TODO validate the node has the expected state, e.g. consensus, genesis, networkId,
       // protocol(s), ports, listen address
@@ -92,7 +121,12 @@ public class Orion {
   }
 
   public void stop() {
-    orion.stop();
+    if (orion != null) {
+      orion.stop();
+    }
+    if (jsonRpc != null) {
+      jsonRpc.close();
+    }
   }
 
   public String getNetworkAddress() {

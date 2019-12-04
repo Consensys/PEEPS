@@ -70,6 +70,7 @@ public class Network {
     this.orionA =
         new Orion(
             new OrionConfigurationBuilder()
+                .withVertx(vertx)
                 .withContainerNetwork(network)
                 .withIpAddress("172.20.0.5")
                 .withPrivateKeys(Collections.singletonList(OrionKeys.ONE.getPrivateKey()))
@@ -81,8 +82,8 @@ public class Network {
     this.besuA =
         new Besu(
             new NodeConfigurationBuilder()
-                .withContainerNetwork(network)
                 .withVertx(vertx)
+                .withContainerNetwork(network)
                 .withIpAddress("172.20.0.6")
                 .withNodePrivateKeyFile(NodeKeys.BOOTNODE.getPrivateKeyFile())
                 .build());
@@ -94,6 +95,7 @@ public class Network {
     this.orionB =
         new Orion(
             new OrionConfigurationBuilder()
+                .withVertx(vertx)
                 .withContainerNetwork(network)
                 .withIpAddress("172.20.0.7")
                 .withPrivateKeys(Collections.singletonList(OrionKeys.TWO.getPrivateKey()))
@@ -109,8 +111,8 @@ public class Network {
     this.besuB =
         new Besu(
             new NodeConfigurationBuilder()
-                .withContainerNetwork(network)
                 .withVertx(vertx)
+                .withContainerNetwork(network)
                 .withIpAddress("172.20.0.8")
                 .withBootnodeEnodeAddress(bootnodeEnodeAddress)
                 .build());
@@ -135,6 +137,7 @@ public class Network {
   public void close() {
     stop();
     vertx.close();
+    network.close();
   }
 
   private void awaitConnectivity() {

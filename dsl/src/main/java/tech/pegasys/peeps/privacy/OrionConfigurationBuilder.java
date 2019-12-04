@@ -18,6 +18,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.nio.file.Path;
 import java.util.List;
 
+import io.vertx.core.Vertx;
 import org.testcontainers.containers.Network;
 
 public class OrionConfigurationBuilder {
@@ -27,7 +28,10 @@ public class OrionConfigurationBuilder {
   private List<String> bootnodeUrls;
   private String ipAddress;
   private Path fileSystemConfigFile;
+
+  // TODO these into their own builder, not node related but test container related
   private Network containerNetwork;
+  private Vertx vertx;
 
   public OrionConfigurationBuilder withPrivateKeys(final List<String> privKeys) {
     this.privKeys = privKeys;
@@ -60,6 +64,11 @@ public class OrionConfigurationBuilder {
     return this;
   }
 
+  public OrionConfigurationBuilder withVertx(final Vertx vertx) {
+    this.vertx = vertx;
+    return this;
+  }
+
   public OrionConfiguration build() {
     checkNotNull(privKeys, "Private keys are mandatory");
     checkArgument(privKeys.size() > 0, "At least one private key is required");
@@ -67,9 +76,10 @@ public class OrionConfigurationBuilder {
     checkArgument(pubKeys.size() > 0, "At least one public key is required");
     checkNotNull(fileSystemConfigFile, "A file system configuration file path is mandatory");
     checkNotNull(containerNetwork, "Container network Address is mandatory");
+    checkNotNull(vertx, "A handle to a Vertx instance is mandatory");
     checkNotNull(ipAddress, "Container IP Address is mandatory");
 
     return new OrionConfiguration(
-        privKeys, pubKeys, bootnodeUrls, ipAddress, containerNetwork, fileSystemConfigFile);
+        privKeys, pubKeys, bootnodeUrls, ipAddress, containerNetwork, vertx, fileSystemConfigFile);
   }
 }

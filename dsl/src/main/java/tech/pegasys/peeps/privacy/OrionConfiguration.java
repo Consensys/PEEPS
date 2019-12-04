@@ -21,6 +21,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import io.vertx.core.Vertx;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.testcontainers.containers.Network;
@@ -36,7 +37,10 @@ public class OrionConfiguration {
   private final List<String> bootnodeUrls;
   private final String ipAddress;
   private final Path fileSystemConfigurationFile;
+
+  // TODO move these out, they are not related to the node, but test container setups
   private final Network containerNetwork;
+  private final Vertx vertx;
 
   public OrionConfiguration(
       final List<String> privKeys,
@@ -44,12 +48,14 @@ public class OrionConfiguration {
       final List<String> bootnodeUrls,
       final String ipAddress,
       final Network containerNetwork,
+      final Vertx vertx,
       final Path fileSystemConfigurationFile) {
     this.privKeys = privKeys;
     this.pubKeys = pubKeys;
     this.bootnodeUrls = bootnodeUrls;
     this.ipAddress = ipAddress;
     this.containerNetwork = containerNetwork;
+    this.vertx = vertx;
     this.fileSystemConfigurationFile = fileSystemConfigurationFile;
   }
 
@@ -76,6 +82,10 @@ public class OrionConfiguration {
 
   public List<String> getPublicKeys() {
     return pubKeys;
+  }
+
+  public Vertx getVertx() {
+    return vertx;
   }
 
   public void write() throws IOException {
