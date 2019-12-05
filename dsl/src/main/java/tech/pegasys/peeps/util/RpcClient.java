@@ -12,8 +12,10 @@
  */
 package tech.pegasys.peeps.util;
 
+import static com.github.dockerjava.core.MediaType.APPLICATION_JSON;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
+import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
 
 import tech.pegasys.peeps.json.Json;
 
@@ -82,14 +84,12 @@ public abstract class RpcClient {
                     String.format(
                         "Post request: %s, to '%s' failed: %s, %s",
                         json, relativeUri, result.statusCode(), result.statusMessage());
-
                 result.bodyHandler(body -> log.error("{}, {}", errorMessage, body));
-
                 future.completeExceptionally(new IllegalStateException(errorMessage));
               }
             });
 
-    request.putHeader("Content-Type", "application/json");
+    request.putHeader(CONTENT_TYPE, APPLICATION_JSON.getMediaType());
 
     request.setChunked(true);
     request.end(json);
