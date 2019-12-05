@@ -14,13 +14,10 @@ package tech.pegasys.peeps.privacy;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static tech.pegasys.peeps.privacy.OrionConfigurationFile.write;
+import static tech.pegasys.peeps.privacy.rpc.send.SendPayload.generateUniquePayload;
 
-import java.util.Set;
 import tech.pegasys.peeps.privacy.rpc.OrionRpcClient;
-import tech.pegasys.peeps.util.Await;
 import tech.pegasys.peeps.util.ClasspathResources;
-
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -46,11 +43,9 @@ public class Orion {
 
   private static final String CONTAINER_WORKING_DIRECTORY_PREFIX = "/opt/orion/";
 
-  private static final AtomicLong UNIQUEIFIER = new AtomicLong();
-
   private final GenericContainer<?> orion;
   private final String orionNetworkAddress;
-  private final OrionRpcClient jsonRpc;
+  private final OrionRpcClient rpc;
 
   private final String nodePublicKey;
 
@@ -75,32 +70,24 @@ public class Orion {
 
     // TODO just using the first key, selecting the identity could be an option for multi-key Orion
     this.nodePublicKey = ClasspathResources.read(config.getPublicKeys().get(0));
-    this.jsonRpc = new OrionRpcClient(config.getVertx(), nodePublicKey);
+    this.rpc = new OrionRpcClient(config.getVertx(), nodePublicKey);
   }
 
   public void awaitConnectivity(final Orion peer) {
+    final String sentMessage = generateUniquePayload();
 
-
-    // TODO port this into the rpc client as a test payload
-    final String sentMessage = "Test payload " + UNIQUEIFIER.getAndIncrement();
-
-    final String receipt = jsonRpc.send(peer.nodePublicKey, sentMessage);
+    final String receipt = rpc.send(peer.nodePublicKey, sentMessage);
     assertThat(receipt).isNotBlank();
 
-    awaitPeerConnection(receipt, sentMessage, peer);
-  }
-
-  private void awaitPeerConnection(final String receipt,final String sentMessage, final Orion peer) {
-    Await.await(
-        () ->  assertThat(peer.rpc().receive(receipt)).isEqualTo(sentMessage),
-        String.format("Failed to receive receipt: %s, on peer: %s in a timely fashion", receipt, peer.getNetworkAddress()));
+    assertReceived(rpc, receipt, sentMessage);
+    assertReceived(peer.rpc, receipt, sentMessage);
   }
 
   public void start() {
     try {
       orion.start();
 
-      jsonRpc.bind(
+      rpc.bind(
           orion.getContainerId(),
           orion.getContainerIpAddress(),
           orion.getMappedPort(CONTAINER_HTTP_RPC_PORT));
@@ -120,8 +107,8 @@ public class Orion {
     if (orion != null) {
       orion.stop();
     }
-    if (jsonRpc != null) {
-      jsonRpc.close();
+    if (rpc != null) {
+      rpc.close();
     }
   }
 
@@ -129,8 +116,9 @@ public class Orion {
     return orionNetworkAddress;
   }
 
-  private OrionRpcClient rpc() {
-    return jsonRpc;
+  private void assertReceived(
+      final OrionRpcClient rpc, final String receipt, final String sentMessage) {
+    assertThat(rpc.receive(receipt)).isEqualTo(sentMessage);
   }
 
   private void addPrivateKeys(

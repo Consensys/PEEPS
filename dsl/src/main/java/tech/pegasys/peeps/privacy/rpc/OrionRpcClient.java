@@ -70,9 +70,7 @@ public class OrionRpcClient {
     }
   }
 
-  public void verifyConnectivity(){
-
-  }
+  public void verifyConnectivity() {}
 
   public String send(final String to, final String payload) {
     return post("/send", new SendRequest(pubKey, new String[] {to}, payload), SendResponse.class)

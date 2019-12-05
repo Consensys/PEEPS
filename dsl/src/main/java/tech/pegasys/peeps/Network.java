@@ -63,9 +63,7 @@ public class Network {
 
     // TODO 0.1 seems to be used, maybe assigned by the network container?
 
-    // TODO no magic string!?!?
-
-    // TODO File or Path
+    // TODO no magic strings!?!?
 
     this.orionA =
         new Orion(
