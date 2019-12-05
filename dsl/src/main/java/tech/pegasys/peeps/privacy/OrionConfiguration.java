@@ -12,25 +12,15 @@
  */
 package tech.pegasys.peeps.privacy;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 import io.vertx.core.Vertx;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.testcontainers.containers.Network;
 
 public class OrionConfiguration {
-
-  private static final Logger LOG = LogManager.getLogger();
-  private static final int HTTP_RPC_PORT = 8888;
-  private static final int PEER_TO_PEER_PORT = 8080;
 
   private final List<String> privKeys;
   private final List<String> pubKeys;
@@ -84,39 +74,11 @@ public class OrionConfiguration {
     return pubKeys;
   }
 
+  public Optional<List<String>> getBootnodeUrls() {
+    return Optional.ofNullable(bootnodeUrls);
+  }
+
   public Vertx getVertx() {
     return vertx;
-  }
-
-  public void write() throws IOException {
-
-    final StringBuilder content = new StringBuilder();
-    content.append(String.format("nodeurl = \"http://%s:%d\"\n", ipAddress, PEER_TO_PEER_PORT));
-    content.append(String.format("clienturl = \"http://%s:%d\"\n", ipAddress, HTTP_RPC_PORT));
-    content.append(String.format("nodeport = %d\n", PEER_TO_PEER_PORT));
-    content.append(String.format("clientport = %d\n", HTTP_RPC_PORT));
-    content.append(String.format("publickeys = [%s]\n", flatten(pubKeys)));
-    content.append(String.format("privatekeys = [%s]\n", flatten(privKeys)));
-
-    content.append("nodenetworkinterface = \"0.0.0.0\"\n");
-    content.append("clientnetworkinterface = \"0.0.0.0\"\n");
-
-    if (bootnodeUrls != null) {
-      content.append(String.format("othernodes  = [%s]\n", flatten(bootnodeUrls)));
-    }
-
-    // TODO move to utils?
-    LOG.info(
-        "Creating Orion config at: {}, with contents:\n{}",
-        fileSystemConfigurationFile,
-        content.toString());
-    Files.write(
-        fileSystemConfigurationFile,
-        content.toString().getBytes(StandardCharsets.UTF_8),
-        StandardOpenOption.CREATE);
-  }
-
-  private String flatten(final List<String> values) {
-    return values.stream().map(k -> "\"" + k + "\"").collect(Collectors.joining(","));
   }
 }

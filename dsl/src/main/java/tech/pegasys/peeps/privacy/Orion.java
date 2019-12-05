@@ -13,11 +13,11 @@
 package tech.pegasys.peeps.privacy;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static tech.pegasys.peeps.privacy.OrionConfigurationFiles.write;
 
 import tech.pegasys.peeps.privacy.rpc.OrionRpcClient;
 import tech.pegasys.peeps.util.ClasspathResources;
 
-import java.io.IOException;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.logging.log4j.LogManager;
@@ -54,24 +54,13 @@ public class Orion {
 
   public Orion(final OrionConfiguration config) {
 
+    write(config);
+
     final GenericContainer<?> container = new GenericContainer<>(ORION_IMAGE);
     addContainerNetwork(config, container);
     addContainerIpAddress(config, container);
     addPrivateKeys(config, container);
     addPublicKeys(config, container);
-
-    try {
-      config.write();
-    } catch (final IOException e) {
-      final String message =
-          String.format(
-              "Problem creating the Orion config file in the file system: %s, %s",
-              config.getFileSystemConfigurationFile(), e.getLocalizedMessage());
-      LOG.error(message);
-      throw new IllegalStateException(message);
-    }
-
-    // TODO write out & bind to the container
 
     this.orion =
         container
