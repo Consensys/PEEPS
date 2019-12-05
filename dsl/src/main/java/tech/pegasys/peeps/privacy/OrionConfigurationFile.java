@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class OrionConfigurationFiles {
+public class OrionConfigurationFile {
 
   private static final Logger LOG = LogManager.getLogger();
   private static final int HTTP_RPC_PORT = 8888;

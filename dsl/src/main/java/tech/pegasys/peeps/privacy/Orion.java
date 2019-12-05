@@ -13,7 +13,7 @@
 package tech.pegasys.peeps.privacy;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static tech.pegasys.peeps.privacy.OrionConfigurationFiles.write;
+import static tech.pegasys.peeps.privacy.OrionConfigurationFile.write;
 
 import tech.pegasys.peeps.privacy.rpc.OrionRpcClient;
 import tech.pegasys.peeps.util.ClasspathResources;
