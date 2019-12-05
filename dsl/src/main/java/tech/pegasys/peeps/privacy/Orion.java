@@ -15,7 +15,9 @@ package tech.pegasys.peeps.privacy;
 import static org.assertj.core.api.Assertions.assertThat;
 import static tech.pegasys.peeps.privacy.OrionConfigurationFile.write;
 
+import java.util.Set;
 import tech.pegasys.peeps.privacy.rpc.OrionRpcClient;
+import tech.pegasys.peeps.util.Await;
 import tech.pegasys.peeps.util.ClasspathResources;
 
 import java.util.concurrent.atomic.AtomicLong;
@@ -78,14 +80,20 @@ public class Orion {
 
   public void awaitConnectivity(final Orion peer) {
 
+
     // TODO port this into the rpc client as a test payload
     final String sentMessage = "Test payload " + UNIQUEIFIER.getAndIncrement();
 
     final String receipt = jsonRpc.send(peer.nodePublicKey, sentMessage);
     assertThat(receipt).isNotBlank();
 
-    final String receivedMessage = peer.rpc().receive(receipt);
-    assertThat(receivedMessage).isEqualTo(sentMessage);
+    awaitPeerConnection(receipt, sentMessage, peer);
+  }
+
+  private void awaitPeerConnection(final String receipt,final String sentMessage, final Orion peer) {
+    Await.await(
+        () ->  assertThat(peer.rpc().receive(receipt)).isEqualTo(sentMessage),
+        String.format("Failed to receive receipt: %s, on peer: %s in a timely fashion", receipt, peer.getNetworkAddress()));
   }
 
   public void start() {
