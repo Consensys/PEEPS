@@ -95,9 +95,16 @@ public class Orion {
     final String receipt = jsonRpc.send(peer.nodePublicKey, sentMessage);
     assertThat(receipt).isNotBlank();
 
-    final String receivedMessage = peer.jsonRpc.receive(receipt);
+    try {
+      final String receivedMessage = peer.rpc().receive(receipt);
 
-    assertThat(receivedMessage).isEqualTo(sentMessage);
+      assertThat(receivedMessage).isEqualTo(sentMessage);
+    } catch (Exception e) {
+
+      // TODO debug line
+      LOG.error(peer.orion.getLogs());
+      throw e;
+    }
   }
 
   public void start() {
@@ -131,6 +138,10 @@ public class Orion {
 
   public String getNetworkAddress() {
     return orionNetworkAddress;
+  }
+
+  private OrionRpcClient rpc() {
+    return jsonRpc;
   }
 
   private void addPrivateKeys(

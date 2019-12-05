@@ -91,8 +91,8 @@ public class OrionConfiguration {
   public void write() throws IOException {
 
     final StringBuilder content = new StringBuilder();
-    content.append(String.format("nodeUrl = \"http://%s:%d\"\n", ipAddress, PEER_TO_PEER_PORT));
-    content.append(String.format("clientUrl = \"http://%s:%d\"\n", ipAddress, HTTP_RPC_PORT));
+    content.append(String.format("nodeurl = \"http://%s:%d\"\n", ipAddress, PEER_TO_PEER_PORT));
+    content.append(String.format("clienturl = \"http://%s:%d\"\n", ipAddress, HTTP_RPC_PORT));
     content.append(String.format("nodeport = %d\n", PEER_TO_PEER_PORT));
     content.append(String.format("clientport = %d\n", HTTP_RPC_PORT));
     content.append(String.format("publickeys = [%s]\n", flatten(pubKeys)));
@@ -108,8 +108,8 @@ public class OrionConfiguration {
     // TODO move to utils?
     LOG.info(
         "Creating Orion config at: {}, with contents:\n{}",
-        content.toString(),
-        fileSystemConfigurationFile);
+        fileSystemConfigurationFile,
+        content.toString());
     Files.write(
         fileSystemConfigurationFile,
         content.toString().getBytes(StandardCharsets.UTF_8),
