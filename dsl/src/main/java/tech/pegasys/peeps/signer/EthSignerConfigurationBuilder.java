@@ -29,6 +29,11 @@ public class EthSignerConfigurationBuilder {
   private String ipAddress;
   private Vertx vertx;
 
+  // TOFO move these file specific ones out into their own config, encapsulate (i.e refactor
+  // EthSigner)
+  private String keyFile;
+  private String passwordFile;
+
   public EthSignerConfigurationBuilder withContainerNetwork(final Network containerNetwork) {
     this.containerNetwork = containerNetwork;
     return this;
@@ -59,6 +64,16 @@ public class EthSignerConfigurationBuilder {
     return this;
   }
 
+  public EthSignerConfigurationBuilder withKeyFile(final String keyFile) {
+    this.keyFile = keyFile;
+    return this;
+  }
+
+  public EthSignerConfigurationBuilder withPasswordFile(final String passwordFile) {
+    this.passwordFile = passwordFile;
+    return this;
+  }
+
   public EthSignerConfiguration build() {
     checkArgument(chainId > 0, "Chain ID must be set as larger than zero");
     checkNotNull(downstreamHost, "Downstream host is mandatory");
@@ -66,8 +81,17 @@ public class EthSignerConfigurationBuilder {
     checkNotNull(vertx, "A Vertx instance is mandatory");
     checkNotNull(ipAddress, "Container IP Address is mandatory");
     checkNotNull(containerNetwork, "Container network is mandatory");
+    checkNotNull(keyFile, "The key file is mandatory");
+    checkNotNull(passwordFile, "The password file is mandatory");
 
     return new EthSignerConfiguration(
-        chainId, downstreamHost, downstreamPort, containerNetwork, ipAddress, vertx);
+        chainId,
+        downstreamHost,
+        downstreamPort,
+        containerNetwork,
+        ipAddress,
+        vertx,
+        keyFile,
+        passwordFile);
   }
 }

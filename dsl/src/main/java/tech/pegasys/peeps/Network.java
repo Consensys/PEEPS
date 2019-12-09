@@ -76,9 +76,17 @@ public class Network {
     final String ipAddressSignerB = "172.20.0.10";
 
     // TODO these should come from the Besu, or config aggregation
-    final long chainId = 2018;
+    final long chainId = 4004;
     final int portBesuA = 8545;
     final int portBesuB = 8545;
+
+    // TODO name files according the account pubkey
+
+    // TODO these should come from somewhere, programmatically generated?
+    final String keyFileSignerA = "signer/account/funded/wallet_a.v3";
+    final String passwordFileSignerA = "signer/account/funded/wallet_a.pass";
+    final String keyFileSignerB = "signer/account/funded/wallet_b.v3";
+    final String passwordFileSignerB = "signer/account/funded/wallet_b.pass";
 
     this.orionA =
         new Orion(
@@ -110,6 +118,8 @@ public class Network {
                 .withChainId(chainId)
                 .withDownstreamHost(ipAddressBesuA)
                 .withDownstreamPort(portBesuA)
+                .withKeyFile(keyFileSignerA)
+                .withPasswordFile(passwordFileSignerA)
                 .build());
 
     // TODO More typing then a String - URI, URL, File or Path
@@ -150,6 +160,8 @@ public class Network {
                 .withChainId(chainId)
                 .withDownstreamHost(ipAddressBesuB)
                 .withDownstreamPort(portBesuB)
+                .withKeyFile(keyFileSignerB)
+                .withPasswordFile(passwordFileSignerB)
                 .build());
   }
 

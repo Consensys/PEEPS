@@ -17,6 +17,7 @@ import java.util.List;
 import com.google.common.collect.Lists;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
@@ -30,8 +31,11 @@ public class EthSigner {
   private static final int ALIVE_STATUS_CODE = 200;
 
   private static final String ETH_SIGNER_IMAGE = "pegasyseng/ethsigner:latest";
-  private static final String CONTAINER_DATA_PATH = "/ethsigner/tmp/";
+  private static final String CONTAINER_DATA_PATH = "/etc/ethsigner/tmp/";
   private static final int CONTAINER_HTTP_RPC_PORT = 8545;
+
+  private static final String CONTAINER_KEY_FILE = "/etc/ethsigner/key_file.v3";
+  private static final String CONTAINER_PASSWORD_FILE = "/etc/ethsigner/password_file.txt";
 
   // TODO need a rpcClient to send stuff to the signer
   private final GenericContainer<?> ethSigner;
@@ -46,6 +50,7 @@ public class EthSigner {
     addDownstreamHost(config, commandLineOptions);
     addContainerNetwork(config, container);
     addContainerIpAddress(config, container);
+    addFileBasedSigner(config, commandLineOptions, container);
 
     this.ethSigner =
         container.withCommand(commandLineOptions.toArray(new String[0])).waitingFor(liveliness());
@@ -154,5 +159,22 @@ public class EthSigner {
       final EthSignerConfiguration config, final GenericContainer<?> container) {
     container.withCreateContainerCmdModifier(
         modifier -> modifier.withIpv4Address(config.getIpAddress()));
+  }
+
+  private void addFileBasedSigner(
+      final EthSignerConfiguration config,
+      final List<String> commandLineOptions,
+      final GenericContainer<?> container) {
+    commandLineOptions.add("file-based-signer");
+
+    commandLineOptions.add("--key-file");
+    commandLineOptions.add(CONTAINER_KEY_FILE);
+    container.withClasspathResourceMapping(
+        config.getKeyFile(), CONTAINER_KEY_FILE, BindMode.READ_ONLY);
+
+    commandLineOptions.add("--password-file");
+    commandLineOptions.add(CONTAINER_PASSWORD_FILE);
+    container.withClasspathResourceMapping(
+        config.getPasswordFile(), CONTAINER_PASSWORD_FILE, BindMode.READ_ONLY);
   }
 }

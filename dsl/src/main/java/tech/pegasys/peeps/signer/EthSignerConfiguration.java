@@ -26,19 +26,28 @@ public class EthSignerConfiguration {
   private final String ipAddress;
   private final Vertx vertx;
 
+  // TOFO move these file specific ones out into their own config, encapsulate (i.e refactor
+  // EthSigner)
+  private final String keyFile;
+  private final String passwordFile;
+
   public EthSignerConfiguration(
       final long chainId,
       final String downstreamHost,
       final int downstreamPort,
       final Network containerNetwork,
       final String ipAddress,
-      final Vertx vertx) {
+      final Vertx vertx,
+      final String keyFile,
+      final String passwordFile) {
     this.chainId = chainId;
     this.downstreamHost = downstreamHost;
     this.downstreamPort = downstreamPort;
     this.containerNetwork = containerNetwork;
     this.ipAddress = ipAddress;
     this.vertx = vertx;
+    this.keyFile = keyFile;
+    this.passwordFile = passwordFile;
   }
 
   public Network getContainerNetwork() {
@@ -63,5 +72,13 @@ public class EthSignerConfiguration {
 
   public String getDownstreamHost() {
     return downstreamHost;
+  }
+
+  public String getKeyFile() {
+    return keyFile;
+  }
+
+  public String getPasswordFile() {
+    return passwordFile;
   }
 }
