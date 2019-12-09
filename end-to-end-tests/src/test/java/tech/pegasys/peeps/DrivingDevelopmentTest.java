@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Test;
 public class DrivingDevelopmentTest {
 
   // TODO have Orion use command line parameters, not only a config file
+  //TODO needs to be unique in the working directory i.e each Network has it's own subfolder & orion within that
   private final Path workingDirectory = new File(System.getProperty("user.dir")).toPath();
 
   private final Network network = new Network(workingDirectory);
