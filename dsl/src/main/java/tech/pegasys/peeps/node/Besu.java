@@ -238,10 +238,12 @@ public class Besu {
       final List<String> commandLineOptions,
       final GenericContainer<?> container) {
     commandLineOptions.add("--privacy-enabled");
+    commandLineOptions.add("--privacy-url");
+    commandLineOptions.add(config.getPrivacyUrl());
     commandLineOptions.add("--privacy-public-key-file");
     commandLineOptions.add(CONTAINER_PRIVACY_PUBLIC_KEY_FILE);
     container.withClasspathResourceMapping(
-        config.getEnclavePublicKeyFile(), CONTAINER_PRIVACY_PUBLIC_KEY_FILE, BindMode.READ_ONLY);
+        config.getPrivacyublicKeyFile(), CONTAINER_PRIVACY_PUBLIC_KEY_FILE, BindMode.READ_ONLY);
   }
 
   private void addContainerIpAddress(

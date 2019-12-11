@@ -12,6 +12,7 @@
  */
 package tech.pegasys.peeps.signer;
 
+import tech.pegasys.peeps.privacy.Orion;
 import tech.pegasys.peeps.signer.rpc.SignerRpcClient;
 
 import java.util.List;
@@ -32,7 +33,8 @@ public class EthSigner {
   private static final String AM_I_ALIVE_ENDPOINT = "/upcheck";
   private static final int ALIVE_STATUS_CODE = 200;
 
-  private static final String ETH_SIGNER_IMAGE = "pegasyseng/ethsigner:latest";
+  //  private static final String ETH_SIGNER_IMAGE = "pegasyseng/ethsigner:latest";
+  private static final String ETH_SIGNER_IMAGE = "pegasyseng/ethsigner:develop";
   private static final String CONTAINER_DATA_PATH = "/etc/ethsigner/tmp/";
   private static final int CONTAINER_HTTP_RPC_PORT = 8545;
 
@@ -42,6 +44,10 @@ public class EthSigner {
   // TODO need a rpcClient to send stuff to the signer
   private final GenericContainer<?> ethSigner;
   private final SignerRpcClient rpc;
+
+  // TODO better typing
+  // TODO this is stored in the wallet file as address - can be read in EthSigner
+  private final String senderAccount = "0xf17f52151ebef6c7334fad080c5704d77216b732";
 
   public EthSigner(final EthSignerConfiguration config) {
 
@@ -90,12 +96,16 @@ public class EthSigner {
     }
   }
 
-  public String deployContract(final String binary) {
+  // TODO could config a EthSigner to be bound to a node & orion setup?
+  public String deployContractToPrivacyGroup(
+      final String binary, final Orion sender, final Orion... recipients) {
+    final String[] privateRecipients = new String[recipients.length];
+    for (int i = 0; i < recipients.length; i++) {
+      privateRecipients[i] = recipients[i].getId();
+    }
 
-    final String receiptHash = null;
-    // TODO code
-
-    return receiptHash;
+    return rpc.deployContractToPrivacyGroup(
+        senderAccount, binary, sender.getId(), privateRecipients);
   }
 
   private HttpWaitStrategy liveliness() {

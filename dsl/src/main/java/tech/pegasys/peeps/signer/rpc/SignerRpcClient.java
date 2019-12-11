@@ -13,8 +13,8 @@
 package tech.pegasys.peeps.signer.rpc;
 
 import tech.pegasys.peeps.json.rpc.JsonRpcClient;
-import tech.pegasys.peeps.node.rpc.admin.ConnectedPeer;
-import tech.pegasys.peeps.node.rpc.admin.ConnectedPeersResponse;
+import tech.pegasys.peeps.signer.rpc.eea.SendPrivateTransactionResponse;
+import tech.pegasys.peeps.signer.rpc.eea.SendTransactionRequest;
 
 import io.vertx.core.Vertx;
 import org.apache.logging.log4j.LogManager;
@@ -23,12 +23,22 @@ import org.apache.logging.log4j.Logger;
 public class SignerRpcClient extends JsonRpcClient {
 
   private static final Logger LOG = LogManager.getLogger();
+  private static final String NO_RECIPIENT = null;
 
   public SignerRpcClient(final Vertx vertx) {
     super(vertx, LOG);
   }
 
-  private ConnectedPeer[] connectedPeers() {
-    return post("admin_peers", ConnectedPeersResponse.class).getResult();
+  public String deployContractToPrivacyGroup(
+      final String sender,
+      final String binary,
+      final String privateSender,
+      final String[] privateRecipients) {
+    return post(
+            "eea_sendTransaction",
+            new SendTransactionRequest(
+                sender, NO_RECIPIENT, binary, privateSender, privateRecipients),
+            SendPrivateTransactionResponse.class)
+        .getResult();
   }
 }

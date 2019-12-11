@@ -41,15 +41,17 @@ public class PrivacyContractDeployment {
 
   @Test
   public void a() {
-    final String receiptHash = network.getSignerA().deployContract(SimpleStorage.BINARY);
+    final String receiptHash =
+        network
+            .getSignerA()
+            .deployContractToPrivacyGroup(
+                SimpleStorage.BINARY, network.getOrionA(), network.getOrionB());
 
-    // TODO get contract deployment receipt from NodeA
     final Optional<PrivacyTransactionReceipt> receiptNodeA =
         network.getNodeA().getPrivacyTransactionReceipt(receiptHash);
 
-    // TODO get contract deployment receipt from NodeB
     final Optional<PrivacyTransactionReceipt> receiptNodeB =
-        network.getNodeA().getPrivacyTransactionReceipt(receiptHash);
+        network.getNodeB().getPrivacyTransactionReceipt(receiptHash);
 
     // TODO verify receipt is valid, contains a contract address
     assertThat(receiptNodeA).isNotNull();

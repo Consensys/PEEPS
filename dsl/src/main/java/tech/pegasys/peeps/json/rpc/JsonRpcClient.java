@@ -17,17 +17,23 @@ import org.apache.logging.log4j.Logger;
 
 public abstract class JsonRpcClient extends RpcClient {
 
+  public static final String JSON_RPC_VERSION = "2.0";
+
   private static final String JSON_RPC_CONTEXT_PATH = "/";
-  private static final String JSON_RPC_VERSION = "2.0";
 
   public JsonRpcClient(final Vertx vertx, final Logger log) {
     super(vertx, log);
   }
 
   protected <T> T post(final String method, final Class<T> clazz) {
-    return post(
+    return this.post(method, new Object[0], clazz);
+  }
+
+  protected <T> T post(final String method, final Object params, final Class<T> clazz) {
+    return super.post(
         JSON_RPC_CONTEXT_PATH,
-        new JsonRpcRequest(JSON_RPC_VERSION, method, new Object[0], new JsonRpcRequestId(1)),
+        new JsonRpcRequest(
+            JSON_RPC_VERSION, method, new Object[] {params}, new JsonRpcRequestId(1)),
         clazz);
   }
 }

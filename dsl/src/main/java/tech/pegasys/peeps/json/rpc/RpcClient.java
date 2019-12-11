@@ -65,7 +65,7 @@ public abstract class RpcClient {
     }
   }
 
-  public <T> T post(final String relativeUri, final Object requestPojo, final Class<T> clazz) {
+  protected <T> T post(final String relativeUri, final Object requestPojo, final Class<T> clazz) {
     final CompletableFuture<T> future = new CompletableFuture<>();
     final String json = Json.encode(requestPojo);
 

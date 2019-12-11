@@ -26,7 +26,8 @@ public class NodeConfigurationBuilder {
   private static final String DEFAULT_ENCLAVE_PUBLIC_KEY_FILE = "node/enclave_key.pub";
 
   private String genesisFile;
-  private String enclaveKeyFile;
+  private String privacyPublicKeyFile;
+  private String privacyTransactionManagerUrl;
   private String cors;
   private String nodePrivateKeyFile;
   private String bootnodeEnodeAddress;
@@ -38,7 +39,7 @@ public class NodeConfigurationBuilder {
 
   public NodeConfigurationBuilder() {
     this.genesisFile = DEFAULT_GENESIS_FILE;
-    this.enclaveKeyFile = DEFAULT_ENCLAVE_PUBLIC_KEY_FILE;
+    this.privacyPublicKeyFile = DEFAULT_ENCLAVE_PUBLIC_KEY_FILE;
   }
 
   public NodeConfigurationBuilder withGenesisFile(final String genesisFile) {
@@ -76,16 +77,22 @@ public class NodeConfigurationBuilder {
     return this;
   }
 
+  public NodeConfigurationBuilder withPrivacyUrl(final String privacyTransactionManagerUrl) {
+    this.privacyTransactionManagerUrl = privacyTransactionManagerUrl;
+    return this;
+  }
+
   public NodeConfiguration build() {
     checkNotNull(genesisFile, "A genesis file path is mandatory");
-    checkNotNull(enclaveKeyFile, "An enclave key file path is mandatory");
+    checkNotNull(privacyPublicKeyFile, "An enclave key file path is mandatory");
     checkNotNull(vertx, "A Vertx instance is mandatory");
     checkNotNull(ipAddress, "Container IP address is mandatory");
     checkNotNull(containerNetwork, "Container network is mandatory");
 
     return new NodeConfiguration(
         genesisFile,
-        enclaveKeyFile,
+        privacyPublicKeyFile,
+        privacyTransactionManagerUrl,
         cors,
         containerNetwork,
         vertx,

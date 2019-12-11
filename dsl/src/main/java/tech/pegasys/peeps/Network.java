@@ -107,6 +107,7 @@ public class Network implements Closeable {
             new NodeConfigurationBuilder()
                 .withVertx(vertx)
                 .withContainerNetwork(network)
+                .withPrivacyUrl(orionA.getNetworkRpcAddress())
                 .withIpAddress(ipAddressBesuA)
                 .withNodePrivateKeyFile(NodeKeys.BOOTNODE.getPrivateKeyFile())
                 .build());
@@ -126,7 +127,7 @@ public class Network implements Closeable {
 
     // TODO More typing then a String - URI, URL, File or Path
     final List<String> orionBootnodes = new ArrayList<>();
-    orionBootnodes.add(orionA.getNetworkAddress());
+    orionBootnodes.add(orionA.getPeerNetworkAddress());
 
     this.orionB =
         new Orion(
@@ -148,6 +149,7 @@ public class Network implements Closeable {
             new NodeConfigurationBuilder()
                 .withVertx(vertx)
                 .withContainerNetwork(network)
+                .withPrivacyUrl(orionB.getNetworkRpcAddress())
                 .withIpAddress(ipAddressBesuB)
                 .withBootnodeEnodeAddress(bootnodeEnodeAddress)
                 .build());
@@ -215,6 +217,16 @@ public class Network implements Closeable {
   // TODO figure out a nicer way for the UT to get a handle on the node or send requests
   public Besu getNodeB() {
     return besuB;
+  }
+
+  // TODO figure out a nicer way for the UT to get a handle on the Orion or send requests
+  public Orion getOrionA() {
+    return orionA;
+  }
+
+  // TODO figure out a nicer way for the UT to get a handle on the Orion or send requests
+  public Orion getOrionB() {
+    return orionB;
   }
 
   // TODO provide a handle for Besus too? (web3j?)
