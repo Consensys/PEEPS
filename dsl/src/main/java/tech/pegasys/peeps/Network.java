@@ -207,9 +207,14 @@ public class Network implements Closeable {
     return signerA;
   }
 
-  // TODO figure out a nicer way for the UT to get a handle on the signers
-  public EthSigner getSignerB() {
-    return signerB;
+  // TODO figure out a nicer way for the UT to get a handle on the node or send requests
+  public Besu getNodeA() {
+    return besuA;
+  }
+
+  // TODO figure out a nicer way for the UT to get a handle on the node or send requests
+  public Besu getNodeB() {
+    return besuB;
   }
 
   // TODO provide a handle for Besus too? (web3j?)

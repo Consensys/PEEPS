@@ -10,47 +10,25 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package tech.pegasys.peeps.node.rpc;
+package tech.pegasys.peeps.signer.rpc;
 
 import tech.pegasys.peeps.json.rpc.JsonRpcClient;
 import tech.pegasys.peeps.node.rpc.admin.ConnectedPeer;
 import tech.pegasys.peeps.node.rpc.admin.ConnectedPeersResponse;
-import tech.pegasys.peeps.node.rpc.admin.NodeInfo;
-import tech.pegasys.peeps.node.rpc.admin.NodeInfoResponse;
-import tech.pegasys.peeps.node.rpc.priv.GetPrivateTransactionResponse;
-import tech.pegasys.peeps.node.rpc.priv.PrivacyTransactionReceipt;
-
-import java.util.Arrays;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import io.vertx.core.Vertx;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class NodeJsonRpcClient extends JsonRpcClient {
+public class SignerRpcClient extends JsonRpcClient {
 
   private static final Logger LOG = LogManager.getLogger();
 
-  public NodeJsonRpcClient(final Vertx vertx) {
+  public SignerRpcClient(final Vertx vertx) {
     super(vertx, LOG);
-  }
-
-  public Set<String> getConnectedPeerIds() {
-    return Arrays.stream(connectedPeers()).map(ConnectedPeer::getId).collect(Collectors.toSet());
-  }
-
-  public NodeInfo nodeInfo() {
-    return post("admin_nodeInfo", NodeInfoResponse.class).getResult();
   }
 
   private ConnectedPeer[] connectedPeers() {
     return post("admin_peers", ConnectedPeersResponse.class).getResult();
-  }
-
-  public Optional<PrivacyTransactionReceipt> getPrivacyTransactionReceipt(final String receipt) {
-    return Optional.ofNullable(
-        post("priv_getPrivateTransaction", GetPrivateTransactionResponse.class).getResult());
   }
 }

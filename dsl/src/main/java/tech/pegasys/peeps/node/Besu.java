@@ -18,10 +18,12 @@ import static tech.pegasys.peeps.util.HexFormatter.ensureHexPrefix;
 
 import tech.pegasys.peeps.node.rpc.NodeJsonRpcClient;
 import tech.pegasys.peeps.node.rpc.admin.NodeInfo;
+import tech.pegasys.peeps.node.rpc.priv.PrivacyTransactionReceipt;
 import tech.pegasys.peeps.util.Await;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -68,7 +70,7 @@ public class Besu {
     addGenesisFile(config, commandLineOptions, container);
     addPrivacy(config, commandLineOptions, container);
 
-    LOG.debug("besu command line {}", commandLineOptions);
+    LOG.debug("Besu command line {}", commandLineOptions);
 
     this.besu =
         container.withCommand(commandLineOptions.toArray(new String[0])).waitingFor(liveliness());
@@ -112,6 +114,11 @@ public class Besu {
     awaitPeerIdConnections(expectedPeerIds(peers));
   }
 
+  public Optional<PrivacyTransactionReceipt> getPrivacyTransactionReceipt(
+      final String receiptHash) {
+    return jsonRpc.getPrivacyTransactionReceipt(receiptHash);
+  }
+
   private String getNodeId() {
     checkNotNull(nodeId, "NodeId only exists after the node has started");
     return nodeId;
@@ -119,7 +126,7 @@ public class Besu {
 
   private void awaitPeerIdConnections(final Set<String> peerIds) {
     Await.await(
-        () -> assertThat(jsonRpc.connectedPeerIds().containsAll(peerIds)).isTrue(),
+        () -> assertThat(jsonRpc.getConnectedPeerIds().containsAll(peerIds)).isTrue(),
         String.format("Failed to connect in time to peers: %s", peerIds));
   }
 

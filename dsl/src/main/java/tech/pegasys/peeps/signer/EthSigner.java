@@ -12,6 +12,8 @@
  */
 package tech.pegasys.peeps.signer;
 
+import tech.pegasys.peeps.signer.rpc.SignerRpcClient;
+
 import java.util.List;
 
 import com.google.common.collect.Lists;
@@ -39,6 +41,7 @@ public class EthSigner {
 
   // TODO need a rpcClient to send stuff to the signer
   private final GenericContainer<?> ethSigner;
+  private final SignerRpcClient rpc;
 
   public EthSigner(final EthSignerConfiguration config) {
 
@@ -54,13 +57,18 @@ public class EthSigner {
 
     this.ethSigner =
         container.withCommand(commandLineOptions.toArray(new String[0])).waitingFor(liveliness());
+
+    this.rpc = new SignerRpcClient(config.getVertx());
   }
 
   public void start() {
     try {
       ethSigner.start();
 
-      // TODO create signer to send things to EthSigner
+      rpc.bind(
+          ethSigner.getContainerId(),
+          ethSigner.getContainerIpAddress(),
+          ethSigner.getMappedPort(CONTAINER_HTTP_RPC_PORT));
 
       // TODO validate the node has the expected state, e.g. consensus, genesis, networkId,
       // protocol(s), ports, listen address
@@ -77,6 +85,9 @@ public class EthSigner {
     if (ethSigner != null) {
       ethSigner.stop();
     }
+    if (rpc != null) {
+      rpc.close();
+    }
   }
 
   public String deployContract(final String binary) {
@@ -85,13 +96,6 @@ public class EthSigner {
     // TODO code
 
     return receiptHash;
-  }
-
-  public String getTransactionReceipt(final String receiptHash) {
-    final String receipt = null;
-    // TODO code
-
-    return receipt;
   }
 
   private HttpWaitStrategy liveliness() {
