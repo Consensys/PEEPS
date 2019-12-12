@@ -50,7 +50,9 @@ public class Besu {
   private static final String CONTAINER_GENESIS_FILE = "/etc/besu/genesis.json";
   private static final String CONTAINER_PRIVACY_PUBLIC_KEY_FILE =
       "/etc/besu/privacy_public_key.pub";
-  private static final String CONTAINER_NODE_PRIVATE_KEY_FILE = "/etc/besu/keys/key.priv";
+  private static final String CONTAINER_NODE_PRIVATE_KEY_FILE = "/etc/besu/keys/node.priv";
+  private static final String CONTAINER_PRIVACY_SIGNING_PRIVATE_KEY_FILE =
+      "/etc/besu/keys/pmt_signing.priv";
 
   private final GenericContainer<?> besu;
   private final NodeJsonRpcClient jsonRpc;
@@ -70,7 +72,7 @@ public class Besu {
     addGenesisFile(config, commandLineOptions, container);
     addPrivacy(config, commandLineOptions, container);
 
-    LOG.debug("Besu command line {}", commandLineOptions);
+    LOG.info("Besu command line {}", commandLineOptions);
 
     this.besu =
         container.withCommand(commandLineOptions.toArray(new String[0])).waitingFor(liveliness());
@@ -169,7 +171,7 @@ public class Besu {
   private List<String> standardCommandLineOptions() {
     return Lists.newArrayList(
         "--logging",
-        "INFO",
+        "DEBUG",
         "--miner-enabled",
         "--miner-coinbase",
         "1b23ba34ca45bb56aa67bc78be89ac00ca00da00",
@@ -178,7 +180,7 @@ public class Besu {
         "--rpc-http-enabled",
         "--rpc-ws-enabled",
         "--rpc-http-apis",
-        "ADMIN,ETH,NET,WEB3,EEA");
+        "ADMIN,ETH,NET,WEB3,EEA,PRIV");
   }
 
   private void addPeerToPeerHost(
@@ -243,7 +245,13 @@ public class Besu {
     commandLineOptions.add("--privacy-public-key-file");
     commandLineOptions.add(CONTAINER_PRIVACY_PUBLIC_KEY_FILE);
     container.withClasspathResourceMapping(
-        config.getPrivacyublicKeyFile(), CONTAINER_PRIVACY_PUBLIC_KEY_FILE, BindMode.READ_ONLY);
+        config.getPrivacyPublicKeyFile(), CONTAINER_PRIVACY_PUBLIC_KEY_FILE, BindMode.READ_ONLY);
+    commandLineOptions.add("--privacy-marker-transaction-signing-key-file");
+    commandLineOptions.add(CONTAINER_PRIVACY_SIGNING_PRIVATE_KEY_FILE);
+    container.withClasspathResourceMapping(
+        config.getPrivacyMarkerSigningPrivateKeyFile(),
+        CONTAINER_PRIVACY_SIGNING_PRIVATE_KEY_FILE,
+        BindMode.READ_ONLY);
   }
 
   private void addContainerIpAddress(

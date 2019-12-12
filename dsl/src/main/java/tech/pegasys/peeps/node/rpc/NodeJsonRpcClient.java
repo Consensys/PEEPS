@@ -49,8 +49,8 @@ public class NodeJsonRpcClient extends JsonRpcClient {
     return post("admin_peers", ConnectedPeersResponse.class).getResult();
   }
 
-  public Optional<PrivacyTransactionReceipt> getPrivacyTransactionReceipt(final String receipt) {
+  public Optional<PrivacyTransactionReceipt> getPrivacyTransactionReceipt(final String hash) {
     return Optional.ofNullable(
-        post("priv_getPrivateTransaction", GetPrivateTransactionResponse.class).getResult());
+        post("priv_getTransactionReceipt", hash, GetPrivateTransactionResponse.class).getResult());
   }
 }

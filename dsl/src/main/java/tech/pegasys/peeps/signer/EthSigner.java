@@ -61,6 +61,8 @@ public class EthSigner {
     addContainerIpAddress(config, container);
     addFileBasedSigner(config, commandLineOptions, container);
 
+    LOG.info("EthSigner command line {}", commandLineOptions);
+
     this.ethSigner =
         container.withCommand(commandLineOptions.toArray(new String[0])).waitingFor(liveliness());
 

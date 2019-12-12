@@ -25,6 +25,7 @@ public class NodeConfiguration {
   private final String nodePrivateKeyFile;
   private final String bootnodeEnodeAddress;
   private final String privacyUrl;
+  private final String privacyMarkerSigningPrivateKeyFile;
 
   // TODO move these out, they are not related to the node, but test container setups
   private final Network containerNetwork;
@@ -35,6 +36,7 @@ public class NodeConfiguration {
       final String genesisFile,
       final String privacyPublicKeyFile,
       final String privacyUrl,
+      final String privacyMarkerSigningPrivateKeyFile,
       final String cors,
       final Network containerNetwork,
       final Vertx vertx,
@@ -43,6 +45,7 @@ public class NodeConfiguration {
       final String bootnodeEnodeAddress) {
     this.genesisFile = genesisFile;
     this.enclavePublicKeyFile = privacyPublicKeyFile;
+    this.privacyMarkerSigningPrivateKeyFile = privacyMarkerSigningPrivateKeyFile;
     this.privacyUrl = privacyUrl;
     this.cors = cors;
     this.containerNetwork = containerNetwork;
@@ -56,7 +59,7 @@ public class NodeConfiguration {
     return genesisFile;
   }
 
-  public String getPrivacyublicKeyFile() {
+  public String getPrivacyPublicKeyFile() {
     return enclavePublicKeyFile;
   }
 
@@ -86,5 +89,9 @@ public class NodeConfiguration {
 
   public String getPrivacyUrl() {
     return privacyUrl;
+  }
+
+  public String getPrivacyMarkerSigningPrivateKeyFile() {
+    return privacyMarkerSigningPrivateKeyFile;
   }
 }

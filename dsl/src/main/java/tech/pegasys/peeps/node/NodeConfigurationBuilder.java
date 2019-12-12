@@ -25,8 +25,13 @@ public class NodeConfigurationBuilder {
   // TODO enclave key.priv to be passed (without default)
   private static final String DEFAULT_ENCLAVE_PUBLIC_KEY_FILE = "node/enclave_key.pub";
 
+  // TODO move these into the test
+  private static final String DEFAULT_PRIVACY_MARKER_SIGNER_PRIVATE_KEY_FILE =
+      "node/keys/pmt_signing.priv";
+
   private String genesisFile;
   private String privacyPublicKeyFile;
+  private String privacyMarkerSigningPrivateKeyFile;
   private String privacyTransactionManagerUrl;
   private String cors;
   private String nodePrivateKeyFile;
@@ -40,6 +45,7 @@ public class NodeConfigurationBuilder {
   public NodeConfigurationBuilder() {
     this.genesisFile = DEFAULT_GENESIS_FILE;
     this.privacyPublicKeyFile = DEFAULT_ENCLAVE_PUBLIC_KEY_FILE;
+    this.privacyMarkerSigningPrivateKeyFile = DEFAULT_PRIVACY_MARKER_SIGNER_PRIVATE_KEY_FILE;
   }
 
   public NodeConfigurationBuilder withGenesisFile(final String genesisFile) {
@@ -93,6 +99,7 @@ public class NodeConfigurationBuilder {
         genesisFile,
         privacyPublicKeyFile,
         privacyTransactionManagerUrl,
+        privacyMarkerSigningPrivateKeyFile,
         cors,
         containerNetwork,
         vertx,
