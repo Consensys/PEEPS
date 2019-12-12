@@ -50,7 +50,7 @@ public class NodeJsonRpcClient extends JsonRpcClient {
   }
 
   public Optional<PrivacyTransactionReceipt> getPrivacyTransactionReceipt(final String hash) {
-    return Optional.ofNullable(
-        post("priv_getTransactionReceipt", hash, GetPrivateTransactionResponse.class).getResult());
+    return post("priv_getTransactionReceipt", hash, GetPrivateTransactionResponse.class)
+        .getResult();
   }
 }

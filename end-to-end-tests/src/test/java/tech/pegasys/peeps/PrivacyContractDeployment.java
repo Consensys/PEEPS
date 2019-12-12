@@ -12,7 +12,12 @@
  */
 package tech.pegasys.peeps;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import tech.pegasys.peeps.contract.SimpleStorage;
+import tech.pegasys.peeps.node.rpc.priv.PrivacyTransactionReceipt;
+
+import java.util.Optional;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,16 +47,16 @@ public class PrivacyContractDeployment {
             .deployContractToPrivacyGroup(
                 SimpleStorage.BINARY, network.getOrionA(), network.getOrionB());
 
-    // TODO getting the transaction works for one node but not the other?!?!?
-    //    final Optional<PrivacyTransactionReceipt> receiptNodeA =
-    //        network.getNodeA().getPrivacyTransactionReceipt(receiptHash);
+    // TODO getting the transaction works for one node but not the other - why?
+    final Optional<PrivacyTransactionReceipt> receiptNodeA =
+        network.getNodeA().getPrivacyTransactionReceipt(receiptHash);
 
     //    final Optional<PrivacyTransactionReceipt> receiptNodeB =
     //        network.getNodeB().getPrivacyTransactionReceipt(receiptHash);
 
     // TODO verify receipt is valid, contains a contract address
-    //    assertThat(receiptNodeA).isNotNull();
-    //    assertThat(receiptNodeB).isNotNull();
+    assertThat(receiptNodeA).isNotNull();
+    //   assertThat(receiptNodeB).isNotNull();
 
     // TODO verify the state of the Orions & state of each Besu - side effects
   }

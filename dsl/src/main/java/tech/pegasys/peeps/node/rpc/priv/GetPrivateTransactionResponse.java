@@ -12,20 +12,22 @@
  */
 package tech.pegasys.peeps.node.rpc.priv;
 
+import java.util.Optional;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSetter;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class GetPrivateTransactionResponse {
 
-  private final PrivacyTransactionReceipt result;
+  private PrivacyTransactionReceipt result;
 
-  public GetPrivateTransactionResponse(
-      @JsonProperty("result") final PrivacyTransactionReceipt result) {
+  @JsonSetter("result")
+  public void setResult(final PrivacyTransactionReceipt result) {
     this.result = result;
   }
 
-  public PrivacyTransactionReceipt getResult() {
-    return result;
+  public Optional<PrivacyTransactionReceipt> getResult() {
+    return Optional.ofNullable(result);
   }
 }

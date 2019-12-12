@@ -14,111 +14,57 @@ package tech.pegasys.peeps.node.rpc.priv;
 
 import java.util.Optional;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSetter;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class PrivacyTransactionReceipt {
 
-  private final String from;
-  private final String to;
-  private final String gas;
-  private final String gasPrice;
-  private final String hash;
-  private final String input;
-  private final String nonce;
-  private final String value;
-  private final String v;
-  private final String r;
-  private final String s;
-  private final String privateFrom;
-  private final String[] privateFor;
-  private final String restriction;
+  private final String contractAddress;
+  private final String sender;
 
+  private final String output;
+  private final String[] logs;
+
+  private String recipient;
   // TODO better typing than String
 
+  @JsonCreator
   public PrivacyTransactionReceipt(
-      @JsonProperty("from") final String from,
-      @JsonProperty("to") final String to,
-      @JsonProperty("gas") final String gas,
-      @JsonProperty("gasPrice") final String gasPrice,
-      @JsonProperty("hash") final String hash,
-      @JsonProperty("input") final String input,
-      @JsonProperty("nonce") final String nonce,
-      @JsonProperty("value") final String value,
-      @JsonProperty("v") final String v,
-      @JsonProperty("r") final String r,
-      @JsonProperty("s") final String s,
-      @JsonProperty("privateFrom") final String privateFrom,
-      @JsonProperty("privateFor") final String[] privateFor,
-      @JsonProperty("restriction") final String restriction) {
-    this.from = from;
-    this.to = to;
-    this.gas = gas;
-    this.gasPrice = gasPrice;
-    this.hash = hash;
-    this.input = input;
-    this.nonce = nonce;
-    this.value = value;
-    this.v = v;
-    this.r = r;
-    this.s = s;
-    this.privateFrom = privateFrom;
-    this.privateFor = privateFor;
-    this.restriction = restriction;
+      @JsonProperty("contractAddress") final String contractAddress,
+      @JsonProperty("from") final String sender,
+      @JsonProperty("output") final String output,
+      @JsonProperty("logs") final String[] logs) {
+    this.contractAddress = contractAddress;
+    this.sender = sender;
+    this.output = output;
+    this.logs = logs;
   }
 
-  public String getFrom() {
-    return from;
+  @JsonSetter("to")
+  public void setRecipient(final String recipient) {
+    this.recipient = recipient;
   }
 
-  public Optional<String> getTo() {
-    return Optional.ofNullable(to);
+  public String getContractAddress() {
+    return contractAddress;
   }
 
-  public String getGas() {
-    return gas;
+  public String getSender() {
+    return sender;
   }
 
-  public String getGasPrice() {
-    return gasPrice;
+  public Optional<String> getRecipient() {
+    return Optional.ofNullable(recipient);
   }
 
-  public String getHash() {
-    return hash;
+  public String getOutput() {
+    return output;
   }
 
-  public String getInput() {
-    return input;
-  }
-
-  public String getNonce() {
-    return nonce;
-  }
-
-  public String getValue() {
-    return value;
-  }
-
-  public String getV() {
-    return v;
-  }
-
-  public String getR() {
-    return r;
-  }
-
-  public String getS() {
-    return s;
-  }
-
-  public String getPrivateFrom() {
-    return privateFrom;
-  }
-
-  public String[] getPrivateFor() {
-    return privateFor;
-  }
-
-  public String getRestriction() {
-    return restriction;
+  public String[] getLogs() {
+    return logs;
   }
 }
