@@ -29,6 +29,7 @@ public abstract class JsonRpcClient extends RpcClient {
     return this.post(method, new Object[0], clazz);
   }
 
+  @Override
   protected <T> T post(final String method, final Object params, final Class<T> clazz) {
     return super.post(
         JSON_RPC_CONTEXT_PATH,
