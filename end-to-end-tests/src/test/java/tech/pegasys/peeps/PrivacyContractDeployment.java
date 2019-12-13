@@ -47,21 +47,15 @@ public class PrivacyContractDeployment {
             .deployContractToPrivacyGroup(
                 SimpleStorage.BINARY, network.getOrionA(), network.getOrionB());
 
-    // TODO getting the transaction works for one node but not the other - why?
     final Optional<PrivacyTransactionReceipt> receiptNodeA =
         network.getNodeA().getPrivacyTransactionReceipt(receiptHash);
 
-    try {
-      final Optional<PrivacyTransactionReceipt> receiptNodeB =
-          network.getNodeB().getPrivacyTransactionReceipt(receiptHash);
-    } catch (Throwable e) {
-
-      int i = 0;
-    }
+    final Optional<PrivacyTransactionReceipt> receiptNodeB =
+        network.getNodeB().getPrivacyTransactionReceipt(receiptHash);
 
     // TODO verify receipt is valid, contains a contract address
     assertThat(receiptNodeA).isNotNull();
-    //  assertThat(receiptNodeB).isNotNull();
+    assertThat(receiptNodeB).isNotNull();
 
     // TODO verify the state of the Orions & state of each Besu - side effects
   }

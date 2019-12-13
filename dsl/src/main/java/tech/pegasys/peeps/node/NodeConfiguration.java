@@ -34,7 +34,7 @@ public class NodeConfiguration {
 
   public NodeConfiguration(
       final String genesisFile,
-      final String privacyPublicKeyFile,
+      final String privacyManagerPublicKeyFile,
       final String privacyUrl,
       final String privacyMarkerSigningPrivateKeyFile,
       final String cors,
@@ -44,7 +44,7 @@ public class NodeConfiguration {
       final String nodePrivateKeyFile,
       final String bootnodeEnodeAddress) {
     this.genesisFile = genesisFile;
-    this.enclavePublicKeyFile = privacyPublicKeyFile;
+    this.enclavePublicKeyFile = privacyManagerPublicKeyFile;
     this.privacyMarkerSigningPrivateKeyFile = privacyMarkerSigningPrivateKeyFile;
     this.privacyUrl = privacyUrl;
     this.cors = cors;

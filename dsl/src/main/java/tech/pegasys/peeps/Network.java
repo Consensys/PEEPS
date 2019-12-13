@@ -110,6 +110,7 @@ public class Network implements Closeable {
                 .withPrivacyUrl(orionA.getNetworkRpcAddress())
                 .withIpAddress(ipAddressBesuA)
                 .withNodePrivateKeyFile(NodeKeys.BOOTNODE.getPrivateKeyFile())
+                .withPrivacyManagerPublicKey(OrionKeys.ONE.getPublicKey())
                 .build());
 
     this.signerA =
@@ -152,6 +153,7 @@ public class Network implements Closeable {
                 .withPrivacyUrl(orionB.getNetworkRpcAddress())
                 .withIpAddress(ipAddressBesuB)
                 .withBootnodeEnodeAddress(bootnodeEnodeAddress)
+                .withPrivacyManagerPublicKey(OrionKeys.TWO.getPublicKey())
                 .build());
 
     this.signerB =

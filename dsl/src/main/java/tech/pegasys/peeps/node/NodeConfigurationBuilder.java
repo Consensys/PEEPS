@@ -22,15 +22,12 @@ public class NodeConfigurationBuilder {
   // TODO move these into the test
   private static final String DEFAULT_GENESIS_FILE = "node/genesis/eth_hash_4004.json";
 
-  // TODO enclave key.priv to be passed (without default)
-  private static final String DEFAULT_ENCLAVE_PUBLIC_KEY_FILE = "node/enclave_key.pub";
-
   // TODO move these into the test
   private static final String DEFAULT_PRIVACY_MARKER_SIGNER_PRIVATE_KEY_FILE =
       "node/keys/pmt_signing.priv";
 
   private String genesisFile;
-  private String privacyPublicKeyFile;
+  private String privacyManagerPublicKeyFile;
   private String privacyMarkerSigningPrivateKeyFile;
   private String privacyTransactionManagerUrl;
   private String cors;
@@ -44,7 +41,6 @@ public class NodeConfigurationBuilder {
 
   public NodeConfigurationBuilder() {
     this.genesisFile = DEFAULT_GENESIS_FILE;
-    this.privacyPublicKeyFile = DEFAULT_ENCLAVE_PUBLIC_KEY_FILE;
     this.privacyMarkerSigningPrivateKeyFile = DEFAULT_PRIVACY_MARKER_SIGNER_PRIVATE_KEY_FILE;
   }
 
@@ -88,16 +84,22 @@ public class NodeConfigurationBuilder {
     return this;
   }
 
+  public NodeConfigurationBuilder withPrivacyManagerPublicKey(
+      final String privacyManagerPublicKeyFile) {
+    this.privacyManagerPublicKeyFile = privacyManagerPublicKeyFile;
+    return this;
+  }
+
   public NodeConfiguration build() {
     checkNotNull(genesisFile, "A genesis file path is mandatory");
-    checkNotNull(privacyPublicKeyFile, "An enclave key file path is mandatory");
+    checkNotNull(privacyManagerPublicKeyFile, "An privacy manager key file is mandatory");
     checkNotNull(vertx, "A Vertx instance is mandatory");
     checkNotNull(ipAddress, "Container IP address is mandatory");
     checkNotNull(containerNetwork, "Container network is mandatory");
 
     return new NodeConfiguration(
         genesisFile,
-        privacyPublicKeyFile,
+        privacyManagerPublicKeyFile,
         privacyTransactionManagerUrl,
         privacyMarkerSigningPrivateKeyFile,
         cors,
