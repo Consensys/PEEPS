@@ -159,8 +159,8 @@ public class Network implements Closeable {
             new EthSignerConfigurationBuilder()
                 .withVertx(vertx)
                 .withContainerNetwork(network)
-                .withIpAddress(ipAddressSignerB)
                 .withChainId(chainId)
+                .withIpAddress(ipAddressSignerB)
                 .withDownstreamHost(ipAddressBesuB)
                 .withDownstreamPort(portBesuB)
                 .withKeyFile(keyFileSignerB)
@@ -207,6 +207,10 @@ public class Network implements Closeable {
   // TODO figure out a nicer way for the UT to get a handle on the signers
   public EthSigner getSignerA() {
     return signerA;
+  }
+
+  public EthSigner getSignerB() {
+    return signerB;
   }
 
   // TODO figure out a nicer way for the UT to get a handle on the node or send requests

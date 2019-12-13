@@ -51,12 +51,17 @@ public class PrivacyContractDeployment {
     final Optional<PrivacyTransactionReceipt> receiptNodeA =
         network.getNodeA().getPrivacyTransactionReceipt(receiptHash);
 
-    //    final Optional<PrivacyTransactionReceipt> receiptNodeB =
-    //        network.getNodeB().getPrivacyTransactionReceipt(receiptHash);
+    try {
+      final Optional<PrivacyTransactionReceipt> receiptNodeB =
+          network.getNodeB().getPrivacyTransactionReceipt(receiptHash);
+    } catch (Throwable e) {
+
+      int i = 0;
+    }
 
     // TODO verify receipt is valid, contains a contract address
     assertThat(receiptNodeA).isNotNull();
-    //   assertThat(receiptNodeB).isNotNull();
+    //  assertThat(receiptNodeB).isNotNull();
 
     // TODO verify the state of the Orions & state of each Besu - side effects
   }

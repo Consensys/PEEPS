@@ -27,6 +27,7 @@ public class PrivacyTransactionReceipt {
 
   private final String output;
   private final String[] logs;
+  private final String status;
 
   private String recipient;
   // TODO better typing than String
@@ -36,11 +37,13 @@ public class PrivacyTransactionReceipt {
       @JsonProperty("contractAddress") final String contractAddress,
       @JsonProperty("from") final String sender,
       @JsonProperty("output") final String output,
-      @JsonProperty("logs") final String[] logs) {
+      @JsonProperty("logs") final String[] logs,
+      @JsonProperty("status") final String status) {
     this.contractAddress = contractAddress;
     this.sender = sender;
     this.output = output;
     this.logs = logs;
+    this.status = status;
   }
 
   @JsonSetter("to")
@@ -66,5 +69,9 @@ public class PrivacyTransactionReceipt {
 
   public String[] getLogs() {
     return logs;
+  }
+
+  public String getStatus() {
+    return status;
   }
 }

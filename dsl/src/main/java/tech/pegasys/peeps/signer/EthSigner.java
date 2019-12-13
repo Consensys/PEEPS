@@ -46,8 +46,11 @@ public class EthSigner {
   private final SignerRpcClient rpc;
 
   // TODO better typing
+
+  // TODO enter this perhaps
   // TODO this is stored in the wallet file as address - can be read in EthSigner
   private final String senderAccount = "0xf17f52151ebef6c7334fad080c5704d77216b732";
+  //  private final String senderAccount = "0x627306090abab3a6e1400e9345bc60c78a8bef57";
 
   public EthSigner(final EthSignerConfiguration config) {
 
