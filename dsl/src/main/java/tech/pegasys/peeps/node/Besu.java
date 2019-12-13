@@ -119,11 +119,10 @@ public class Besu {
   public Optional<PrivacyTransactionReceipt> getPrivacyTransactionReceipt(
       final String receiptHash) {
     // TODO get the result on success?
-
-    //    Await.await(
-    //        () -> assertThat(jsonRpc.getPrivacyTransactionReceipt(receiptHash)).isPresent(),
-    //        String.format(
-    //            "Failed to retrieve the private transaction receipt with hash: %s", receiptHash));
+    Await.await(
+        () -> assertThat(jsonRpc.getPrivacyTransactionReceipt(receiptHash)).isPresent(),
+        String.format(
+            "Failed to retrieve the private transaction receipt with hash: %s", receiptHash));
 
     return jsonRpc.getPrivacyTransactionReceipt(receiptHash);
   }

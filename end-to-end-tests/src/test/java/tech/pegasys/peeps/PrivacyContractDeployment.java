@@ -57,6 +57,14 @@ public class PrivacyContractDeployment {
     assertThat(receiptNodeA).isNotNull();
     assertThat(receiptNodeB).isNotNull();
 
+    assertThat(receiptNodeA).isPresent();
+    assertThat(receiptNodeB).isPresent();
+
+    assertThat(receiptNodeA.get().getContractAddress()).isNotEmpty();
+    assertThat(receiptNodeA.get().getStatus()).isEqualTo("0x1");
+
+    assertThat(receiptNodeA.get()).usingRecursiveComparison().isEqualTo(receiptNodeB.get());
+
     // TODO verify the state of the Orions & state of each Besu - side effects
   }
 }
