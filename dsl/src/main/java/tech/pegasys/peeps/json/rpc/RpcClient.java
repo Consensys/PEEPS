@@ -56,7 +56,10 @@ public abstract class RpcClient {
 
     rpc =
         vertx.createHttpClient(
-            new WebClientOptions().setDefaultPort(httpJsonRpcPort).setDefaultHost(ipAddress));
+            new WebClientOptions()
+                .setDefaultPort(httpJsonRpcPort)
+                .setDefaultHost(ipAddress)
+                .setConnectTimeout(2 * 60000));
   }
 
   public void close() {
