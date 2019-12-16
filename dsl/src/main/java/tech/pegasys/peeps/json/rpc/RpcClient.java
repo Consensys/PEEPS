@@ -59,7 +59,7 @@ public abstract class RpcClient {
             new WebClientOptions()
                 .setDefaultPort(httpJsonRpcPort)
                 .setDefaultHost(ipAddress)
-                .setConnectTimeout(2 * 60000));
+                .setConnectTimeout(5 * 60000));
   }
 
   public void close() {
