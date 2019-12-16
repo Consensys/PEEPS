@@ -57,6 +57,7 @@ public class Besu {
   private final GenericContainer<?> besu;
   private final NodeJsonRpcClient jsonRpc;
   private String nodeId;
+  private String enodeId;
 
   public Besu(final NodeConfiguration config) {
 
@@ -91,6 +92,7 @@ public class Besu {
 
       final NodeInfo info = jsonRpc.nodeInfo();
       nodeId = info.getId();
+      enodeId = info.getEnode();
 
       // TODO validate the node has the expected state, e.g. consensus, genesis, networkId,
       // protocol(s), ports, listen address
@@ -110,6 +112,10 @@ public class Besu {
     if (jsonRpc != null) {
       jsonRpc.close();
     }
+  }
+
+  public String getEnodeId() {
+    return enodeId;
   }
 
   public void awaitConnectivity(final Besu... peers) {

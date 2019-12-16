@@ -12,8 +12,12 @@
  */
 package tech.pegasys.peeps.signer;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import tech.pegasys.peeps.node.Besu;
 import tech.pegasys.peeps.privacy.Orion;
 import tech.pegasys.peeps.signer.rpc.SignerRpcClient;
+import tech.pegasys.peeps.util.Await;
 
 import java.util.List;
 
@@ -195,5 +199,11 @@ public class EthSigner {
     commandLineOptions.add(CONTAINER_PASSWORD_FILE);
     container.withClasspathResourceMapping(
         config.getPasswordFile(), CONTAINER_PASSWORD_FILE, BindMode.READ_ONLY);
+  }
+
+  public void awaitConnectivity(final Besu node) {
+    Await.await(
+        () -> assertThat(rpc.enode()).isEqualTo(node.getEnodeId()),
+        String.format("Failed to connect to node: %s", node.getEnodeId()));
   }
 }

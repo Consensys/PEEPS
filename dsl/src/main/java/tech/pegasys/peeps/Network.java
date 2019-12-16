@@ -203,6 +203,9 @@ public class Network implements Closeable {
     besuB.awaitConnectivity(besuA);
     orionA.awaitConnectivity(orionB);
     orionB.awaitConnectivity(orionA);
+
+    signerA.awaitConnectivity(besuA);
+    signerB.awaitConnectivity(besuB);
   }
 
   // TODO interfaces for the signer used by the test?

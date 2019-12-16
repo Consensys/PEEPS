@@ -12,12 +12,14 @@
  */
 package tech.pegasys.peeps.signer.rpc.eea;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class SendPrivateTransactionResponse {
 
   private final String result;
 
+  @JsonCreator
   public SendPrivateTransactionResponse(@JsonProperty("result") final String result) {
     this.result = result;
   }

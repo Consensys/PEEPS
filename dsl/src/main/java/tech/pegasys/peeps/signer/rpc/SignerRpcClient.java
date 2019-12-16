@@ -15,6 +15,7 @@ package tech.pegasys.peeps.signer.rpc;
 import tech.pegasys.peeps.json.rpc.JsonRpcClient;
 import tech.pegasys.peeps.signer.rpc.eea.SendPrivateTransactionResponse;
 import tech.pegasys.peeps.signer.rpc.eea.SendTransactionRequest;
+import tech.pegasys.peeps.signer.rpc.net.EnodeResponse;
 
 import io.vertx.core.Vertx;
 import org.apache.logging.log4j.LogManager;
@@ -40,5 +41,9 @@ public class SignerRpcClient extends JsonRpcClient {
                 sender, NO_RECIPIENT, binary, privateSender, privateRecipients),
             SendPrivateTransactionResponse.class)
         .getResult();
+  }
+
+  public String enode() {
+    return post("net_enode", EnodeResponse.class).getResult();
   }
 }
