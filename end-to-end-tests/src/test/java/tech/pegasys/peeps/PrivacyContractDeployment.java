@@ -52,7 +52,6 @@ public class PrivacyContractDeployment {
                   SimpleStorage.BINARY, network.getOrionA(), network.getOrionB());
     } catch (final Throwable e) {
       network.getNodeA().log();
-      network.getNodeB().log();
       throw e;
     }
 
