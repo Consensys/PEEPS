@@ -17,6 +17,8 @@ import tech.pegasys.peeps.signer.rpc.eea.SendPrivateTransactionResponse;
 import tech.pegasys.peeps.signer.rpc.eea.SendTransactionRequest;
 import tech.pegasys.peeps.signer.rpc.net.EnodeResponse;
 
+import java.time.Duration;
+
 import io.vertx.core.Vertx;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -26,8 +28,8 @@ public class SignerRpcClient extends JsonRpcClient {
   private static final Logger LOG = LogManager.getLogger();
   private static final String NO_RECIPIENT = null;
 
-  public SignerRpcClient(final Vertx vertx) {
-    super(vertx, LOG);
+  public SignerRpcClient(final Vertx vertx, final Duration timeout) {
+    super(vertx, timeout, LOG);
   }
 
   public String deployContractToPrivacyGroup(

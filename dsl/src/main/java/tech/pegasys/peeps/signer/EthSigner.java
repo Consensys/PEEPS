@@ -19,8 +19,8 @@ import tech.pegasys.peeps.privacy.Orion;
 import tech.pegasys.peeps.signer.rpc.SignerRpcClient;
 import tech.pegasys.peeps.util.Await;
 
+import java.time.Duration;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import com.google.common.collect.Lists;
 import org.apache.logging.log4j.LogManager;
@@ -42,7 +42,7 @@ public class EthSigner {
   private static final String ETH_SIGNER_IMAGE = "pegasyseng/ethsigner:develop";
   private static final String CONTAINER_DATA_PATH = "/etc/ethsigner/tmp/";
   private static final int CONTAINER_HTTP_RPC_PORT = 8545;
-  private static final long DOWNSTREAM_TIMEOUT_MS = TimeUnit.SECONDS.toMillis(1);
+  private static final Duration DOWNSTREAM_TIMEOUT = Duration.ofSeconds(10);
 
   private static final String CONTAINER_KEY_FILE = "/etc/ethsigner/key_file.v3";
   private static final String CONTAINER_PASSWORD_FILE = "/etc/ethsigner/password_file.txt";
@@ -75,7 +75,7 @@ public class EthSigner {
     this.ethSigner =
         container.withCommand(commandLineOptions.toArray(new String[0])).waitingFor(liveliness());
 
-    this.rpc = new SignerRpcClient(config.getVertx());
+    this.rpc = new SignerRpcClient(config.getVertx(), DOWNSTREAM_TIMEOUT);
   }
 
   public void start() {
@@ -136,7 +136,7 @@ public class EthSigner {
         "--http-listen-port",
         String.valueOf(CONTAINER_HTTP_RPC_PORT),
         "--downstream-http-request-timeout",
-        String.valueOf(DOWNSTREAM_TIMEOUT_MS));
+        String.valueOf(DOWNSTREAM_TIMEOUT.toMillis()));
   }
 
   private void logContainerNetworkDetails() {

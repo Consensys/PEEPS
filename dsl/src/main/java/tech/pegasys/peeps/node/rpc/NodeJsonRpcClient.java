@@ -20,6 +20,7 @@ import tech.pegasys.peeps.node.rpc.admin.NodeInfoResponse;
 import tech.pegasys.peeps.node.rpc.priv.GetPrivateTransactionResponse;
 import tech.pegasys.peeps.node.rpc.priv.PrivacyTransactionReceipt;
 
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.Set;
@@ -32,9 +33,10 @@ import org.apache.logging.log4j.Logger;
 public class NodeJsonRpcClient extends JsonRpcClient {
 
   private static final Logger LOG = LogManager.getLogger();
+  private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(5);
 
   public NodeJsonRpcClient(final Vertx vertx) {
-    super(vertx, LOG);
+    super(vertx, DEFAULT_TIMEOUT, LOG);
   }
 
   public Set<String> getConnectedPeerIds() {

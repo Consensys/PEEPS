@@ -19,6 +19,7 @@ import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
 
 import tech.pegasys.peeps.json.Json;
 
+import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -34,11 +35,13 @@ public abstract class RpcClient {
 
   private final Vertx vertx;
   private final Logger log;
+  private final Duration timeout;
 
   private HttpClient rpc;
   private String containerId;
 
-  public RpcClient(final Vertx vertx, final Logger log) {
+  public RpcClient(final Vertx vertx, final Duration timeout, final Logger log) {
+    this.timeout = timeout;
     this.vertx = vertx;
     this.log = log;
   }
@@ -56,7 +59,10 @@ public abstract class RpcClient {
 
     rpc =
         vertx.createHttpClient(
-            new WebClientOptions().setDefaultPort(httpJsonRpcPort).setDefaultHost(ipAddress));
+            new WebClientOptions()
+                .setDefaultPort(httpJsonRpcPort)
+                .setDefaultHost(ipAddress)
+                .setConnectTimeout((int) timeout.toMillis()));
   }
 
   public void close() {

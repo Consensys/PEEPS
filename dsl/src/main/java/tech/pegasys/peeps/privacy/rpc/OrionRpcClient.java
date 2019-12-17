@@ -18,6 +18,8 @@ import tech.pegasys.peeps.privacy.rpc.receive.ReceiveResponse;
 import tech.pegasys.peeps.privacy.rpc.send.SendRequest;
 import tech.pegasys.peeps.privacy.rpc.send.SendResponse;
 
+import java.time.Duration;
+
 import io.vertx.core.Vertx;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -25,11 +27,12 @@ import org.apache.logging.log4j.Logger;
 public class OrionRpcClient extends RpcClient {
 
   private static final Logger LOG = LogManager.getLogger();
+  private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(5);
 
   private final String pubKey;
 
   public OrionRpcClient(final Vertx vertx, final String pubKey) {
-    super(vertx, LOG);
+    super(vertx, DEFAULT_TIMEOUT, LOG);
     this.pubKey = pubKey;
   }
 

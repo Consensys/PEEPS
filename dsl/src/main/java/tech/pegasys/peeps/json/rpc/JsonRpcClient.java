@@ -12,17 +12,18 @@
  */
 package tech.pegasys.peeps.json.rpc;
 
+import java.time.Duration;
+
 import io.vertx.core.Vertx;
 import org.apache.logging.log4j.Logger;
 
 public abstract class JsonRpcClient extends RpcClient {
 
-  public static final String JSON_RPC_VERSION = "2.0";
-
+  private static final String JSON_RPC_VERSION = "2.0";
   private static final String JSON_RPC_CONTEXT_PATH = "/";
 
-  public JsonRpcClient(final Vertx vertx, final Logger log) {
-    super(vertx, log);
+  public JsonRpcClient(final Vertx vertx, final Duration timeout, final Logger log) {
+    super(vertx, timeout, log);
   }
 
   protected <T> T post(final String method, final Class<T> clazz) {
