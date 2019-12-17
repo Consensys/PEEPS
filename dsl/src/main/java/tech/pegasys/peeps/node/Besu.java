@@ -188,7 +188,7 @@ public class Besu {
   private List<String> standardCommandLineOptions() {
     return Lists.newArrayList(
         "--logging",
-        "INFO",
+        "DEBUG",
         "--miner-enabled",
         "--miner-coinbase",
         "1b23ba34ca45bb56aa67bc78be89ac00ca00da00",

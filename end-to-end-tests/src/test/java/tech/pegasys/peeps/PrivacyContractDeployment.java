@@ -50,6 +50,7 @@ public class PrivacyContractDeployment {
               .getSignerA()
               .deployContractToPrivacyGroup(
                   SimpleStorage.BINARY, network.getOrionA(), network.getOrionB());
+
     } catch (final Throwable e) {
       network.getNodeA().log();
       throw e;
