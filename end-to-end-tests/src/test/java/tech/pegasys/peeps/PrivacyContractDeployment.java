@@ -41,11 +41,20 @@ public class PrivacyContractDeployment {
 
   @Test
   public void a() {
-    final String receiptHash =
-        network
-            .getSignerA()
-            .deployContractToPrivacyGroup(
-                SimpleStorage.BINARY, network.getOrionA(), network.getOrionB());
+    final String receiptHash;
+
+    try {
+
+      receiptHash =
+          network
+              .getSignerA()
+              .deployContractToPrivacyGroup(
+                  SimpleStorage.BINARY, network.getOrionA(), network.getOrionB());
+    } catch (final Throwable e) {
+      network.getNodeA().log();
+      network.getNodeB().log();
+      throw e;
+    }
 
     final Optional<PrivacyTransactionReceipt> receiptNodeA =
         network.getNodeA().getPrivacyTransactionReceipt(receiptHash);

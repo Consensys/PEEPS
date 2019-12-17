@@ -133,6 +133,11 @@ public class Besu {
     return jsonRpc.getPrivacyTransactionReceipt(receiptHash);
   }
 
+  public void log() {
+    LOG.info("Besu Container {}", besu.getContainerId());
+    LOG.info(besu.getLogs());
+  }
+
   private String getNodeId() {
     checkNotNull(nodeId, "NodeId only exists after the node has started");
     return nodeId;
