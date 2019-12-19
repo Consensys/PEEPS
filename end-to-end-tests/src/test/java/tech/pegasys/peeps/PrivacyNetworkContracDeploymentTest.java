@@ -13,6 +13,7 @@
 package tech.pegasys.peeps;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static tech.pegasys.peeps.util.HexFormatter.*;
 
 import tech.pegasys.peeps.contract.SimpleStorage;
 import tech.pegasys.peeps.node.model.PrivacyTransactionReceipt;
@@ -20,6 +21,7 @@ import tech.pegasys.peeps.node.model.Transaction;
 import tech.pegasys.peeps.node.model.TransactionReceipt;
 
 import java.nio.file.Path;
+import java.util.Base64;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -76,7 +78,17 @@ public class PrivacyNetworkContracDeploymentTest {
 
     // TODO copy the code from the Privacy pre-compile to generate the Orion key
     // correctly
-    final String key = pmtNodeA.getInput();
+    //    final String key = new
+    // String(Base64.getEncoder().withoutPadding().encode(removeAnyHexPrefix(pmtNodeA.getInput()).getBytes()), StandardCharsets.UTF_8);
+    //    final String key = new
+    // String(Base64.getEncoder().encode(removeAnyHexPrefix(pmtNodeA.getInput()).getBytes()),
+    // StandardCharsets.UTF_8);
+    //    final String key =
+    // Base64.getEncoder().encodeToString(removeAnyHexPrefix(pmtNodeA.getInput()).getBytes());
+    final String key =
+        Base64.getEncoder()
+            .withoutPadding()
+            .encodeToString(removeAnyHexPrefix(pmtNodeA.getInput()).getBytes());
 
     // Valid privacy transaction receipt
     final PrivacyTransactionReceipt receiptNodeA =

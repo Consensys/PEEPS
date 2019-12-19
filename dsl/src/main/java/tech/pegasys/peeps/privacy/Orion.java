@@ -106,6 +106,7 @@ public class Orion {
       // networkId,
       // protocol(s), ports, listen address
 
+      logOrionDetails();
       logPortMappings();
       logContainerNetworkDetails();
     } catch (final ContainerLaunchException e) {
@@ -136,7 +137,7 @@ public class Orion {
     return id;
   }
 
-  // TODO strong typing than String
+  // TODO stronger typing than String
   public String getPayload(final String receipt) {
     return rpc.receive(receipt);
   }
@@ -163,6 +164,10 @@ public class Orion {
 
   private String containerWorkingDirectory(final String relativePath) {
     return CONTAINER_WORKING_DIRECTORY_PREFIX + relativePath;
+  }
+
+  private void logOrionDetails() {
+    LOG.info("Orion Container {}, ID: {}", orion.getContainerId(), id);
   }
 
   private void logContainerNetworkDetails() {
