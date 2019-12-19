@@ -13,16 +13,19 @@
 package tech.pegasys.peeps;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static tech.pegasys.peeps.util.HexFormatter.*;
+import static tech.pegasys.peeps.util.HexFormatter.removeAnyHexPrefix;
 
 import tech.pegasys.peeps.contract.SimpleStorage;
 import tech.pegasys.peeps.node.model.PrivacyTransactionReceipt;
 import tech.pegasys.peeps.node.model.Transaction;
 import tech.pegasys.peeps.node.model.TransactionReceipt;
 
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.util.Base64;
 
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.binary.Hex;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -48,7 +51,7 @@ public class PrivacyNetworkContracDeploymentTest {
   }
 
   @Test
-  public void deploymentMustSucceed() {
+  public void deploymentMustSucceed() throws DecoderException {
 
     // TODO no in-line comments - implement clean code!
 
@@ -76,19 +79,10 @@ public class PrivacyNetworkContracDeploymentTest {
     assertThat(pmtNodeA).usingRecursiveComparison().isEqualTo(pmtNodeB);
     assertThat(pmtNodeA).isNotNull();
 
-    // TODO copy the code from the Privacy pre-compile to generate the Orion key
-    // correctly
-    //    final String key = new
-    // String(Base64.getEncoder().withoutPadding().encode(removeAnyHexPrefix(pmtNodeA.getInput()).getBytes()), StandardCharsets.UTF_8);
-    //    final String key = new
-    // String(Base64.getEncoder().encode(removeAnyHexPrefix(pmtNodeA.getInput()).getBytes()),
-    // StandardCharsets.UTF_8);
-    //    final String key =
-    // Base64.getEncoder().encodeToString(removeAnyHexPrefix(pmtNodeA.getInput()).getBytes());
-    final String key =
-        Base64.getEncoder()
-            .withoutPadding()
-            .encodeToString(removeAnyHexPrefix(pmtNodeA.getInput()).getBytes());
+    // Convert from Hex String to Base64 UTF_8 String for Orion
+    byte[] decodedHex = Hex.decodeHex(removeAnyHexPrefix(pmtNodeA.getInput()).toCharArray());
+    byte[] encodedHexB64 = Base64.encodeBase64(decodedHex);
+    final String key = new String(encodedHexB64, StandardCharsets.UTF_8);
 
     // Valid privacy transaction receipt
     final PrivacyTransactionReceipt receiptNodeA =
