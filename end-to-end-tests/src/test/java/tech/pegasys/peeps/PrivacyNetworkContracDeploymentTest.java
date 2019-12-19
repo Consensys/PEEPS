@@ -15,7 +15,9 @@ package tech.pegasys.peeps;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import tech.pegasys.peeps.contract.SimpleStorage;
-import tech.pegasys.peeps.node.rpc.priv.PrivacyTransactionReceipt;
+import tech.pegasys.peeps.node.model.PrivacyTransactionReceipt;
+import tech.pegasys.peeps.node.model.Transaction;
+import tech.pegasys.peeps.node.model.TransactionReceipt;
 
 import java.nio.file.Path;
 
@@ -45,12 +47,38 @@ public class PrivacyNetworkContracDeploymentTest {
 
   @Test
   public void deploymentMustSucceed() {
+
+    // TODO no in-line comments - implement clean code!
+
     final String receiptHash =
         network
             .getSignerA()
             .deployContractToPrivacyGroup(
                 SimpleStorage.BINARY, network.getOrionA(), network.getOrionB());
 
+    // Valid transaction receipt for the privacy contract deployment
+    final TransactionReceipt pmtReceiptNodeA =
+        network.getNodeA().getTransactionReceipt(receiptHash);
+    final TransactionReceipt pmtReceiptNodeB =
+        network.getNodeB().getTransactionReceipt(receiptHash);
+
+    assertThat(pmtReceiptNodeA.isSuccess()).isTrue();
+    assertThat(pmtReceiptNodeA).usingRecursiveComparison().isEqualTo(pmtReceiptNodeB);
+
+    // Valid privacy marker transaction
+    final String hash = pmtReceiptNodeA.getTransactionHash();
+    final Transaction pmtNodeA = network.getNodeA().getTransactionByHash(hash);
+    final Transaction pmtNodeB = network.getNodeB().getTransactionByHash(hash);
+
+    assertThat(pmtNodeA.isProcessed()).isTrue();
+    assertThat(pmtNodeA).usingRecursiveComparison().isEqualTo(pmtNodeB);
+    assertThat(pmtNodeA).isNotNull();
+
+    // TODO copy the code from the Privacy pre-compile to generate the Orion key
+    // correctly
+    final String key = pmtNodeA.getInput();
+
+    // Valid privacy transaction receipt
     final PrivacyTransactionReceipt receiptNodeA =
         network.getNodeA().getPrivacyContractReceipt(receiptHash);
     final PrivacyTransactionReceipt receiptNodeB =
@@ -59,6 +87,11 @@ public class PrivacyNetworkContracDeploymentTest {
     assertThat(receiptNodeA.isSuccess()).isTrue();
     assertThat(receiptNodeA).usingRecursiveComparison().isEqualTo(receiptNodeB);
 
-    // TODO verify the state of the Orions & state of each Besu - side effects
+    // Valid entries in both Orions
+    final String payloadOrionA = network.getOrionA().getPayload(key);
+    final String payloadOrionB = network.getOrionB().getPayload(key);
+
+    assertThat(payloadOrionA).isNotNull();
+    assertThat(payloadOrionA).isEqualTo(payloadOrionB);
   }
 }
