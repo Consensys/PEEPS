@@ -80,8 +80,8 @@ public class PrivacyNetworkContracDeploymentTest {
     assertThat(pmtNodeA).isNotNull();
 
     // Convert from Hex String to Base64 UTF_8 String for Orion
-    byte[] decodedHex = Hex.decodeHex(removeAnyHexPrefix(pmtNodeA.getInput()).toCharArray());
-    byte[] encodedHexB64 = Base64.encodeBase64(decodedHex);
+    final byte[] decodedHex = Hex.decodeHex(removeAnyHexPrefix(pmtNodeA.getInput()).toCharArray());
+    final byte[] encodedHexB64 = Base64.encodeBase64(decodedHex);
     final String key = new String(encodedHexB64, StandardCharsets.UTF_8);
 
     // Valid privacy transaction receipt
@@ -99,5 +99,11 @@ public class PrivacyNetworkContracDeploymentTest {
 
     assertThat(payloadOrionA).isNotNull();
     assertThat(payloadOrionA).isEqualTo(payloadOrionB);
+
+    // Verify Orion payload matches private transaction
+    // final byte[] decodedB64 = Base64.decodeBase64(payloadOrionA);
+
+    // TODO Orion returns RLPInput encoded PrivateTransaction - copy from Besu & Apache Tuweni?
+
   }
 }
