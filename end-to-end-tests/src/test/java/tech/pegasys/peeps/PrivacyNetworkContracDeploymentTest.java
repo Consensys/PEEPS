@@ -99,11 +99,5 @@ public class PrivacyNetworkContracDeploymentTest {
 
     assertThat(payloadOrionA).isNotNull();
     assertThat(payloadOrionA).isEqualTo(payloadOrionB);
-
-    // Verify Orion payload matches private transaction
-    // final byte[] decodedB64 = Base64.decodeBase64(payloadOrionA);
-
-    // TODO Orion returns RLPInput encoded PrivateTransaction - copy from Besu & Apache Tuweni?
-
   }
 }
