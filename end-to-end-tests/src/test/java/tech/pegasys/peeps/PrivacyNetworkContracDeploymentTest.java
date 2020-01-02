@@ -19,7 +19,6 @@ import tech.pegasys.peeps.contract.SimpleStorage;
 import tech.pegasys.peeps.node.model.PrivacyTransactionReceipt;
 import tech.pegasys.peeps.node.model.Transaction;
 import tech.pegasys.peeps.node.model.TransactionReceipt;
-import tech.pegasys.peeps.util.Await;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
@@ -63,7 +62,7 @@ public class PrivacyNetworkContracDeploymentTest {
                 SimpleStorage.BINARY, network.getOrionA(), network.getOrionB());
 
     // Valid transaction receipt for the privacy contract deployment
-    awaitPmtAlignment(receiptHash);
+    network.awaitConsensusOn(receiptHash);
     final TransactionReceipt pmtReceiptNodeA =
         network.getNodeA().getTransactionReceipt(receiptHash);
 
@@ -96,24 +95,5 @@ public class PrivacyNetworkContracDeploymentTest {
 
     assertThat(payloadOrionA).isNotNull();
     assertThat(payloadOrionA).isEqualTo(payloadOrionB);
-  }
-
-  // TODO move this method somewhere
-  private void awaitPmtAlignment(final String receiptHash) {
-
-    Await.await(
-        () -> {
-          final TransactionReceipt pmtReceiptNodeA =
-              network.getNodeA().getTransactionReceipt(receiptHash);
-          final TransactionReceipt pmtReceiptNodeB =
-              network.getNodeB().getTransactionReceipt(receiptHash);
-
-          assertThat(pmtReceiptNodeA.isSuccess()).isTrue();
-          assertThat(pmtReceiptNodeA).usingRecursiveComparison().isEqualTo(pmtReceiptNodeB);
-        },
-        "conditionTimeoutMessage");
-
-    // TODO think of a sensible message
-
   }
 }
