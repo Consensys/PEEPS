@@ -19,6 +19,9 @@ dependencies {
   testImplementation 'commons-codec:commons-codec'
   testImplementation 'org.assertj:assertj-core'
   testImplementation 'org.junit.jupiter:junit-jupiter-api'
+
+  //TODO don't have this dependency in the tests - move into the dsl
+  implementation 'org.awaitility:awaitility'
 }
 
 test.enabled = false
