@@ -22,14 +22,18 @@ import com.github.dockerjava.api.model.Network.Ipam.Config;
 import com.google.common.annotations.VisibleForTesting;
 import org.testcontainers.containers.Network;
 
-public class Subnetwork {
+public class Subnet {
 
+  private static final byte FIRST_AVAILABLE_FORTH_OCTET = 2;
   private static final int MAXIMUM_ATTEMPTS = 25;
   private static final int OCTET_MAXIMUM = 255;
   private static final String SUBNET_FORMAT = "172.20.%d.0/24";
   private static final AtomicInteger THIRD_OCTET = new AtomicInteger(0);
 
-  public Network create() {
+  private String ipAddressFormat;
+  private AtomicInteger forthOctet;
+
+  public Network createContainerNetwork() {
 
     // TODO loop through until a free subnet is found
 
@@ -39,7 +43,8 @@ public class Subnetwork {
 
       try {
         final Network network = createDockerNetwork(subnet);
-
+        forthOctet = new AtomicInteger(FIRST_AVAILABLE_FORTH_OCTET);
+        ipAddressFormat = subnet.substring(0, subnet.lastIndexOf('.')) + ".%d";
         return network;
       } catch (final UndeclaredThrowableException e) {
         // Try creating with the next subnet
@@ -52,8 +57,7 @@ public class Subnetwork {
 
   /** Retrieves the next available IP address and now considers it as unavailable. */
   public String consumeNextIPAddress() {
-    // TODO code me!
-    return null;
+    return String.format(ipAddressFormat, forthOctet.getAndIncrement());
   }
 
   @VisibleForTesting

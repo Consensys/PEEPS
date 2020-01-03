@@ -25,12 +25,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.Network;
 
-public class SubnetworkTest {
+public class SubnetTest {
 
   private final List<Network> cleanUp = new ArrayList<>();
 
   @BeforeEach
   public void setUp() {
+    Runtime.getRuntime().addShutdownHook(new Thread(this::tearDown));
     cleanUp.clear();
   }
 
@@ -49,7 +50,7 @@ public class SubnetworkTest {
 
   @Test
   public void canCreateNetworkWhenFirstSubnetUnavailable() {
-    createDockerNetwork(new Subnetwork().nextSubnet());
+    createDockerNetwork(new Subnet().nextSubnet());
 
     final Network network = create();
 
@@ -67,7 +68,7 @@ public class SubnetworkTest {
   }
 
   private Network create() {
-    final Network network = new Subnetwork().create();
+    final Network network = new Subnet().createContainerNetwork();
     cleanUp.add(network);
     return network;
   }

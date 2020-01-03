@@ -39,7 +39,7 @@ public class PrivacyNetworkContracDeploymentTest {
   private Network network;
 
   @BeforeEach
-  public void startUp() {
+  public void setUp() {
     Runtime.getRuntime().addShutdownHook(new Thread(this::tearDown));
     network = new Network(configurationDirectory);
     network.start();

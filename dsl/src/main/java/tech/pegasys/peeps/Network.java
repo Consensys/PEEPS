@@ -62,10 +62,10 @@ public class Network implements Closeable {
     final PathGenerator pathGenerator = new PathGenerator(configurationDirectory);
     this.vertx = Vertx.vertx();
 
-    final Subnetwork subnet = new Subnetwork();
+    final Subnet subnet = new Subnet();
 
     // TODO subnet with substitution for static IPs
-    this.network = subnet.create();
+    this.network = subnet.createContainerNetwork();
 
     // TODO 0.1 seems to be used, maybe assigned by the network container?
 
