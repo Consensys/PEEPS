@@ -19,7 +19,7 @@ import com.github.dockerjava.api.model.Network.Ipam.Config;
 
 public class Subnetwork {
 
-  private static final int OCTET_MAXIMUM = 255;
+  // private static final int OCTET_MAXIMUM = 255;
   private static final String SUBNET_FORMAT = "172.20.%d.0/24";
   private static final AtomicInteger THIRD_OCTET = new AtomicInteger(0);
 
