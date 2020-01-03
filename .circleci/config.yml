@@ -54,7 +54,7 @@ commands:
 
 jobs:
   build:
-    executor: executor_large
+    executor: executor_machine
     steps:
       - prepare
       - run:
