@@ -10,7 +10,7 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package tech.pegasys.peeps;
+package tech.pegasys.peeps.network;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -53,8 +53,6 @@ public class Network implements Closeable {
 
   private final Vertx vertx;
 
-  // TODO IP management
-
   // TODO choosing the topology should be elsewhere
   public Network(final Path configurationDirectory) {
     checkNotNull(configurationDirectory);
@@ -64,18 +62,17 @@ public class Network implements Closeable {
 
     final Subnet subnet = new Subnet();
 
-    // TODO subnet with substitution for static IPs
     this.network = subnet.createContainerNetwork();
 
     // TODO 0.1 seems to be used, maybe assigned by the network container?
 
     // TODO better typing then String
-    final String ipAddressOrionA = subnet.getIpAddressAndIncrement();
-    final String ipAddressBesuA = subnet.getIpAddressAndIncrement();
-    final String ipAddressSignerA = subnet.getIpAddressAndIncrement();
-    final String ipAddressOrionB = subnet.getIpAddressAndIncrement();
-    final String ipAddressBesuB = subnet.getIpAddressAndIncrement();
-    final String ipAddressSignerB = subnet.getIpAddressAndIncrement();
+    final String ipAddressOrionA = subnet.getAddressAndIncrement();
+    final String ipAddressBesuA = subnet.getAddressAndIncrement();
+    final String ipAddressSignerA = subnet.getAddressAndIncrement();
+    final String ipAddressOrionB = subnet.getAddressAndIncrement();
+    final String ipAddressBesuB = subnet.getAddressAndIncrement();
+    final String ipAddressSignerB = subnet.getAddressAndIncrement();
 
     // TODO these should come from the Besu, or config aggregation
     final long chainId = 4004;

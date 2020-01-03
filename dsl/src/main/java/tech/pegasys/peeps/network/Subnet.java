@@ -10,7 +10,7 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package tech.pegasys.peeps;
+package tech.pegasys.peeps.network;
 
 import static com.google.common.base.Preconditions.checkState;
 
@@ -24,14 +24,12 @@ import org.testcontainers.containers.Network;
 
 public class Subnet {
 
-  private static final byte FIRST_AVAILABLE_FORTH_OCTET = 2;
   private static final int MAXIMUM_ATTEMPTS = 25;
   private static final int OCTET_MAXIMUM = 255;
   private static final String SUBNET_FORMAT = "172.20.%d.0/24";
   private static final AtomicInteger THIRD_OCTET = new AtomicInteger(0);
 
-  private String ipAddressFormat;
-  private AtomicInteger forthOctet;
+  private SubnetAddresses addresses;
 
   public Network createContainerNetwork() {
 
@@ -41,8 +39,7 @@ public class Subnet {
 
       try {
         final Network network = createDockerNetwork(subnet);
-        forthOctet = new AtomicInteger(FIRST_AVAILABLE_FORTH_OCTET);
-        ipAddressFormat = subnet.substring(0, subnet.lastIndexOf('.')) + ".%d";
+        addresses = new SubnetAddresses(subnetAddressFormat(subnet));
         return network;
       } catch (final UndeclaredThrowableException e) {
         // Try creating with the next subnet
@@ -53,9 +50,8 @@ public class Subnet {
         String.format("Failed to create a Docker network within %s attempts", MAXIMUM_ATTEMPTS));
   }
 
-  /** Retrieves the next available IP address and now considers it as unavailable. */
-  public String getIpAddressAndIncrement() {
-    return String.format(ipAddressFormat, forthOctet.getAndIncrement());
+  public String getAddressAndIncrement() {
+    return addresses.getAddressAndIncrement();
   }
 
   @VisibleForTesting
@@ -74,6 +70,10 @@ public class Subnet {
     }
 
     return THIRD_OCTET.getAndIncrement();
+  }
+
+  private String subnetAddressFormat(final String subnet) {
+    return subnet.substring(0, subnet.lastIndexOf('.')) + ".%d";
   }
 
   /**
