@@ -12,6 +12,7 @@
  */
 package tech.pegasys.peeps;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import tech.pegasys.peeps.node.Besu;
@@ -34,7 +35,6 @@ import java.util.List;
 
 import com.github.dockerjava.api.model.Network.Ipam;
 import com.github.dockerjava.api.model.Network.Ipam.Config;
-import com.google.common.base.Preconditions;
 import io.vertx.core.Vertx;
 
 public class Network implements Closeable {
@@ -59,7 +59,7 @@ public class Network implements Closeable {
 
   // TODO choosing the topology should be elsewhere
   public Network(final Path configurationDirectory) {
-    Preconditions.checkNotNull(configurationDirectory);
+    checkNotNull(configurationDirectory);
 
     final PathGenerator pathGenerator = new PathGenerator(configurationDirectory);
     this.vertx = Vertx.vertx();
