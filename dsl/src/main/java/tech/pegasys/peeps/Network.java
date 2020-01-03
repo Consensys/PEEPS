@@ -69,14 +69,13 @@ public class Network implements Closeable {
 
     // TODO 0.1 seems to be used, maybe assigned by the network container?
 
-    // TODO no magic strings!?!?
     // TODO better typing then String
-    final String ipAddressOrionA = "172.20.0.5";
-    final String ipAddressBesuA = "172.20.0.6";
-    final String ipAddressSignerA = "172.20.0.7";
-    final String ipAddressOrionB = "172.20.0.8";
-    final String ipAddressBesuB = "172.20.0.9";
-    final String ipAddressSignerB = "172.20.0.10";
+    final String ipAddressOrionA = subnet.getIpAddressAndIncrement();
+    final String ipAddressBesuA = subnet.getIpAddressAndIncrement();
+    final String ipAddressSignerA = subnet.getIpAddressAndIncrement();
+    final String ipAddressOrionB = subnet.getIpAddressAndIncrement();
+    final String ipAddressBesuB = subnet.getIpAddressAndIncrement();
+    final String ipAddressSignerB = subnet.getIpAddressAndIncrement();
 
     // TODO these should come from the Besu, or config aggregation
     final long chainId = 4004;

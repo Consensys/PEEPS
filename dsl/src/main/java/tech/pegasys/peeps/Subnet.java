@@ -35,11 +35,9 @@ public class Subnet {
 
   public Network createContainerNetwork() {
 
-    // TODO loop through until a free subnet is found
-
     for (int attempt = 0; attempt < MAXIMUM_ATTEMPTS; attempt++) {
 
-      final String subnet = String.format(SUBNET_FORMAT, consumeNextThirdOctet());
+      final String subnet = getNextSubnetAndIncrement();
 
       try {
         final Network network = createDockerNetwork(subnet);
@@ -56,13 +54,17 @@ public class Subnet {
   }
 
   /** Retrieves the next available IP address and now considers it as unavailable. */
-  public String consumeNextIPAddress() {
+  public String getIpAddressAndIncrement() {
     return String.format(ipAddressFormat, forthOctet.getAndIncrement());
   }
 
   @VisibleForTesting
   String nextSubnet() {
     return String.format(SUBNET_FORMAT, THIRD_OCTET.get());
+  }
+
+  private String getNextSubnetAndIncrement() {
+    return String.format(SUBNET_FORMAT, consumeNextThirdOctet());
   }
 
   private synchronized int consumeNextThirdOctet() {
