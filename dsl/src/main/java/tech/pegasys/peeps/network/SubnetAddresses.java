@@ -14,24 +14,29 @@ package tech.pegasys.peeps.network;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 public class SubnetAddresses {
 
-  private static final byte FIRST_AVAILABLE_HOST_ADDRESS = 2;
+  private static final int HOST_MAXIMUM = 255;
+  private static final int FIRST_AVAILABLE_HOST_ADDRESS = 2;
 
   private final String addressFormat;
-  private byte hostAddress;
+  private AtomicInteger hostAddress;
 
   public SubnetAddresses(final String addressFormat) {
     checkNotNull(addressFormat);
 
     this.addressFormat = addressFormat;
-    this.hostAddress = FIRST_AVAILABLE_HOST_ADDRESS;
+    this.hostAddress = new AtomicInteger(FIRST_AVAILABLE_HOST_ADDRESS);
   }
 
   /** Retrieves the next available IP address and now considers it as unavailable. */
-  public synchronized String getAddressAndIncrement() {
-    final String address = String.format(addressFormat, hostAddress);
-    hostAddress++;
-    return address;
+  public String getAddressAndIncrement() {
+    if (hostAddress.get() > HOST_MAXIMUM) {
+      throw new IllegalStateException("Subnet addresses have been exhaused");
+    }
+
+    return String.format(addressFormat, hostAddress.getAndIncrement());
   }
 }
