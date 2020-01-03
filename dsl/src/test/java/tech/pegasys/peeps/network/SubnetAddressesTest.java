@@ -45,4 +45,30 @@ public class SubnetAddressesTest {
 
     assertThat(exception.getMessage()).isEqualTo("Subnet addresses have been exhaused");
   }
+
+  @Test
+  public void missingAddressFormatMustException() {
+    final Exception exception =
+        assertThrows(
+            NullPointerException.class,
+            () -> {
+              new SubnetAddresses(null);
+            });
+
+    assertThat(exception.getMessage()).isEqualTo("An address format is required");
+  }
+
+  @Test
+  public void incorrectAddressFormatMustException() {
+    final Exception exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> {
+              new SubnetAddresses("172.20.0.0");
+            });
+
+    assertThat(exception.getMessage())
+        .isEqualTo(
+            "Given address format: '172.20.0.0' does not conform to IPv4 pattern: '^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.%d$'");
+  }
 }

@@ -12,11 +12,15 @@
  */
 package tech.pegasys.peeps.network;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.*;
 
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Pattern;
 
 public class SubnetAddresses {
+
+  private static final Pattern IPV4 =
+      Pattern.compile("^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.%d$");
 
   private static final int HOST_MAXIMUM = 255;
   private static final int FIRST_AVAILABLE_HOST_ADDRESS = 2;
@@ -25,7 +29,12 @@ public class SubnetAddresses {
   private AtomicInteger hostAddress;
 
   public SubnetAddresses(final String addressFormat) {
-    checkNotNull(addressFormat);
+    checkNotNull(addressFormat, "An address format is required");
+    checkArgument(
+        IPV4.matcher(addressFormat).matches(),
+        "Given address format: '%s' does not conform to IPv4 pattern: '%s'",
+        addressFormat,
+        IPV4.pattern());
 
     this.addressFormat = addressFormat;
     this.hostAddress = new AtomicInteger(FIRST_AVAILABLE_HOST_ADDRESS);
