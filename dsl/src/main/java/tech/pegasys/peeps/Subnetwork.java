@@ -12,37 +12,79 @@
  */
 package tech.pegasys.peeps;
 
+import static com.google.common.base.Preconditions.checkState;
+
+import java.lang.reflect.UndeclaredThrowableException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.github.dockerjava.api.model.Network.Ipam;
 import com.github.dockerjava.api.model.Network.Ipam.Config;
+import com.google.common.annotations.VisibleForTesting;
+import org.testcontainers.containers.Network;
 
 public class Subnetwork {
 
-  // private static final int OCTET_MAXIMUM = 255;
+  private static final int MAXIMUM_ATTEMPTS = 25;
+  private static final int OCTET_MAXIMUM = 255;
   private static final String SUBNET_FORMAT = "172.20.%d.0/24";
   private static final AtomicInteger THIRD_OCTET = new AtomicInteger(0);
 
-  public org.testcontainers.containers.Network build() {
+  public Network create() {
 
     // TODO loop through until a free subnet is found
 
-    final String subnet = String.format(SUBNET_FORMAT, THIRD_OCTET.getAndIncrement());
+    for (int attempt = 0; attempt < MAXIMUM_ATTEMPTS; attempt++) {
 
-    // TODO subnet with substitution for static IPs
-    final org.testcontainers.containers.Network network =
-        org.testcontainers.containers.Network.builder()
+      final String subnet = String.format(SUBNET_FORMAT, consumeNextThirdOctet());
+
+      try {
+        final Network network = createDockerNetwork(subnet);
+
+        return network;
+      } catch (final UndeclaredThrowableException e) {
+        // Try creating with the next subnet
+      }
+    }
+
+    throw new IllegalStateException(
+        String.format("Failed to create a Docker network within %s attempts", MAXIMUM_ATTEMPTS));
+  }
+
+  /** Retrieves the next available IP address and now considers it as unavailable. */
+  public String consumeNextIPAddress() {
+    // TODO code me!
+    return null;
+  }
+
+  @VisibleForTesting
+  String nextSubnet() {
+    return String.format(SUBNET_FORMAT, THIRD_OCTET.get());
+  }
+
+  private synchronized int consumeNextThirdOctet() {
+
+    if (THIRD_OCTET.get() > OCTET_MAXIMUM) {
+      THIRD_OCTET.set(0);
+    }
+
+    return THIRD_OCTET.getAndIncrement();
+  }
+
+  /**
+   * TestContainers uses lazy initialization of Docker networks, creation with the Docker client
+   * being triggered by getId().
+   */
+  private Network createDockerNetwork(final String subnet) {
+    final Network network =
+        Network.builder()
             .createNetworkCmdModifier(
                 modifier ->
                     modifier.withIpam(new Ipam().withConfig(new Config().withSubnet(subnet))))
             .build();
 
-    return network;
-  }
+    checkState(network.getId() != null);
+    checkState(!network.getId().isBlank());
 
-  /** Retrieves the next available IP address and now considers it as unavailable. */
-  public String getAndIncrement() {
-    // TODO code me!
-    return null;
+    return network;
   }
 }

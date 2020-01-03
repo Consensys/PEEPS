@@ -12,11 +12,14 @@
  */
 package tech.pegasys.peeps;
 
+import static com.google.common.base.Preconditions.checkState;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import com.github.dockerjava.api.model.Network.Ipam;
+import com.github.dockerjava.api.model.Network.Ipam.Config;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,38 +40,47 @@ public class SubnetworkTest {
   }
 
   @Test
-  public void canCreateOneNetwork() {
-    final Network one = new Subnetwork().build();
+  public void canCreateNetwork() {
+    final Network network = create();
 
-    start(one);
+    assertThat(network).isNotNull();
+    assertThat(network.getId()).isNotBlank();
   }
 
   @Test
-  public void canCreateTwoConcurrentlyLiveNetworks() {
-    final Network first = new Subnetwork().build();
-    final Network second = new Subnetwork().build();
+  public void canCreateNetworkWhenFirstSubnetUnavailable() {
+    createDockerNetwork(new Subnetwork().nextSubnet());
 
-    start(first);
-    start(second);
+    final Network network = create();
+
+    assertThat(network).isNotNull();
+    assertThat(network.getId()).isNotBlank();
   }
 
   @Test
-  public void canCreateTwoSequentallyLiveNetworks() {
-    final Network first = new Subnetwork().build();
-    start(first);
+  public void canCreateConcurrentNetworks() {
+    final Network networkA = create();
+    final Network networkB = create();
 
-    final Network second = new Subnetwork().build();
-    start(second);
+    assertThat(networkA).isNotEqualTo(networkB);
+    assertThat(networkA.getId()).isNotEqualTo(networkB.getId());
   }
 
-  /**
-   * TestContainers uses lazy creation for the Docker network client calls.
-   *
-   * <p>Wraps up the calls and manages clean up of the Docker networks.
-   */
-  private void start(final Network network) {
-    assertThat(network.getId()).isNotEmpty();
-
+  private Network create() {
+    final Network network = new Subnetwork().create();
     cleanUp.add(network);
+    return network;
+  }
+
+  private void createDockerNetwork(final String subnet) {
+    final Network network =
+        Network.builder()
+            .createNetworkCmdModifier(
+                modifier ->
+                    modifier.withIpam(new Ipam().withConfig(new Config().withSubnet(subnet))))
+            .build();
+
+    checkState(network.getId() != null);
+    checkState(!network.getId().isBlank());
   }
 }

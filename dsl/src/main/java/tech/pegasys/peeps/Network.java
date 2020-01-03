@@ -33,8 +33,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import com.github.dockerjava.api.model.Network.Ipam;
-import com.github.dockerjava.api.model.Network.Ipam.Config;
 import io.vertx.core.Vertx;
 
 public class Network implements Closeable {
@@ -64,14 +62,10 @@ public class Network implements Closeable {
     final PathGenerator pathGenerator = new PathGenerator(configurationDirectory);
     this.vertx = Vertx.vertx();
 
+    final Subnetwork subnet = new Subnetwork();
+
     // TODO subnet with substitution for static IPs
-    this.network =
-        org.testcontainers.containers.Network.builder()
-            .createNetworkCmdModifier(
-                modifier ->
-                    modifier.withIpam(
-                        new Ipam().withConfig(new Config().withSubnet("172.20.0.0/24"))))
-            .build();
+    this.network = subnet.create();
 
     // TODO 0.1 seems to be used, maybe assigned by the network container?
 
@@ -177,7 +171,8 @@ public class Network implements Closeable {
   }
 
   public void start() {
-    // TODO multi-thread the blocking start ops, using await connectivity as the sync point
+    // TODO multi-thread the blocking start ops, using await connectivity as the
+    // sync point
     orionA.start();
     besuA.start();
     signerA.start();
@@ -239,22 +234,26 @@ public class Network implements Closeable {
     return signerB;
   }
 
-  // TODO figure out a nicer way for the UT to get a handle on the node or send requests
+  // TODO figure out a nicer way for the UT to get a handle on the node or send
+  // requests
   public Besu getNodeA() {
     return besuA;
   }
 
-  // TODO figure out a nicer way for the UT to get a handle on the node or send requests
+  // TODO figure out a nicer way for the UT to get a handle on the node or send
+  // requests
   public Besu getNodeB() {
     return besuB;
   }
 
-  // TODO figure out a nicer way for the UT to get a handle on the Orion or send requests
+  // TODO figure out a nicer way for the UT to get a handle on the Orion or send
+  // requests
   public Orion getOrionA() {
     return orionA;
   }
 
-  // TODO figure out a nicer way for the UT to get a handle on the Orion or send requests
+  // TODO figure out a nicer way for the UT to get a handle on the Orion or send
+  // requests
   public Orion getOrionB() {
     return orionB;
   }
