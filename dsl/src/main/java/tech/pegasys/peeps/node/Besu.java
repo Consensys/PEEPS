@@ -58,6 +58,7 @@ public class Besu {
 
   private final GenericContainer<?> besu;
   private final NodeRpc rpc;
+  private final String ipAddress;
   private String nodeId;
   private String enodeId;
 
@@ -66,11 +67,13 @@ public class Besu {
     final GenericContainer<?> container = new GenericContainer<>(BESU_IMAGE);
     final List<String> commandLineOptions = standardCommandLineOptions();
 
+    this.ipAddress = config.getIpAddress();
+
     addPeerToPeerHost(config, commandLineOptions);
     addCorsOrigins(config, commandLineOptions);
     addBootnodeAddress(config, commandLineOptions);
     addContainerNetwork(config, container);
-    addContainerIpAddress(config, container);
+    addContainerIpAddress(ipAddress, container);
     addNodePrivateKey(config, commandLineOptions, container);
     addGenesisFile(config, commandLineOptions, container);
     addPrivacy(config, commandLineOptions, container);
@@ -117,7 +120,12 @@ public class Besu {
     }
   }
 
-  public String getEnodeId() {
+  // TODO stricter typing then String
+  public String ipAddress() {
+    return ipAddress;
+  }
+
+  public String enodeId() {
     return enodeId;
   }
 
@@ -320,9 +328,7 @@ public class Besu {
         BindMode.READ_ONLY);
   }
 
-  private void addContainerIpAddress(
-      final BesuConfiguration config, final GenericContainer<?> container) {
-    container.withCreateContainerCmdModifier(
-        modifier -> modifier.withIpv4Address(config.getIpAddress()));
+  private void addContainerIpAddress(final String ipAddress, final GenericContainer<?> container) {
+    container.withCreateContainerCmdModifier(modifier -> modifier.withIpv4Address(ipAddress));
   }
 }

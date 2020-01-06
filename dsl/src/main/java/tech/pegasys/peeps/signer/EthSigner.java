@@ -210,7 +210,7 @@ public class EthSigner {
 
   public void awaitConnectivity(final Besu node) {
     Await.await(
-        () -> assertThat(rpc.enode()).isEqualTo(node.getEnodeId()),
-        String.format("Failed to connect to node: %s", node.getEnodeId()));
+        () -> assertThat(rpc.enode()).isEqualTo(node.enodeId()),
+        String.format("Failed to connect to node: %s", node.enodeId()));
   }
 }

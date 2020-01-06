@@ -28,14 +28,14 @@ public abstract class NetworkTest {
   protected Network network;
 
   @BeforeEach
-  public void setUp() {
-    Runtime.getRuntime().addShutdownHook(new Thread(this::tearDown));
+  public void setUpNetwork() {
+    Runtime.getRuntime().addShutdownHook(new Thread(this::tearDownNetwork));
     network = new Network(configurationDirectory);
     network.start();
   }
 
   @AfterEach
-  public void tearDown() {
+  public void tearDownNetwork() {
     network.close();
   }
 }

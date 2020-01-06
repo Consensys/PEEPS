@@ -41,6 +41,10 @@ public class Network implements Closeable {
   // TODO cater for one-many & many-one for Besu/Orion
   // TODO cater for one-many for Besu/EthSigner
 
+  private final List<Besu> nodes;
+
+  // TODO relationship mappings
+
   private final Besu besuA;
   private final Orion orionA;
   private final EthSigner signerA;
@@ -49,6 +53,7 @@ public class Network implements Closeable {
   private final EthSigner signerB;
   private final Orion orionB;
 
+  private final Subnet subnet;
   private final org.testcontainers.containers.Network network;
 
   private final Vertx vertx;
@@ -60,7 +65,9 @@ public class Network implements Closeable {
     final PathGenerator pathGenerator = new PathGenerator(configurationDirectory);
     this.vertx = Vertx.vertx();
 
-    final Subnet subnet = new Subnet();
+    this.nodes = new ArrayList<>();
+
+    this.subnet = new Subnet();
 
     this.network = subnet.createContainerNetwork();
 
@@ -68,10 +75,8 @@ public class Network implements Closeable {
 
     // TODO better typing then String
     final String ipAddressOrionA = subnet.getAddressAndIncrement();
-    final String ipAddressBesuA = subnet.getAddressAndIncrement();
     final String ipAddressSignerA = subnet.getAddressAndIncrement();
     final String ipAddressOrionB = subnet.getAddressAndIncrement();
-    final String ipAddressBesuB = subnet.getAddressAndIncrement();
     final String ipAddressSignerB = subnet.getAddressAndIncrement();
 
     // TODO these should come from the Besu, or config aggregation
@@ -99,15 +104,11 @@ public class Network implements Closeable {
                 .build());
 
     this.besuA =
-        new Besu(
+        node(
             new BesuConfigurationBuilder()
-                .withVertx(vertx)
-                .withContainerNetwork(network)
                 .withPrivacyUrl(orionA.getNetworkRpcAddress())
-                .withIpAddress(ipAddressBesuA)
                 .withNodePrivateKeyFile(NodeKeys.BOOTNODE.getPrivateKeyFile())
-                .withPrivacyManagerPublicKey(OrionKeys.ONE.getPublicKey())
-                .build());
+                .withPrivacyManagerPublicKey(OrionKeys.ONE.getPublicKey()));
 
     this.signerA =
         new EthSigner(
@@ -116,7 +117,7 @@ public class Network implements Closeable {
                 .withContainerNetwork(network)
                 .withIpAddress(ipAddressSignerA)
                 .withChainId(chainId)
-                .withDownstreamHost(ipAddressBesuA)
+                .withDownstreamHost(besuA.ipAddress())
                 .withDownstreamPort(portBesuA)
                 .withKeyFile(keyFileSignerA)
                 .withPasswordFile(passwordFileSignerA)
@@ -139,18 +140,15 @@ public class Network implements Closeable {
                 .build());
 
     // TODO better typing then String
-    final String bootnodeEnodeAddress = NodeKeys.BOOTNODE.getEnodeAddress(ipAddressBesuA, "30303");
+    final String bootnodeEnodeAddress =
+        NodeKeys.BOOTNODE.getEnodeAddress(besuA.ipAddress(), "30303");
 
     this.besuB =
-        new Besu(
+        node(
             new BesuConfigurationBuilder()
-                .withVertx(vertx)
-                .withContainerNetwork(network)
                 .withPrivacyUrl(orionB.getNetworkRpcAddress())
-                .withIpAddress(ipAddressBesuB)
                 .withBootnodeEnodeAddress(bootnodeEnodeAddress)
-                .withPrivacyManagerPublicKey(OrionKeys.TWO.getPublicKey())
-                .build());
+                .withPrivacyManagerPublicKey(OrionKeys.TWO.getPublicKey()));
 
     this.signerB =
         new EthSigner(
@@ -159,7 +157,7 @@ public class Network implements Closeable {
                 .withContainerNetwork(network)
                 .withChainId(chainId)
                 .withIpAddress(ipAddressSignerB)
-                .withDownstreamHost(ipAddressBesuB)
+                .withDownstreamHost(besuB.ipAddress())
                 .withDownstreamPort(portBesuB)
                 .withKeyFile(keyFileSignerB)
                 .withPasswordFile(passwordFileSignerB)
@@ -169,21 +167,22 @@ public class Network implements Closeable {
   public void start() {
     // TODO multi-thread the blocking start ops, using await connectivity as the
     // sync point
+
+    nodes.parallelStream().forEach(node -> node.start());
+
     orionA.start();
-    besuA.start();
     signerA.start();
     orionB.start();
-    besuB.start();
     signerB.start();
     awaitConnectivity();
   }
 
   public void stop() {
+    nodes.parallelStream().forEach(node -> node.stop());
+
     orionA.stop();
-    besuA.stop();
     signerA.stop();
     orionB.stop();
-    besuB.stop();
     signerB.stop();
   }
 
@@ -202,6 +201,21 @@ public class Network implements Closeable {
 
     signerA.awaitConnectivity(besuA);
     signerB.awaitConnectivity(besuB);
+  }
+
+  private Besu node(final BesuConfigurationBuilder config) {
+
+    final Besu besu =
+        new Besu(
+            config
+                .withVertx(vertx)
+                .withContainerNetwork(network)
+                .withIpAddress(subnet.getAddressAndIncrement())
+                .build());
+
+    nodes.add(besu);
+
+    return besu;
   }
 
   // TODO restructure, maybe Supplier related or a utility on network?
