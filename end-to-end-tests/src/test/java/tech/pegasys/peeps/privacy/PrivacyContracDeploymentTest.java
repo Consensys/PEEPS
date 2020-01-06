@@ -10,46 +10,25 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package tech.pegasys.peeps;
+package tech.pegasys.peeps.privacy;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static tech.pegasys.peeps.util.HexFormatter.removeAnyHexPrefix;
 
+import tech.pegasys.peeps.NetworkTest;
 import tech.pegasys.peeps.contract.SimpleStorage;
-import tech.pegasys.peeps.network.Network;
 import tech.pegasys.peeps.node.model.PrivacyTransactionReceipt;
 import tech.pegasys.peeps.node.model.Transaction;
 import tech.pegasys.peeps.node.model.TransactionReceipt;
 
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 
-// TODO extract common network setup into superclass
-public class PrivacyNetworkContracDeploymentTest {
-
-  @TempDir Path configurationDirectory;
-
-  private Network network;
-
-  @BeforeEach
-  public void setUp() {
-    Runtime.getRuntime().addShutdownHook(new Thread(this::tearDown));
-    network = new Network(configurationDirectory);
-    network.start();
-  }
-
-  @AfterEach
-  public void tearDown() {
-    network.close();
-  }
+public class PrivacyContracDeploymentTest extends NetworkTest {
 
   @Test
   public void deploymentMustSucceed() throws DecoderException {

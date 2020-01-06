@@ -12,32 +12,11 @@
  */
 package tech.pegasys.peeps.consensus;
 
-import tech.pegasys.peeps.network.Network;
+import tech.pegasys.peeps.NetworkTest;
 
-import java.nio.file.Path;
-
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 
-public class CliqueConsensusTest {
-
-  @TempDir Path configurationDirectory;
-
-  private Network network;
-
-  @BeforeEach
-  public void setUp() {
-    Runtime.getRuntime().addShutdownHook(new Thread(this::tearDown));
-    network = new Network(configurationDirectory);
-    network.start();
-  }
-
-  @AfterEach
-  public void tearDown() {
-    network.close();
-  }
+public class CliqueConsensusTest extends NetworkTest {
 
   @Test
   public void consensusAfterMiningMustHappen() {
