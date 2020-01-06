@@ -14,6 +14,7 @@ package tech.pegasys.peeps.signer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import tech.pegasys.peeps.network.NetworkMember;
 import tech.pegasys.peeps.node.Besu;
 import tech.pegasys.peeps.privacy.Orion;
 import tech.pegasys.peeps.signer.rpc.SignerRpc;
@@ -31,7 +32,7 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.containers.wait.strategy.Wait;
 
-public class EthSigner {
+public class EthSigner implements NetworkMember {
 
   private static final Logger LOG = LogManager.getLogger();
 
@@ -80,6 +81,7 @@ public class EthSigner {
     this.rpc = new SignerRpc(config.getVertx(), DOWNSTREAM_TIMEOUT);
   }
 
+  @Override
   public void start() {
     try {
       ethSigner.start();
@@ -100,6 +102,7 @@ public class EthSigner {
     }
   }
 
+  @Override
   public void stop() {
     if (ethSigner != null) {
       ethSigner.stop();

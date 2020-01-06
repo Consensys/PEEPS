@@ -16,6 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static tech.pegasys.peeps.privacy.OrionConfigurationFile.write;
 import static tech.pegasys.peeps.privacy.rpc.send.SendPayload.generateUniquePayload;
 
+import tech.pegasys.peeps.network.NetworkMember;
 import tech.pegasys.peeps.privacy.rpc.OrionRpc;
 import tech.pegasys.peeps.util.ClasspathResources;
 
@@ -28,7 +29,7 @@ import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.MountableFile;
 
-public class Orion {
+public class Orion implements NetworkMember {
 
   private static final Logger LOG = LogManager.getLogger();
 
@@ -93,6 +94,7 @@ public class Orion {
     assertReceived(peer.rpc, receipt, sentMessage);
   }
 
+  @Override
   public void start() {
     try {
       orion.start();
@@ -115,6 +117,7 @@ public class Orion {
     }
   }
 
+  @Override
   public void stop() {
     if (orion != null) {
       orion.stop();

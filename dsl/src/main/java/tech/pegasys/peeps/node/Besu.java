@@ -16,6 +16,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static org.assertj.core.api.Assertions.assertThat;
 import static tech.pegasys.peeps.util.HexFormatter.ensureHexPrefix;
 
+import tech.pegasys.peeps.network.NetworkMember;
 import tech.pegasys.peeps.node.model.PrivacyTransactionReceipt;
 import tech.pegasys.peeps.node.model.Transaction;
 import tech.pegasys.peeps.node.model.TransactionReceipt;
@@ -38,7 +39,7 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.containers.wait.strategy.Wait;
 
-public class Besu {
+public class Besu implements NetworkMember {
 
   private static final Logger LOG = LogManager.getLogger();
 
@@ -59,6 +60,7 @@ public class Besu {
   private final GenericContainer<?> besu;
   private final NodeRpc rpc;
   private final String ipAddress;
+  private final long chainId;
   private String nodeId;
   private String enodeId;
 
@@ -68,6 +70,9 @@ public class Besu {
     final List<String> commandLineOptions = standardCommandLineOptions();
 
     this.ipAddress = config.getIpAddress();
+
+    // TODO parse the genesis file for the chain id
+    this.chainId = 4004;
 
     addPeerToPeerHost(config, commandLineOptions);
     addCorsOrigins(config, commandLineOptions);
@@ -86,6 +91,7 @@ public class Besu {
     this.rpc = new NodeRpc(config.getVertx());
   }
 
+  @Override
   public void start() {
     try {
       besu.start();
@@ -111,6 +117,7 @@ public class Besu {
     }
   }
 
+  @Override
   public void stop() {
     if (besu != null) {
       besu.stop();
@@ -135,6 +142,10 @@ public class Besu {
 
   public int p2pPort() {
     return CONTAINER_P2P_PORT;
+  }
+
+  public long chainId() {
+    return chainId;
   }
 
   public void awaitConnectivity(final Besu... peers) {

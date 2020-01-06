@@ -40,6 +40,8 @@ public class Network implements Closeable {
   // TODO cater for one-many & many-one for Besu/Orion
   // TODO cater for one-many for Besu/EthSigner
 
+  private final List<NetworkMember> members;
+
   private final List<Besu> nodes;
   private final List<EthSigner> signers;
   private final List<Orion> privacyTransactionManagers;
@@ -65,6 +67,7 @@ public class Network implements Closeable {
     checkNotNull(configurationDirectory, "Path to configuration directory is mandatory");
 
     this.privacyTransactionManagers = new ArrayList<>();
+    this.members = new ArrayList<>();
     this.signers = new ArrayList<>();
     this.nodes = new ArrayList<>();
 
@@ -73,9 +76,6 @@ public class Network implements Closeable {
 
     this.subnet = new Subnet();
     this.network = subnet.createContainerNetwork();
-
-    // TODO these should come from the Besu, or config aggregation
-    final long chainId = 4004;
 
     // TODO name files according the account pubkey
 
@@ -101,7 +101,7 @@ public class Network implements Closeable {
     this.signerA =
         signer(
             new EthSignerConfigurationBuilder()
-                .withChainId(chainId)
+                .withChainId(besuA.chainId())
                 .withKeyFile(keyFileSignerA)
                 .withPasswordFile(passwordFileSignerA),
             besuA);
@@ -131,27 +131,20 @@ public class Network implements Closeable {
     this.signerB =
         signer(
             new EthSignerConfigurationBuilder()
-                .withChainId(chainId)
+                .withChainId(besuB.chainId())
                 .withKeyFile(keyFileSignerB)
                 .withPasswordFile(passwordFileSignerB),
             besuB);
   }
 
   public void start() {
-    // TODO multi-thread the blocking start ops, using await connectivity as the
-    // sync point
-
-    nodes.parallelStream().forEach(node -> node.start());
-    privacyTransactionManagers.parallelStream().forEach(ptm -> ptm.start());
-    signers.parallelStream().forEach(signer -> signer.start());
+    members.parallelStream().forEach(member -> member.start());
 
     awaitConnectivity();
   }
 
   public void stop() {
-    nodes.parallelStream().forEach(node -> node.stop());
-    privacyTransactionManagers.parallelStream().forEach(ptm -> ptm.stop());
-    signers.parallelStream().forEach(signer -> signer.stop());
+    members.parallelStream().forEach(member -> member.stop());
   }
 
   @Override
@@ -182,6 +175,7 @@ public class Network implements Closeable {
                 .build());
 
     nodes.add(besu);
+    members.add(besu);
 
     return besu;
   }
@@ -198,6 +192,7 @@ public class Network implements Closeable {
                 .build());
 
     privacyTransactionManagers.add(manager);
+    members.add(manager);
 
     return manager;
   }
@@ -214,6 +209,7 @@ public class Network implements Closeable {
                 .build());
 
     signers.add(signer);
+    members.add(signer);
 
     return signer;
   }
