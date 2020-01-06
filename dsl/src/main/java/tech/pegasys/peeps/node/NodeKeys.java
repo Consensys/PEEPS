@@ -32,8 +32,8 @@ public enum NodeKeys {
     this.privKeyFile = keysDirectory + PRIVATE_KEY_FILENAME;
   }
 
-  public String getEnodeAddress(final String hostIp, final String port) {
-    return String.format("enode://%s@%s:%s", pubKey, hostIp, port);
+  public String getEnodeAddress(final String hostIp, final int port) {
+    return String.format("enode://%s@%s:%d", pubKey, hostIp, port);
   }
 
   public String getPrivateKeyFile() {

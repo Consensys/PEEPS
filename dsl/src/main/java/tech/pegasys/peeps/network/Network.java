@@ -77,8 +77,6 @@ public class Network implements Closeable {
 
     // TODO these should come from the Besu, or config aggregation
     final long chainId = 4004;
-    final int portBesuA = 8545;
-    final int portBesuB = 8545;
 
     // TODO name files according the account pubkey
 
@@ -105,10 +103,9 @@ public class Network implements Closeable {
         signer(
             new EthSignerConfigurationBuilder()
                 .withChainId(chainId)
-                .withDownstreamHost(besuA.ipAddress())
-                .withDownstreamPort(portBesuA)
                 .withKeyFile(keyFileSignerA)
-                .withPasswordFile(passwordFileSignerA));
+                .withPasswordFile(passwordFileSignerA),
+            besuA);
 
     // TODO More typing then a String - URI, URL, File or Path
     final List<String> orionBootnodes = new ArrayList<>();
@@ -123,7 +120,7 @@ public class Network implements Closeable {
 
     // TODO better typing then String
     final String bootnodeEnodeAddress =
-        NodeKeys.BOOTNODE.getEnodeAddress(besuA.ipAddress(), "30303");
+        NodeKeys.BOOTNODE.getEnodeAddress(besuA.ipAddress(), besuA.p2pPort());
 
     this.besuB =
         node(
@@ -136,10 +133,9 @@ public class Network implements Closeable {
         signer(
             new EthSignerConfigurationBuilder()
                 .withChainId(chainId)
-                .withDownstreamHost(besuB.ipAddress())
-                .withDownstreamPort(portBesuB)
                 .withKeyFile(keyFileSignerB)
-                .withPasswordFile(passwordFileSignerB));
+                .withPasswordFile(passwordFileSignerB),
+            besuB);
   }
 
   public void start() {
@@ -147,19 +143,16 @@ public class Network implements Closeable {
     // sync point
 
     nodes.parallelStream().forEach(node -> node.start());
-    privacyTransactionManagers.parallelStream().forEach(node -> node.start());
+    privacyTransactionManagers.parallelStream().forEach(ptm -> ptm.start());
+    signers.parallelStream().forEach(signer -> signer.start());
 
-    signerA.start();
-    signerB.start();
     awaitConnectivity();
   }
 
   public void stop() {
     nodes.parallelStream().forEach(node -> node.stop());
-    privacyTransactionManagers.parallelStream().forEach(node -> node.stop());
-
-    signerA.stop();
-    signerB.stop();
+    privacyTransactionManagers.parallelStream().forEach(ptm -> ptm.stop());
+    signers.parallelStream().forEach(signer -> signer.stop());
   }
 
   @Override
@@ -210,13 +203,15 @@ public class Network implements Closeable {
     return manager;
   }
 
-  private EthSigner signer(final EthSignerConfigurationBuilder config) {
+  private EthSigner signer(final EthSignerConfigurationBuilder config, final Besu downstream) {
     final EthSigner signer =
         new EthSigner(
             config
                 .withVertx(vertx)
                 .withContainerNetwork(network)
                 .withIpAddress(subnet.getAddressAndIncrement())
+                .withDownstreamHost(downstream.ipAddress())
+                .withDownstreamPort(downstream.httpRpcPort())
                 .build());
 
     signers.add(signer);

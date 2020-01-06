@@ -129,6 +129,14 @@ public class Besu {
     return enodeId;
   }
 
+  public int httpRpcPort() {
+    return CONTAINER_HTTP_RPC_PORT;
+  }
+
+  public int p2pPort() {
+    return CONTAINER_P2P_PORT;
+  }
+
   public void awaitConnectivity(final Besu... peers) {
     awaitPeerIdConnections(expectedPeerIds(peers));
   }
