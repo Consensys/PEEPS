@@ -10,7 +10,7 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package tech.pegasys.peeps;
+package tech.pegasys.peeps.consensus;
 
 import tech.pegasys.peeps.network.Network;
 
@@ -21,7 +21,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-public class EthHashConsensusTest {
+public class CliqueConsensusTest {
 
   @TempDir Path configurationDirectory;
 
@@ -46,7 +46,7 @@ public class EthHashConsensusTest {
 
     // Network Two Besus, no EthSigners or Orions
 
-    // Choose EthHash as consensus mechanism
+    // Choose Clique as consensus mechanism
 
     // Mine: transfer
 
