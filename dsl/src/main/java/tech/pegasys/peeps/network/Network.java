@@ -42,6 +42,7 @@ public class Network implements Closeable {
   // TODO cater for one-many for Besu/EthSigner
 
   private final List<Besu> nodes;
+  private final List<Orion> privacyTransactionManagers;
 
   // TODO relationship mappings
 
@@ -55,17 +56,19 @@ public class Network implements Closeable {
 
   private final Subnet subnet;
   private final org.testcontainers.containers.Network network;
+  private final PathGenerator pathGenerator;
 
   private final Vertx vertx;
 
   // TODO choosing the topology should be elsewhere
   public Network(final Path configurationDirectory) {
-    checkNotNull(configurationDirectory);
+    checkNotNull(configurationDirectory, "Path to configuration directory is mandatory");
 
-    final PathGenerator pathGenerator = new PathGenerator(configurationDirectory);
+    this.pathGenerator = new PathGenerator(configurationDirectory);
     this.vertx = Vertx.vertx();
 
     this.nodes = new ArrayList<>();
+    this.privacyTransactionManagers = new ArrayList<>();
 
     this.subnet = new Subnet();
 
@@ -74,9 +77,7 @@ public class Network implements Closeable {
     // TODO 0.1 seems to be used, maybe assigned by the network container?
 
     // TODO better typing then String
-    final String ipAddressOrionA = subnet.getAddressAndIncrement();
     final String ipAddressSignerA = subnet.getAddressAndIncrement();
-    final String ipAddressOrionB = subnet.getAddressAndIncrement();
     final String ipAddressSignerB = subnet.getAddressAndIncrement();
 
     // TODO these should come from the Besu, or config aggregation
@@ -93,15 +94,10 @@ public class Network implements Closeable {
     final String passwordFileSignerB = "signer/account/funded/wallet_b.pass";
 
     this.orionA =
-        new Orion(
+        privacyTransactionManager(
             new OrionConfigurationBuilder()
-                .withVertx(vertx)
-                .withContainerNetwork(network)
-                .withIpAddress(ipAddressOrionA)
                 .withPrivateKeys(Collections.singletonList(OrionKeys.ONE.getPrivateKey()))
-                .withPublicKeys(Collections.singletonList(OrionKeys.ONE.getPublicKey()))
-                .withFileSystemConfigurationFile(pathGenerator.uniqueFile())
-                .build());
+                .withPublicKeys(Collections.singletonList(OrionKeys.ONE.getPublicKey())));
 
     this.besuA =
         node(
@@ -128,16 +124,11 @@ public class Network implements Closeable {
     orionBootnodes.add(orionA.getPeerNetworkAddress());
 
     this.orionB =
-        new Orion(
+        privacyTransactionManager(
             new OrionConfigurationBuilder()
-                .withVertx(vertx)
-                .withContainerNetwork(network)
-                .withIpAddress(ipAddressOrionB)
                 .withPrivateKeys(Collections.singletonList(OrionKeys.TWO.getPrivateKey()))
                 .withPublicKeys(Collections.singletonList(OrionKeys.TWO.getPublicKey()))
-                .withBootnodeUrls(orionBootnodes)
-                .withFileSystemConfigurationFile(pathGenerator.uniqueFile())
-                .build());
+                .withBootnodeUrls(orionBootnodes));
 
     // TODO better typing then String
     final String bootnodeEnodeAddress =
@@ -169,20 +160,18 @@ public class Network implements Closeable {
     // sync point
 
     nodes.parallelStream().forEach(node -> node.start());
+    privacyTransactionManagers.parallelStream().forEach(node -> node.start());
 
-    orionA.start();
     signerA.start();
-    orionB.start();
     signerB.start();
     awaitConnectivity();
   }
 
   public void stop() {
     nodes.parallelStream().forEach(node -> node.stop());
+    privacyTransactionManagers.parallelStream().forEach(node -> node.stop());
 
-    orionA.stop();
     signerA.stop();
-    orionB.stop();
     signerB.stop();
   }
 
@@ -216,6 +205,22 @@ public class Network implements Closeable {
     nodes.add(besu);
 
     return besu;
+  }
+
+  private Orion privacyTransactionManager(final OrionConfigurationBuilder config) {
+
+    final Orion manager =
+        new Orion(
+            new OrionConfigurationBuilder()
+                .withVertx(vertx)
+                .withContainerNetwork(network)
+                .withIpAddress(subnet.getAddressAndIncrement())
+                .withFileSystemConfigurationFile(pathGenerator.uniqueFile())
+                .build());
+
+    privacyTransactionManagers.add(manager);
+
+    return manager;
   }
 
   // TODO restructure, maybe Supplier related or a utility on network?
