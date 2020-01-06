@@ -30,7 +30,6 @@ import tech.pegasys.peeps.util.PathGenerator;
 import java.io.Closeable;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import io.vertx.core.Vertx;
@@ -89,8 +88,8 @@ public class Network implements Closeable {
     this.orionA =
         privacyTransactionManager(
             new OrionConfigurationBuilder()
-                .withPrivateKeys(Collections.singletonList(OrionKeys.ONE.getPrivateKey()))
-                .withPublicKeys(Collections.singletonList(OrionKeys.ONE.getPublicKey())));
+                .withPrivateKeys(OrionKeys.ONE.getPrivateKey())
+                .withPublicKeys(OrionKeys.ONE.getPublicKey()));
 
     this.besuA =
         node(
@@ -114,8 +113,8 @@ public class Network implements Closeable {
     this.orionB =
         privacyTransactionManager(
             new OrionConfigurationBuilder()
-                .withPrivateKeys(Collections.singletonList(OrionKeys.TWO.getPrivateKey()))
-                .withPublicKeys(Collections.singletonList(OrionKeys.TWO.getPublicKey()))
+                .withPrivateKeys(OrionKeys.TWO.getPrivateKey())
+                .withPublicKeys(OrionKeys.TWO.getPublicKey())
                 .withBootnodeUrls(orionBootnodes));
 
     // TODO better typing then String
