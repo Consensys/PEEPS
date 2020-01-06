@@ -42,6 +42,7 @@ public class Network implements Closeable {
   // TODO cater for one-many for Besu/EthSigner
 
   private final List<Besu> nodes;
+  private final List<EthSigner> signers;
   private final List<Orion> privacyTransactionManagers;
 
   // TODO relationship mappings
@@ -64,21 +65,15 @@ public class Network implements Closeable {
   public Network(final Path configurationDirectory) {
     checkNotNull(configurationDirectory, "Path to configuration directory is mandatory");
 
+    this.privacyTransactionManagers = new ArrayList<>();
+    this.signers = new ArrayList<>();
+    this.nodes = new ArrayList<>();
+
     this.pathGenerator = new PathGenerator(configurationDirectory);
     this.vertx = Vertx.vertx();
 
-    this.nodes = new ArrayList<>();
-    this.privacyTransactionManagers = new ArrayList<>();
-
     this.subnet = new Subnet();
-
     this.network = subnet.createContainerNetwork();
-
-    // TODO 0.1 seems to be used, maybe assigned by the network container?
-
-    // TODO better typing then String
-    final String ipAddressSignerA = subnet.getAddressAndIncrement();
-    final String ipAddressSignerB = subnet.getAddressAndIncrement();
 
     // TODO these should come from the Besu, or config aggregation
     final long chainId = 4004;
@@ -107,17 +102,13 @@ public class Network implements Closeable {
                 .withPrivacyManagerPublicKey(OrionKeys.ONE.getPublicKey()));
 
     this.signerA =
-        new EthSigner(
+        signer(
             new EthSignerConfigurationBuilder()
-                .withVertx(vertx)
-                .withContainerNetwork(network)
-                .withIpAddress(ipAddressSignerA)
                 .withChainId(chainId)
                 .withDownstreamHost(besuA.ipAddress())
                 .withDownstreamPort(portBesuA)
                 .withKeyFile(keyFileSignerA)
-                .withPasswordFile(passwordFileSignerA)
-                .build());
+                .withPasswordFile(passwordFileSignerA));
 
     // TODO More typing then a String - URI, URL, File or Path
     final List<String> orionBootnodes = new ArrayList<>();
@@ -142,17 +133,13 @@ public class Network implements Closeable {
                 .withPrivacyManagerPublicKey(OrionKeys.TWO.getPublicKey()));
 
     this.signerB =
-        new EthSigner(
+        signer(
             new EthSignerConfigurationBuilder()
-                .withVertx(vertx)
-                .withContainerNetwork(network)
                 .withChainId(chainId)
-                .withIpAddress(ipAddressSignerB)
                 .withDownstreamHost(besuB.ipAddress())
                 .withDownstreamPort(portBesuB)
                 .withKeyFile(keyFileSignerB)
-                .withPasswordFile(passwordFileSignerB)
-                .build());
+                .withPasswordFile(passwordFileSignerB));
   }
 
   public void start() {
@@ -211,7 +198,7 @@ public class Network implements Closeable {
 
     final Orion manager =
         new Orion(
-            new OrionConfigurationBuilder()
+            config
                 .withVertx(vertx)
                 .withContainerNetwork(network)
                 .withIpAddress(subnet.getAddressAndIncrement())
@@ -221,6 +208,20 @@ public class Network implements Closeable {
     privacyTransactionManagers.add(manager);
 
     return manager;
+  }
+
+  private EthSigner signer(final EthSignerConfigurationBuilder config) {
+    final EthSigner signer =
+        new EthSigner(
+            config
+                .withVertx(vertx)
+                .withContainerNetwork(network)
+                .withIpAddress(subnet.getAddressAndIncrement())
+                .build());
+
+    signers.add(signer);
+
+    return signer;
   }
 
   // TODO restructure, maybe Supplier related or a utility on network?
