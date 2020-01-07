@@ -45,7 +45,7 @@ public class PrivacyContracDeploymentTest extends NetworkTest {
   private EthSigner signerA;
 
   private Besu besuB;
-  private EthSigner signerB;
+  // private EthSigner signerB;
   private Orion orionB;
 
   @Override
@@ -95,13 +95,13 @@ public class PrivacyContracDeploymentTest extends NetworkTest {
                 .withBootnodeEnodeAddress(bootnodeEnodeAddress)
                 .withPrivacyManagerPublicKey(OrionKeys.TWO.getPublicKey()));
 
-    this.signerB =
-        network.addSigner(
-            new EthSignerConfigurationBuilder()
-                .withChainId(besuB.chainId())
-                .withKeyFile(SignerKeys.WALLET_B.getKeyResource())
-                .withPasswordFile(SignerKeys.WALLET_B.getPasswordResource()),
-            besuB);
+    //    this.signerB =
+    //        network.addSigner(
+    //            new EthSignerConfigurationBuilder()
+    //                .withChainId(besuB.chainId())
+    //                .withKeyFile(SignerKeys.WALLET_B.getKeyResource())
+    //                .withPasswordFile(SignerKeys.WALLET_B.getPasswordResource()),
+    //            besuB);
   }
 
   @Test
@@ -136,6 +136,10 @@ public class PrivacyContracDeploymentTest extends NetworkTest {
 
     assertThat(receiptNodeA.isSuccess()).isTrue();
     assertThat(receiptNodeA).usingRecursiveComparison().isEqualTo(receiptNodeB);
+
+    //    final PrivacyTransactionReceipt receiptNodeC =
+    // signerB.getPrivacyContractReceipt(receiptHash);
+    //    assertThat(receiptNodeA).usingRecursiveComparison().isEqualTo(receiptNodeC);
 
     // Valid entries in both Orions
     final String payloadOrionA = orionA.getPayload(key);

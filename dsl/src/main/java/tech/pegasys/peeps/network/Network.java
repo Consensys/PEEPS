@@ -39,7 +39,6 @@ public class Network implements Closeable {
   // TODO cater for one-many for Besu/EthSigner
 
   private final List<NetworkMember> members;
-
   private final List<Besu> nodes;
   private final List<EthSigner> signers;
   private final List<Orion> privacyManagers;
@@ -49,10 +48,8 @@ public class Network implements Closeable {
   private final Subnet subnet;
   private final org.testcontainers.containers.Network network;
   private final PathGenerator pathGenerator;
-
   private final Vertx vertx;
 
-  // TODO choosing the topology should be elsewhere
   public Network(final Path configurationDirectory) {
     checkNotNull(configurationDirectory, "Path to configuration directory is mandatory");
 
