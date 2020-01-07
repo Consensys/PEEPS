@@ -21,6 +21,8 @@ import tech.pegasys.peeps.privacy.rpc.OrionRpc;
 import tech.pegasys.peeps.util.ClasspathResources;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -87,7 +89,11 @@ public class Orion implements NetworkMember {
   }
 
   public void awaitConnectivity(final List<Orion> peers) {
-    peers.parallelStream().forEach(peer -> awaitConnectivity(peer));
+    excludeSelf(peers).parallelStream().forEach(peer -> awaitConnectivity(peer));
+  }
+
+  private Set<Orion> excludeSelf(final List<Orion> peers) {
+    return peers.parallelStream().filter(peer -> peer != this).collect(Collectors.toSet());
   }
 
   private void awaitConnectivity(final Orion peer) {
