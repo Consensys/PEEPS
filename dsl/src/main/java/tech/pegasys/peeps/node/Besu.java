@@ -13,10 +13,15 @@
 package tech.pegasys.peeps.node;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
+import static io.vertx.core.buffer.Buffer.buffer;
 import static org.assertj.core.api.Assertions.assertThat;
+import static tech.pegasys.peeps.util.ClasspathResources.read;
 import static tech.pegasys.peeps.util.HexFormatter.ensureHexPrefix;
 
+import tech.pegasys.peeps.json.Json;
 import tech.pegasys.peeps.network.NetworkMember;
+import tech.pegasys.peeps.node.genesis.Genesis;
 import tech.pegasys.peeps.node.model.PrivacyTransactionReceipt;
 import tech.pegasys.peeps.node.model.Transaction;
 import tech.pegasys.peeps.node.model.TransactionReceipt;
@@ -70,9 +75,7 @@ public class Besu implements NetworkMember {
     final List<String> commandLineOptions = standardCommandLineOptions();
 
     this.ipAddress = config.getIpAddress();
-
-    // TODO parse the genesis file for the chain id
-    this.chainId = 4004;
+    this.chainId = loadGenesis(config.getGenesisFile()).getConfig().getChainId();
 
     addPeerToPeerHost(config, commandLineOptions);
     addCorsOrigins(config, commandLineOptions);
@@ -235,6 +238,17 @@ public class Besu implements NetworkMember {
     return Wait.forHttp(AM_I_ALIVE_ENDPOINT)
         .forStatusCode(ALIVE_STATUS_CODE)
         .forPort(CONTAINER_HTTP_RPC_PORT);
+  }
+
+  private Genesis loadGenesis(final String resourcePath) {
+    LOG.info("Loading genesis from resource location: %s", resourcePath);
+    final String genesis = read(resourcePath);
+    checkState(
+        !genesis.isBlank(),
+        "Genesis file at resource location: %s, must not be blank",
+        resourcePath);
+
+    return Json.decode(buffer(genesis), Genesis.class);
   }
 
   private void logPortMappings() {
