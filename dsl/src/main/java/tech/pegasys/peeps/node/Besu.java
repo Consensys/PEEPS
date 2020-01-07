@@ -29,7 +29,6 @@ import tech.pegasys.peeps.node.rpc.NodeRpc;
 import tech.pegasys.peeps.node.rpc.admin.NodeInfo;
 import tech.pegasys.peeps.util.Await;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -151,8 +150,8 @@ public class Besu implements NetworkMember {
     return chainId;
   }
 
-  public void awaitConnectivity(final Besu... peers) {
-    awaitPeerIdConnections(expectedPeerIds(peers));
+  public void awaitConnectivity(final List<Besu> peers) {
+    awaitPeerIdConnections(excludeSelf(expectedPeerIds(peers)));
   }
 
   // TODO these JSON-RPC call could do with encapsulating outside of Besu
@@ -228,9 +227,17 @@ public class Besu implements NetworkMember {
         String.format("Failed to connect in time to peers: %s", peerIds));
   }
 
-  private Set<String> expectedPeerIds(final Besu... peers) {
-    return Arrays.stream(peers)
+  private Set<String> expectedPeerIds(final List<Besu> peers) {
+    return peers
+        .parallelStream()
         .map(node -> ensureHexPrefix(node.getNodeId()))
+        .collect(Collectors.toSet());
+  }
+
+  private Set<String> excludeSelf(final Set<String> peers) {
+    return peers
+        .parallelStream()
+        .filter(peer -> !peer.contains(nodeId))
         .collect(Collectors.toSet());
   }
 

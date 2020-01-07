@@ -24,13 +24,13 @@ public abstract class NetworkTest {
 
   @TempDir Path configurationDirectory;
 
-  // TODO encapsulate this better - hide from the subclasses
-  protected Network network;
+  private Network network;
 
   @BeforeEach
   public void setUpNetwork() {
     Runtime.getRuntime().addShutdownHook(new Thread(this::tearDownNetwork));
     network = new Network(configurationDirectory);
+    setUpNetwork(network);
     network.start();
   }
 
@@ -38,4 +38,6 @@ public abstract class NetworkTest {
   public void tearDownNetwork() {
     network.close();
   }
+
+  protected abstract void setUpNetwork(Network network);
 }

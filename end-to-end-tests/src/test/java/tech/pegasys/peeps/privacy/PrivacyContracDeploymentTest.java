@@ -17,11 +17,20 @@ import static tech.pegasys.peeps.util.HexFormatter.removeAnyHexPrefix;
 
 import tech.pegasys.peeps.NetworkTest;
 import tech.pegasys.peeps.contract.SimpleStorage;
+import tech.pegasys.peeps.network.Network;
+import tech.pegasys.peeps.node.Besu;
+import tech.pegasys.peeps.node.BesuConfigurationBuilder;
+import tech.pegasys.peeps.node.NodeKeys;
 import tech.pegasys.peeps.node.model.PrivacyTransactionReceipt;
 import tech.pegasys.peeps.node.model.Transaction;
 import tech.pegasys.peeps.node.model.TransactionReceipt;
+import tech.pegasys.peeps.signer.EthSigner;
+import tech.pegasys.peeps.signer.EthSignerConfigurationBuilder;
+import tech.pegasys.peeps.signer.SignerKeys;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Base64;
@@ -30,26 +39,87 @@ import org.junit.jupiter.api.Test;
 
 public class PrivacyContracDeploymentTest extends NetworkTest {
 
+  private Network network;
+  private Besu besuA;
+  private Orion orionA;
+  private EthSigner signerA;
+
+  private Besu besuB;
+  private EthSigner signerB;
+  private Orion orionB;
+
+  @Override
+  protected void setUpNetwork(final Network network) {
+    this.network = network;
+
+    this.orionA =
+        network.addPrivacyManager(
+            new OrionConfigurationBuilder()
+                .withPrivateKeys(OrionKeys.ONE.getPrivateKey())
+                .withPublicKeys(OrionKeys.ONE.getPublicKey()));
+
+    this.besuA =
+        network.addNode(
+            new BesuConfigurationBuilder()
+                .withPrivacyUrl(orionA.getNetworkRpcAddress())
+                .withNodePrivateKeyFile(NodeKeys.BOOTNODE.getPrivateKeyFile())
+                .withPrivacyManagerPublicKey(OrionKeys.ONE.getPublicKey()));
+
+    this.signerA =
+        network.addSigner(
+            new EthSignerConfigurationBuilder()
+                .withChainId(besuA.chainId())
+                .withKeyFile(SignerKeys.WALLET_A.getKeyResource())
+                .withPasswordFile(SignerKeys.WALLET_A.getPasswordResource()),
+            besuA);
+
+    // TODO More typing then a String - URI, URL, File or Path
+    final List<String> orionBootnodes = new ArrayList<>();
+    orionBootnodes.add(orionA.getPeerNetworkAddress());
+
+    this.orionB =
+        network.addPrivacyManager(
+            new OrionConfigurationBuilder()
+                .withPrivateKeys(OrionKeys.TWO.getPrivateKey())
+                .withPublicKeys(OrionKeys.TWO.getPublicKey())
+                .withBootnodeUrls(orionBootnodes));
+
+    // TODO better typing then String
+    final String bootnodeEnodeAddress =
+        NodeKeys.BOOTNODE.getEnodeAddress(besuA.ipAddress(), besuA.p2pPort());
+
+    this.besuB =
+        network.addNode(
+            new BesuConfigurationBuilder()
+                .withPrivacyUrl(orionB.getNetworkRpcAddress())
+                .withBootnodeEnodeAddress(bootnodeEnodeAddress)
+                .withPrivacyManagerPublicKey(OrionKeys.TWO.getPublicKey()));
+
+    this.signerB =
+        network.addSigner(
+            new EthSignerConfigurationBuilder()
+                .withChainId(besuB.chainId())
+                .withKeyFile(SignerKeys.WALLET_B.getKeyResource())
+                .withPasswordFile(SignerKeys.WALLET_B.getPasswordResource()),
+            besuB);
+  }
+
   @Test
   public void deploymentMustSucceed() throws DecoderException {
 
     // TODO no in-line comments - implement clean code!
 
     final String receiptHash =
-        network
-            .getSignerA()
-            .deployContractToPrivacyGroup(
-                SimpleStorage.BINARY, network.getOrionA(), network.getOrionB());
+        signerA.deployContractToPrivacyGroup(SimpleStorage.BINARY, orionA, orionB);
 
     // Valid transaction receipt for the privacy contract deployment
-    network.awaitConsensusOn(receiptHash);
-    final TransactionReceipt pmtReceiptNodeA =
-        network.getNodeA().getTransactionReceipt(receiptHash);
+    network.awaitConsensusOn(receiptHash, besuA, besuB);
+    final TransactionReceipt pmtReceiptNodeA = besuA.getTransactionReceipt(receiptHash);
 
     // Valid privacy marker transaction
     final String hash = pmtReceiptNodeA.getTransactionHash();
-    final Transaction pmtNodeA = network.getNodeA().getTransactionByHash(hash);
-    final Transaction pmtNodeB = network.getNodeB().getTransactionByHash(hash);
+    final Transaction pmtNodeA = besuA.getTransactionByHash(hash);
+    final Transaction pmtNodeB = besuB.getTransactionByHash(hash);
 
     assertThat(pmtNodeA.isProcessed()).isTrue();
     assertThat(pmtNodeA).usingRecursiveComparison().isEqualTo(pmtNodeB);
@@ -61,17 +131,15 @@ public class PrivacyContracDeploymentTest extends NetworkTest {
     final String key = new String(encodedHexB64, StandardCharsets.UTF_8);
 
     // Valid privacy transaction receipt
-    final PrivacyTransactionReceipt receiptNodeA =
-        network.getNodeA().getPrivacyContractReceipt(receiptHash);
-    final PrivacyTransactionReceipt receiptNodeB =
-        network.getNodeB().getPrivacyContractReceipt(receiptHash);
+    final PrivacyTransactionReceipt receiptNodeA = besuA.getPrivacyContractReceipt(receiptHash);
+    final PrivacyTransactionReceipt receiptNodeB = besuB.getPrivacyContractReceipt(receiptHash);
 
     assertThat(receiptNodeA.isSuccess()).isTrue();
     assertThat(receiptNodeA).usingRecursiveComparison().isEqualTo(receiptNodeB);
 
     // Valid entries in both Orions
-    final String payloadOrionA = network.getOrionA().getPayload(key);
-    final String payloadOrionB = network.getOrionB().getPayload(key);
+    final String payloadOrionA = orionA.getPayload(key);
+    final String payloadOrionB = orionB.getPayload(key);
 
     assertThat(payloadOrionA).isNotNull();
     assertThat(payloadOrionA).isEqualTo(payloadOrionB);

@@ -13,10 +13,16 @@
 package tech.pegasys.peeps.consensus;
 
 import tech.pegasys.peeps.NetworkTest;
+import tech.pegasys.peeps.network.Network;
 
 import org.junit.jupiter.api.Test;
 
 public class CliqueConsensusTest extends NetworkTest {
+  @Override
+  protected void setUpNetwork(final Network network) {
+    // TODO Auto-generated method stub
+
+  }
 
   @Test
   public void consensusAfterMiningMustHappen() {

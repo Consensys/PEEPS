@@ -17,11 +17,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import tech.pegasys.peeps.node.Besu;
 import tech.pegasys.peeps.node.BesuConfigurationBuilder;
-import tech.pegasys.peeps.node.NodeKeys;
 import tech.pegasys.peeps.node.model.TransactionReceipt;
 import tech.pegasys.peeps.privacy.Orion;
 import tech.pegasys.peeps.privacy.OrionConfigurationBuilder;
-import tech.pegasys.peeps.privacy.OrionKeys;
 import tech.pegasys.peeps.signer.EthSigner;
 import tech.pegasys.peeps.signer.EthSignerConfigurationBuilder;
 import tech.pegasys.peeps.util.Await;
@@ -44,17 +42,9 @@ public class Network implements Closeable {
 
   private final List<Besu> nodes;
   private final List<EthSigner> signers;
-  private final List<Orion> privacyTransactionManagers;
+  private final List<Orion> privacyManagers;
 
   // TODO relationship mappings
-
-  private final Besu besuA;
-  private final Orion orionA;
-  private final EthSigner signerA;
-
-  private final Besu besuB;
-  private final EthSigner signerB;
-  private final Orion orionB;
 
   private final Subnet subnet;
   private final org.testcontainers.containers.Network network;
@@ -66,7 +56,7 @@ public class Network implements Closeable {
   public Network(final Path configurationDirectory) {
     checkNotNull(configurationDirectory, "Path to configuration directory is mandatory");
 
-    this.privacyTransactionManagers = new ArrayList<>();
+    this.privacyManagers = new ArrayList<>();
     this.members = new ArrayList<>();
     this.signers = new ArrayList<>();
     this.nodes = new ArrayList<>();
@@ -76,65 +66,6 @@ public class Network implements Closeable {
 
     this.subnet = new Subnet();
     this.network = subnet.createContainerNetwork();
-
-    // TODO name files according the account pubkey
-
-    // TODO these should come from somewhere, programmatically generated?
-    final String keyFileSignerA = "signer/account/funded/wallet_a.v3";
-    final String passwordFileSignerA = "signer/account/funded/wallet_a.pass";
-    final String keyFileSignerB = "signer/account/funded/wallet_b.v3";
-    final String passwordFileSignerB = "signer/account/funded/wallet_b.pass";
-
-    this.orionA =
-        privacyTransactionManager(
-            new OrionConfigurationBuilder()
-                .withPrivateKeys(OrionKeys.ONE.getPrivateKey())
-                .withPublicKeys(OrionKeys.ONE.getPublicKey()));
-
-    this.besuA =
-        node(
-            new BesuConfigurationBuilder()
-                .withPrivacyUrl(orionA.getNetworkRpcAddress())
-                .withNodePrivateKeyFile(NodeKeys.BOOTNODE.getPrivateKeyFile())
-                .withPrivacyManagerPublicKey(OrionKeys.ONE.getPublicKey()));
-
-    this.signerA =
-        signer(
-            new EthSignerConfigurationBuilder()
-                .withChainId(besuA.chainId())
-                .withKeyFile(keyFileSignerA)
-                .withPasswordFile(passwordFileSignerA),
-            besuA);
-
-    // TODO More typing then a String - URI, URL, File or Path
-    final List<String> orionBootnodes = new ArrayList<>();
-    orionBootnodes.add(orionA.getPeerNetworkAddress());
-
-    this.orionB =
-        privacyTransactionManager(
-            new OrionConfigurationBuilder()
-                .withPrivateKeys(OrionKeys.TWO.getPrivateKey())
-                .withPublicKeys(OrionKeys.TWO.getPublicKey())
-                .withBootnodeUrls(orionBootnodes));
-
-    // TODO better typing then String
-    final String bootnodeEnodeAddress =
-        NodeKeys.BOOTNODE.getEnodeAddress(besuA.ipAddress(), besuA.p2pPort());
-
-    this.besuB =
-        node(
-            new BesuConfigurationBuilder()
-                .withPrivacyUrl(orionB.getNetworkRpcAddress())
-                .withBootnodeEnodeAddress(bootnodeEnodeAddress)
-                .withPrivacyManagerPublicKey(OrionKeys.TWO.getPublicKey()));
-
-    this.signerB =
-        signer(
-            new EthSignerConfigurationBuilder()
-                .withChainId(besuB.chainId())
-                .withKeyFile(keyFileSignerB)
-                .withPasswordFile(passwordFileSignerB),
-            besuB);
   }
 
   public void start() {
@@ -155,17 +86,18 @@ public class Network implements Closeable {
   }
 
   private void awaitConnectivity() {
-    besuA.awaitConnectivity(besuB);
-    besuB.awaitConnectivity(besuA);
-    orionA.awaitConnectivity(orionB);
-    orionB.awaitConnectivity(orionA);
+    nodes.parallelStream().forEach(node -> node.awaitConnectivity(nodes));
+    privacyManagers
+        .parallelStream()
+        .forEach(privacyManger -> privacyManger.awaitConnectivity(privacyManagers));
 
-    signerA.awaitConnectivity(besuA);
-    signerB.awaitConnectivity(besuB);
+    // TODO code : need relationship between signers & besus
+    //
+    //    signerA.awaitConnectivity(besuA);
+    //    signerB.awaitConnectivity(besuB);
   }
 
-  private Besu node(final BesuConfigurationBuilder config) {
-
+  public Besu addNode(final BesuConfigurationBuilder config) {
     final Besu besu =
         new Besu(
             config
@@ -180,8 +112,7 @@ public class Network implements Closeable {
     return besu;
   }
 
-  private Orion privacyTransactionManager(final OrionConfigurationBuilder config) {
-
+  public Orion addPrivacyManager(final OrionConfigurationBuilder config) {
     final Orion manager =
         new Orion(
             config
@@ -191,13 +122,13 @@ public class Network implements Closeable {
                 .withFileSystemConfigurationFile(pathGenerator.uniqueFile())
                 .build());
 
-    privacyTransactionManagers.add(manager);
+    privacyManagers.add(manager);
     members.add(manager);
 
     return manager;
   }
 
-  private EthSigner signer(final EthSignerConfigurationBuilder config, final Besu downstream) {
+  public EthSigner addSigner(final EthSignerConfigurationBuilder config, final Besu downstream) {
     final EthSigner signer =
         new EthSigner(
             config
@@ -216,8 +147,7 @@ public class Network implements Closeable {
 
   // TODO restructure, maybe Supplier related or a utility on network?
   // TODO stricter typing than String
-  public void awaitConsensusOn(final String receiptHash) {
-
+  public void awaitConsensusOn(final String receiptHash, final Besu besuA, final Besu besuB) {
     Await.await(
         () -> {
           final TransactionReceipt pmtReceiptNodeA = besuA.getTransactionReceipt(receiptHash);
@@ -229,40 +159,4 @@ public class Network implements Closeable {
         },
         "Consensus was not reached in time for receipt hash: " + receiptHash);
   }
-
-  // TODO interfaces for the signer used by the test?
-  // TODO figure out a nicer way for the UT to get a handle on the signers
-  public EthSigner getSignerA() {
-    return signerA;
-  }
-
-  public EthSigner getSignerB() {
-    return signerB;
-  }
-
-  // TODO figure out a nicer way for the UT to get a handle on the node or send
-  // requests
-  public Besu getNodeA() {
-    return besuA;
-  }
-
-  // TODO figure out a nicer way for the UT to get a handle on the node or send
-  // requests
-  public Besu getNodeB() {
-    return besuB;
-  }
-
-  // TODO figure out a nicer way for the UT to get a handle on the Orion or send
-  // requests
-  public Orion getOrionA() {
-    return orionA;
-  }
-
-  // TODO figure out a nicer way for the UT to get a handle on the Orion or send
-  // requests
-  public Orion getOrionB() {
-    return orionB;
-  }
-
-  // TODO provide a handle for Besus too? (web3j?)
 }

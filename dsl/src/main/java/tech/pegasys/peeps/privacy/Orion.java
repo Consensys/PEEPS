@@ -20,6 +20,8 @@ import tech.pegasys.peeps.network.NetworkMember;
 import tech.pegasys.peeps.privacy.rpc.OrionRpc;
 import tech.pegasys.peeps.util.ClasspathResources;
 
+import java.util.List;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.testcontainers.containers.BindMode;
@@ -84,7 +86,11 @@ public class Orion implements NetworkMember {
     this.rpc = new OrionRpc(config.getVertx(), id);
   }
 
-  public void awaitConnectivity(final Orion peer) {
+  public void awaitConnectivity(final List<Orion> peers) {
+    peers.parallelStream().forEach(peer -> awaitConnectivity(peer));
+  }
+
+  private void awaitConnectivity(final Orion peer) {
     final String sentMessage = generateUniquePayload();
 
     final String receipt = rpc.send(peer.id, sentMessage);
