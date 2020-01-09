@@ -90,7 +90,6 @@ public class Network implements Closeable {
       Thread.sleep(5000l);
     } catch (InterruptedException e) {
       // TODO Auto-generated catch block
-      e.printStackTrace();
     }
 
     nodes.parallelStream().forEach(node -> node.awaitConnectivity(nodes));
