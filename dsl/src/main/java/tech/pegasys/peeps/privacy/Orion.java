@@ -92,20 +92,6 @@ public class Orion implements NetworkMember {
     excludeSelf(peers).parallelStream().forEach(peer -> awaitConnectivity(peer));
   }
 
-  private Set<Orion> excludeSelf(final List<Orion> peers) {
-    return peers.parallelStream().filter(peer -> peer != this).collect(Collectors.toSet());
-  }
-
-  private void awaitConnectivity(final Orion peer) {
-    final String sentMessage = generateUniquePayload();
-
-    final String receipt = rpc.send(peer.id, sentMessage);
-    assertThat(receipt).isNotBlank();
-
-    assertReceived(rpc, receipt, sentMessage);
-    assertReceived(peer.rpc, receipt, sentMessage);
-  }
-
   @Override
   public void start() {
     try {
@@ -155,6 +141,23 @@ public class Orion implements NetworkMember {
   // TODO stronger typing than String
   public String getPayload(final String receipt) {
     return rpc.receive(receipt);
+  }
+
+  private Set<Orion> excludeSelf(final List<Orion> peers) {
+    return peers
+        .parallelStream()
+        .filter(peer -> peer.orionNetworkAddress != orionNetworkAddress)
+        .collect(Collectors.toSet());
+  }
+
+  private void awaitConnectivity(final Orion peer) {
+    final String sentMessage = generateUniquePayload();
+
+    final String receipt = rpc.send(peer.id, sentMessage);
+    assertThat(receipt).isNotBlank();
+
+    assertReceived(rpc, receipt, sentMessage);
+    assertReceived(peer.rpc, receipt, sentMessage);
   }
 
   private void assertReceived(final OrionRpc rpc, final String receipt, final String sentMessage) {
