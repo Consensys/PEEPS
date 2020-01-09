@@ -85,13 +85,6 @@ public class Network implements Closeable {
 
   private void awaitConnectivity() {
 
-    // TODO temp - mimic old sequentail startup
-    try {
-      Thread.sleep(5000l);
-    } catch (InterruptedException e) {
-      // TODO Auto-generated catch block
-    }
-
     nodes.parallelStream().forEach(node -> node.awaitConnectivity(nodes));
     privacyManagers
         .parallelStream()
@@ -101,6 +94,13 @@ public class Network implements Closeable {
     //
     // signerA.awaitConnectivity(besuA);
     // signerB.awaitConnectivity(besuB);
+
+    // TODO temp - mimic old sequentail startup
+    try {
+      Thread.sleep(5000l);
+    } catch (InterruptedException e) {
+      // TODO Auto-generated catch block
+    }
   }
 
   public Besu addNode(final BesuConfigurationBuilder config) {
