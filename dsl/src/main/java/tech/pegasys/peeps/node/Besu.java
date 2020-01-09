@@ -32,6 +32,7 @@ import tech.pegasys.peeps.util.Await;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
@@ -156,59 +157,41 @@ public class Besu implements NetworkMember {
 
   // TODO these JSON-RPC call could do with encapsulating outside of Besu
   public PrivacyTransactionReceipt getPrivacyContractReceipt(final String receiptHash) {
-    final Optional<PrivacyTransactionReceipt> potential = privacyContractReceipt(receiptHash);
-    assertThat(potential).isNotNull();
-    assertThat(potential).isPresent();
-    return potential.get();
+    return awaitRpc(
+        () -> rpc.getPrivacyTransactionReceipt(receiptHash),
+        "Failed to retrieve the private transaction receipt with hash: %s",
+        receiptHash);
   }
 
   public TransactionReceipt getTransactionReceipt(final String receiptHash) {
-    final Optional<TransactionReceipt> potential = transactiontReceipt(receiptHash);
-    assertThat(potential).isNotNull();
-    assertThat(potential).isPresent();
-    return potential.get();
+    return awaitRpc(
+        () -> rpc.getTransactionReceipt(receiptHash),
+        "Failed to retrieve the transaction receipt with hash: %s",
+        receiptHash);
   }
 
   // TODO maybe tying together privacy functions?
   public Transaction getTransactionByHash(final String hash) {
-    final Optional<Transaction> potential = transactionByHash(hash);
-    assertThat(potential).isNotNull();
-    assertThat(potential).isPresent();
-    return potential.get();
+    return awaitRpc(
+        () -> rpc.getTransactionByHash(hash),
+        "Failed to retrieve the transaction with hash: %s",
+        hash);
   }
 
-  private Optional<PrivacyTransactionReceipt> privacyContractReceipt(final String receiptHash) {
-    // TODO find a way to avoid the additional call when successful
+  // TODO maybe a decorator for the generic await behaviour?
+  // TODO an interface for Ethereum Node RPC operations - can reuse for Signer
+  private <T> T awaitRpc(
+      final Supplier<Optional<T>> rpc,
+      final String errorMessage,
+      final Object... errorMessageParameters) {
+
     Await.await(
         () -> {
-          assertThat(rpc.getPrivacyTransactionReceipt(receiptHash)).isPresent();
+          assertThat(rpc.get()).isPresent();
         },
-        String.format(
-            "Failed to retrieve the private transaction receipt with hash: %s", receiptHash));
+        String.format(errorMessage, errorMessageParameters));
 
-    return rpc.getPrivacyTransactionReceipt(receiptHash);
-  }
-
-  private Optional<TransactionReceipt> transactiontReceipt(final String receiptHash) {
-    // TODO find a way to avoid the additional call when successful
-    Await.await(
-        () -> {
-          assertThat(rpc.getTransactionReceipt(receiptHash)).isPresent();
-        },
-        String.format("Failed to retrieve the transaction receipt with hash: %s", receiptHash));
-
-    return rpc.getTransactionReceipt(receiptHash);
-  }
-
-  private Optional<Transaction> transactionByHash(final String hash) {
-    // TODO find a way to avoid the additional call when successful
-    Await.await(
-        () -> {
-          assertThat(rpc.getTransactionByHash(hash)).isPresent();
-        },
-        String.format("Failed to retrieve the transaction with hash: %s", hash));
-
-    return rpc.getTransactionByHash(hash);
+    return rpc.get().get();
   }
 
   public void log() {
