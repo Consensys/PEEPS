@@ -18,6 +18,7 @@ import static tech.pegasys.peeps.privacy.rpc.send.SendPayload.generateUniquePayl
 
 import tech.pegasys.peeps.network.NetworkMember;
 import tech.pegasys.peeps.privacy.rpc.OrionRpc;
+import tech.pegasys.peeps.privacy.rpc.OrionRpcExpectingData;
 import tech.pegasys.peeps.util.ClasspathResources;
 
 import java.util.List;
@@ -47,7 +48,8 @@ public class Orion implements NetworkMember {
   private static final int ALIVE_STATUS_CODE = 200;
 
   private final GenericContainer<?> orion;
-  private final OrionRpc rpc;
+  private final OrionRpc orionRpc;
+  private final OrionRpcExpectingData rpc;
 
   // TODO stronger typing than String
   private final String orionNetworkAddress;
@@ -83,7 +85,8 @@ public class Orion implements NetworkMember {
     // TODO just using the first key, selecting the identity could be an option for
     // multi-key Orion
     this.id = ClasspathResources.read(config.getPublicKeys().get(0));
-    this.rpc = new OrionRpc(config.getVertx(), id);
+    this.orionRpc = new OrionRpc(config.getVertx(), id);
+    this.rpc = new OrionRpcExpectingData(orionRpc);
   }
 
   public void awaitConnectivity(final List<Orion> peers) {
@@ -95,7 +98,7 @@ public class Orion implements NetworkMember {
     try {
       orion.start();
 
-      rpc.bind(
+      orionRpc.bind(
           orion.getContainerId(),
           orion.getContainerIpAddress(),
           orion.getMappedPort(CONTAINER_HTTP_RPC_PORT));
@@ -118,8 +121,8 @@ public class Orion implements NetworkMember {
     if (orion != null) {
       orion.stop();
     }
-    if (rpc != null) {
-      rpc.close();
+    if (orionRpc != null) {
+      orionRpc.close();
     }
   }
 
@@ -151,7 +154,8 @@ public class Orion implements NetworkMember {
     assertReceived(peer.rpc, receipt, message);
   }
 
-  private void assertReceived(final OrionRpc rpc, final String receipt, final String sentMessage) {
+  private void assertReceived(
+      final OrionRpcExpectingData rpc, final String receipt, final String sentMessage) {
     assertThat(rpc.receive(receipt)).isEqualTo(sentMessage);
   }
 
