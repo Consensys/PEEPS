@@ -29,6 +29,7 @@ import java.io.Closeable;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import io.vertx.core.Vertx;
 
@@ -90,8 +91,8 @@ public class Network implements Closeable {
 
     // TODO code : need relationship between signers & besus
     //
-    //    signerA.awaitConnectivity(besuA);
-    //    signerB.awaitConnectivity(besuB);
+    // signerA.awaitConnectivity(besuA);
+    // signerB.awaitConnectivity(besuB);
   }
 
   public Besu addNode(final BesuConfigurationBuilder config) {
@@ -110,6 +111,13 @@ public class Network implements Closeable {
   }
 
   public Orion addPrivacyManager(final OrionConfigurationBuilder config) {
+
+    config.withBootnodeUrls(
+        privacyManagers
+            .parallelStream()
+            .map(manager -> manager.getPeerNetworkAddress())
+            .collect(Collectors.toList()));
+
     final Orion manager =
         new Orion(
             config
@@ -118,6 +126,8 @@ public class Network implements Closeable {
                 .withIpAddress(subnet.getAddressAndIncrement())
                 .withFileSystemConfigurationFile(pathGenerator.uniqueFile())
                 .build());
+
+    // TODO add all existing Orions as bootnodes
 
     privacyManagers.add(manager);
     members.add(manager);
