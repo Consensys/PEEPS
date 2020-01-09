@@ -112,12 +112,6 @@ public class Network implements Closeable {
 
   public Orion addPrivacyManager(final OrionConfigurationBuilder config) {
 
-    config.withBootnodeUrls(
-        privacyManagers
-            .parallelStream()
-            .map(manager -> manager.getPeerNetworkAddress())
-            .collect(Collectors.toList()));
-
     final Orion manager =
         new Orion(
             config
@@ -125,14 +119,20 @@ public class Network implements Closeable {
                 .withContainerNetwork(network)
                 .withIpAddress(subnet.getAddressAndIncrement())
                 .withFileSystemConfigurationFile(pathGenerator.uniqueFile())
+                .withBootnodeUrls(privacyManagerBootnodeUrls())
                 .build());
-
-    // TODO add all existing Orions as bootnodes
 
     privacyManagers.add(manager);
     members.add(manager);
 
     return manager;
+  }
+
+  private List<String> privacyManagerBootnodeUrls() {
+    return privacyManagers
+        .parallelStream()
+        .map(manager -> manager.getPeerNetworkAddress())
+        .collect(Collectors.toList());
   }
 
   public EthSigner addSigner(final EthSignerConfigurationBuilder config, final Besu downstream) {
