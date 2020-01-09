@@ -146,7 +146,7 @@ public class Orion implements NetworkMember {
   private Set<Orion> excludeSelf(final List<Orion> peers) {
     return peers
         .parallelStream()
-        .filter(peer -> peer.orionNetworkAddress != orionNetworkAddress)
+        .filter(peer -> !orionNetworkAddress.equals(peer.orionNetworkAddress))
         .collect(Collectors.toSet());
   }
 
