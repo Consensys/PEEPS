@@ -39,8 +39,12 @@ public class NodeRpc extends JsonRpcClient {
   private static final Logger LOG = LogManager.getLogger();
   private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(5);
 
+  public NodeRpc(final Vertx vertx, final Duration timeout, final Logger log) {
+    super(vertx, timeout, log);
+  }
+
   public NodeRpc(final Vertx vertx) {
-    super(vertx, DEFAULT_TIMEOUT, LOG);
+    this(vertx, DEFAULT_TIMEOUT, LOG);
   }
 
   public Set<String> getConnectedPeerIds() {

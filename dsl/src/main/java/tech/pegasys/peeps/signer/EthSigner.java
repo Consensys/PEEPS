@@ -16,8 +16,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import tech.pegasys.peeps.network.NetworkMember;
 import tech.pegasys.peeps.node.Besu;
-import tech.pegasys.peeps.privacy.Orion;
 import tech.pegasys.peeps.signer.rpc.SignerRpc;
+import tech.pegasys.peeps.signer.rpc.SignerRpcExpectingData;
 import tech.pegasys.peeps.util.Await;
 
 import java.time.Duration;
@@ -48,16 +48,9 @@ public class EthSigner implements NetworkMember {
   private static final String CONTAINER_KEY_FILE = "/etc/ethsigner/key_file.v3";
   private static final String CONTAINER_PASSWORD_FILE = "/etc/ethsigner/password_file.txt";
 
-  // TODO need a rpcClient to send stuff to the signer
   private final GenericContainer<?> ethSigner;
-  private final SignerRpc rpc;
-
-  // TODO better typing
-
-  // TODO enter this perhaps
-  // TODO this is stored in the wallet file as address - can be read in EthSigner
-  private final String senderAccount = "0xf17f52151ebef6c7334fad080c5704d77216b732";
-  //  private final String senderAccount = "0x627306090abab3a6e1400e9345bc60c78a8bef57";
+  private final SignerRpcExpectingData rpc;
+  private final SignerRpc signerRpc;
 
   // TODO need to know about the Besu we are talking to, can output docker logs
   // TODO for privacy transaction need the Orion logs too
@@ -78,7 +71,8 @@ public class EthSigner implements NetworkMember {
     this.ethSigner =
         container.withCommand(commandLineOptions.toArray(new String[0])).waitingFor(liveliness());
 
-    this.rpc = new SignerRpc(config.getVertx(), DOWNSTREAM_TIMEOUT);
+    this.signerRpc = new SignerRpc(config.getVertx(), DOWNSTREAM_TIMEOUT);
+    this.rpc = new SignerRpcExpectingData(signerRpc);
   }
 
   @Override
@@ -86,7 +80,7 @@ public class EthSigner implements NetworkMember {
     try {
       ethSigner.start();
 
-      rpc.bind(
+      signerRpc.bind(
           ethSigner.getContainerId(),
           ethSigner.getContainerIpAddress(),
           ethSigner.getMappedPort(CONTAINER_HTTP_RPC_PORT));
@@ -107,22 +101,13 @@ public class EthSigner implements NetworkMember {
     if (ethSigner != null) {
       ethSigner.stop();
     }
-    if (rpc != null) {
-      rpc.close();
+    if (signerRpc != null) {
+      signerRpc.close();
     }
   }
 
-  // TODO could config a EthSigner to be bound to a node & orion setup?
-  public String deployContractToPrivacyGroup(
-      final String binary, final Orion sender, final Orion... recipients) {
-    final String[] privateRecipients = new String[recipients.length];
-    for (int i = 0; i < recipients.length; i++) {
-      privateRecipients[i] = recipients[i].getId();
-    }
-
-    // TODO catch error & log EthSigner & Besu & Orion docker logs
-    return rpc.deployContractToPrivacyGroup(
-        senderAccount, binary, sender.getId(), privateRecipients);
+  public SignerRpcExpectingData rpc() {
+    return rpc;
   }
 
   private HttpWaitStrategy liveliness() {
@@ -213,7 +198,7 @@ public class EthSigner implements NetworkMember {
 
   public void awaitConnectivity(final Besu node) {
     Await.await(
-        () -> assertThat(rpc.enode()).isEqualTo(node.enodeId()),
+        () -> assertThat(signerRpc.enode()).isEqualTo(node.enodeId()),
         String.format("Failed to connect to node: %s", node.enodeId()));
   }
 }

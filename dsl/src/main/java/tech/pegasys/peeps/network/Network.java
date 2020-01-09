@@ -147,8 +147,8 @@ public class Network implements Closeable {
   public void awaitConsensusOn(final String receiptHash, final Besu besuA, final Besu besuB) {
     Await.await(
         () -> {
-          final TransactionReceipt pmtReceiptNodeA = besuA.getTransactionReceipt(receiptHash);
-          final TransactionReceipt pmtReceiptNodeB = besuB.getTransactionReceipt(receiptHash);
+          final TransactionReceipt pmtReceiptNodeA = besuA.rpc().getTransactionReceipt(receiptHash);
+          final TransactionReceipt pmtReceiptNodeB = besuB.rpc().getTransactionReceipt(receiptHash);
 
           assertThat(pmtReceiptNodeA).isNotNull();
           assertThat(pmtReceiptNodeA.isSuccess()).isTrue();

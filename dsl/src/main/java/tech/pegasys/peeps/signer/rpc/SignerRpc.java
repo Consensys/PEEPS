@@ -12,7 +12,7 @@
  */
 package tech.pegasys.peeps.signer.rpc;
 
-import tech.pegasys.peeps.json.rpc.JsonRpcClient;
+import tech.pegasys.peeps.node.rpc.NodeRpc;
 import tech.pegasys.peeps.signer.rpc.eea.SendPrivateTransactionResponse;
 import tech.pegasys.peeps.signer.rpc.eea.SendTransactionRequest;
 import tech.pegasys.peeps.signer.rpc.net.EnodeResponse;
@@ -23,7 +23,7 @@ import io.vertx.core.Vertx;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class SignerRpc extends JsonRpcClient {
+public class SignerRpc extends NodeRpc {
 
   private static final Logger LOG = LogManager.getLogger();
   private static final String NO_RECIPIENT = null;

@@ -45,7 +45,7 @@ public class PrivacyContracDeploymentTest extends NetworkTest {
   private EthSigner signerA;
 
   private Besu besuB;
-  // private EthSigner signerB;
+  private EthSigner signerB;
   private Orion orionB;
 
   @Override
@@ -95,13 +95,13 @@ public class PrivacyContracDeploymentTest extends NetworkTest {
                 .withBootnodeEnodeAddress(bootnodeEnodeAddress)
                 .withPrivacyManagerPublicKey(OrionKeys.TWO.getPublicKey()));
 
-    //    this.signerB =
-    //        network.addSigner(
-    //            new EthSignerConfigurationBuilder()
-    //                .withChainId(besuB.chainId())
-    //                .withKeyFile(SignerKeys.WALLET_B.getKeyResource())
-    //                .withPasswordFile(SignerKeys.WALLET_B.getPasswordResource()),
-    //            besuB);
+    this.signerB =
+        network.addSigner(
+            new EthSignerConfigurationBuilder()
+                .withChainId(besuB.chainId())
+                .withKeyFile(SignerKeys.WALLET_B.getKeyResource())
+                .withPasswordFile(SignerKeys.WALLET_B.getPasswordResource()),
+            besuB);
   }
 
   @Test
@@ -110,16 +110,16 @@ public class PrivacyContracDeploymentTest extends NetworkTest {
     // TODO no in-line comments - implement clean code!
 
     final String receiptHash =
-        signerA.deployContractToPrivacyGroup(SimpleStorage.BINARY, orionA, orionB);
+        signerA.rpc().deployContractToPrivacyGroup(SimpleStorage.BINARY, orionA, orionB);
 
     // Valid transaction receipt for the privacy contract deployment
     network.awaitConsensusOn(receiptHash, besuA, besuB);
-    final TransactionReceipt pmtReceiptNodeA = besuA.getTransactionReceipt(receiptHash);
 
     // Valid privacy marker transaction
+    final TransactionReceipt pmtReceiptNodeA = besuA.rpc().getTransactionReceipt(receiptHash);
     final String hash = pmtReceiptNodeA.getTransactionHash();
-    final Transaction pmtNodeA = besuA.getTransactionByHash(hash);
-    final Transaction pmtNodeB = besuB.getTransactionByHash(hash);
+    final Transaction pmtNodeA = besuA.rpc().getTransactionByHash(hash);
+    final Transaction pmtNodeB = besuB.rpc().getTransactionByHash(hash);
 
     assertThat(pmtNodeA.isProcessed()).isTrue();
     assertThat(pmtNodeA).usingRecursiveComparison().isEqualTo(pmtNodeB);
@@ -131,15 +131,17 @@ public class PrivacyContracDeploymentTest extends NetworkTest {
     final String key = new String(encodedHexB64, StandardCharsets.UTF_8);
 
     // Valid privacy transaction receipt
-    final PrivacyTransactionReceipt receiptNodeA = besuA.getPrivacyContractReceipt(receiptHash);
-    final PrivacyTransactionReceipt receiptNodeB = besuB.getPrivacyContractReceipt(receiptHash);
+    final PrivacyTransactionReceipt receiptNodeA =
+        besuA.rpc().getPrivacyContractReceipt(receiptHash);
+    final PrivacyTransactionReceipt receiptNodeB =
+        besuB.rpc().getPrivacyContractReceipt(receiptHash);
 
     assertThat(receiptNodeA.isSuccess()).isTrue();
     assertThat(receiptNodeA).usingRecursiveComparison().isEqualTo(receiptNodeB);
 
-    //    final PrivacyTransactionReceipt receiptNodeC =
-    // signerB.getPrivacyContractReceipt(receiptHash);
-    //    assertThat(receiptNodeA).usingRecursiveComparison().isEqualTo(receiptNodeC);
+    final PrivacyTransactionReceipt receiptNodeC =
+        signerB.rpc().getPrivacyContractReceipt(receiptHash);
+    assertThat(receiptNodeA).usingRecursiveComparison().isEqualTo(receiptNodeC);
 
     // Valid entries in both Orions
     final String payloadOrionA = orionA.getPayload(key);

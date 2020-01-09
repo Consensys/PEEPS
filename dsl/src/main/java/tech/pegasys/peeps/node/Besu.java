@@ -22,17 +22,13 @@ import static tech.pegasys.peeps.util.HexFormatter.ensureHexPrefix;
 import tech.pegasys.peeps.json.Json;
 import tech.pegasys.peeps.network.NetworkMember;
 import tech.pegasys.peeps.node.genesis.Genesis;
-import tech.pegasys.peeps.node.model.PrivacyTransactionReceipt;
-import tech.pegasys.peeps.node.model.Transaction;
-import tech.pegasys.peeps.node.model.TransactionReceipt;
 import tech.pegasys.peeps.node.rpc.NodeRpc;
+import tech.pegasys.peeps.node.rpc.NodeRpcExpectingData;
 import tech.pegasys.peeps.node.rpc.admin.NodeInfo;
 import tech.pegasys.peeps.util.Await;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
@@ -63,7 +59,8 @@ public class Besu implements NetworkMember {
       "/etc/besu/keys/pmt_signing.priv";
 
   private final GenericContainer<?> besu;
-  private final NodeRpc rpc;
+  private final NodeRpc nodeRpc;
+  private final NodeRpcExpectingData rpc;
   private final String ipAddress;
   private final long chainId;
   private String nodeId;
@@ -91,7 +88,8 @@ public class Besu implements NetworkMember {
     this.besu =
         container.withCommand(commandLineOptions.toArray(new String[0])).waitingFor(liveliness());
 
-    this.rpc = new NodeRpc(config.getVertx());
+    this.nodeRpc = new NodeRpc(config.getVertx());
+    this.rpc = new NodeRpcExpectingData(nodeRpc);
   }
 
   @Override
@@ -99,12 +97,12 @@ public class Besu implements NetworkMember {
     try {
       besu.start();
 
-      rpc.bind(
+      nodeRpc.bind(
           besu.getContainerId(),
           besu.getContainerIpAddress(),
           besu.getMappedPort(CONTAINER_HTTP_RPC_PORT));
 
-      final NodeInfo info = rpc.nodeInfo();
+      final NodeInfo info = nodeRpc.nodeInfo();
       nodeId = info.getId();
       enodeId = info.getEnode();
 
@@ -125,8 +123,8 @@ public class Besu implements NetworkMember {
     if (besu != null) {
       besu.stop();
     }
-    if (rpc != null) {
-      rpc.close();
+    if (nodeRpc != null) {
+      nodeRpc.close();
     }
   }
 
@@ -155,48 +153,13 @@ public class Besu implements NetworkMember {
     awaitPeerIdConnections(excludeSelf(expectedPeerIds(peers)));
   }
 
-  // TODO these JSON-RPC call could do with encapsulating outside of Besu
-  public PrivacyTransactionReceipt getPrivacyContractReceipt(final String receiptHash) {
-    return awaitRpc(
-        () -> rpc.getPrivacyTransactionReceipt(receiptHash),
-        "Failed to retrieve the private transaction receipt with hash: %s",
-        receiptHash);
-  }
-
-  public TransactionReceipt getTransactionReceipt(final String receiptHash) {
-    return awaitRpc(
-        () -> rpc.getTransactionReceipt(receiptHash),
-        "Failed to retrieve the transaction receipt with hash: %s",
-        receiptHash);
-  }
-
-  // TODO maybe tying together privacy functions?
-  public Transaction getTransactionByHash(final String hash) {
-    return awaitRpc(
-        () -> rpc.getTransactionByHash(hash),
-        "Failed to retrieve the transaction with hash: %s",
-        hash);
-  }
-
-  // TODO maybe a decorator for the generic await behaviour?
-  // TODO an interface for Ethereum Node RPC operations - can reuse for Signer
-  private <T> T awaitRpc(
-      final Supplier<Optional<T>> rpc,
-      final String errorMessage,
-      final Object... errorMessageParameters) {
-
-    Await.await(
-        () -> {
-          assertThat(rpc.get()).isPresent();
-        },
-        String.format(errorMessage, errorMessageParameters));
-
-    return rpc.get().get();
-  }
-
   public void log() {
     LOG.info("Besu Container {}", besu.getContainerId());
     LOG.info(besu.getLogs());
+  }
+
+  public NodeRpcExpectingData rpc() {
+    return rpc;
   }
 
   private String getNodeId() {
@@ -206,7 +169,7 @@ public class Besu implements NetworkMember {
 
   private void awaitPeerIdConnections(final Set<String> peerIds) {
     Await.await(
-        () -> assertThat(rpc.getConnectedPeerIds().containsAll(peerIds)).isTrue(),
+        () -> assertThat(nodeRpc.getConnectedPeerIds().containsAll(peerIds)).isTrue(),
         String.format("Failed to connect in time to peers: %s", peerIds));
   }
 
