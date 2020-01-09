@@ -151,13 +151,17 @@ public class Orion implements NetworkMember {
   }
 
   private void awaitConnectivity(final Orion peer) {
-    final String sentMessage = generateUniquePayload();
+    final String message = generateUniquePayload();
 
-    final String receipt = rpc.send(peer.id, sentMessage);
+    LOG.info(
+        "Sending payload: %s, from Orion: %s, to Orion: %s",
+        message, networkRpcAddress, peer.networkRpcAddress);
+
+    final String receipt = rpc.send(peer.id, message);
     assertThat(receipt).isNotBlank();
 
-    assertReceived(rpc, receipt, sentMessage);
-    assertReceived(peer.rpc, receipt, sentMessage);
+    assertReceived(rpc, receipt, message);
+    assertReceived(peer.rpc, receipt, message);
   }
 
   private void assertReceived(final OrionRpc rpc, final String receipt, final String sentMessage) {
