@@ -54,8 +54,6 @@ public class EthSigner implements NetworkMember {
   private final SignerRpc signerRpc;
   private final Besu downstream;
 
-  // TODO need to know about the Besu we are talking to, can output docker logs
-  // TODO for privacy transaction need the Orion logs too
   public EthSigner(final EthSignerConfiguration config) {
 
     final GenericContainer<?> container = new GenericContainer<>(ETH_SIGNER_IMAGE);
