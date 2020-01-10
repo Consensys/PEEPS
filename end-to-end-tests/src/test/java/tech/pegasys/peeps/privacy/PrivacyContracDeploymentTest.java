@@ -53,10 +53,11 @@ public class PrivacyContracDeploymentTest extends NetworkTest {
     this.orionA = network.addPrivacyManager(OrionKeyPair.ALPHA);
 
     // TODO Besu -> Orion
+    // TODO Orion can expose it's public keys, choose the first
     this.besuA =
         network.addNode(
             new BesuConfigurationBuilder()
-                .withPrivacyUrl(orionA.getNetworkRpcAddress())
+                .withPrivacyUrl(orionA)
                 .withNodePrivateKeyFile(NodeKeys.BOOTNODE.getPrivateKeyFile())
                 .withPrivacyManagerPublicKey(OrionKeyPair.ALPHA.getPublicKey()));
 
@@ -64,6 +65,7 @@ public class PrivacyContracDeploymentTest extends NetworkTest {
 
     this.orionB = network.addPrivacyManager(OrionKeyPair.BETA);
 
+    // TODO move this into Network, same approach as Orions, add enodeAddress to Besu
     // TODO fits as a function of Besu
     // TODO better typing then String - create ENODE Address
     final String bootnodeEnodeAddress =
@@ -72,7 +74,7 @@ public class PrivacyContracDeploymentTest extends NetworkTest {
     this.besuB =
         network.addNode(
             new BesuConfigurationBuilder()
-                .withPrivacyUrl(orionB.getNetworkRpcAddress())
+                .withPrivacyUrl(orionB)
                 .withBootnodeEnodeAddress(bootnodeEnodeAddress)
                 .withPrivacyManagerPublicKey(OrionKeyPair.BETA.getPublicKey()));
 

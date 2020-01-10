@@ -14,6 +14,8 @@ package tech.pegasys.peeps.node;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import tech.pegasys.peeps.privacy.Orion;
+
 import io.vertx.core.Vertx;
 import org.testcontainers.containers.Network;
 
@@ -79,8 +81,8 @@ public class BesuConfigurationBuilder {
     return this;
   }
 
-  public BesuConfigurationBuilder withPrivacyUrl(final String privacyTransactionManagerUrl) {
-    this.privacyTransactionManagerUrl = privacyTransactionManagerUrl;
+  public BesuConfigurationBuilder withPrivacyUrl(final Orion privacyTransactionManager) {
+    this.privacyTransactionManagerUrl = privacyTransactionManager.getNetworkRpcAddress();
     return this;
   }
 
