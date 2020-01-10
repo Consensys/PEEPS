@@ -21,6 +21,7 @@ import tech.pegasys.peeps.network.Network;
 import tech.pegasys.peeps.node.Besu;
 import tech.pegasys.peeps.node.BesuConfigurationBuilder;
 import tech.pegasys.peeps.node.NodeKeys;
+import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.model.PrivacyTransactionReceipt;
 import tech.pegasys.peeps.node.model.Transaction;
 import tech.pegasys.peeps.node.model.TransactionReceipt;
@@ -109,24 +110,23 @@ public class PrivacyContracDeploymentTest extends NetworkTest {
   @Test
   public void deploymentMustSucceed() throws DecoderException {
 
-    // TODO no in-line comments - implement clean code!
-
-    // TODO create type Hash
-    final String pmtHash =
+    final Hash pmt =
         signerA.rpc().deployContractToPrivacyGroup(SimpleStorage.BINARY, orionA, orionB);
+
+    // TODO no in-line comments - implement clean code!
 
     // TODO entire network - i.e. all Nodes, don't pass them in
     // Valid transaction receipt for the privacy contract deployment
-    network.awaitConsensusOn(pmtHash, besuA, besuB);
+    network.awaitConsensusOn(pmt, besuA, besuB);
 
     // Valid privacy marker transaction
-    final TransactionReceipt pmtReceiptNodeA = besuA.rpc().getTransactionReceipt(pmtHash);
+    final TransactionReceipt pmtReceiptNodeA = besuA.rpc().getTransactionReceipt(pmt);
 
-    assertThat(pmtReceiptNodeA.getTransactionHash()).isEqualTo(pmtHash);
+    assertThat(pmtReceiptNodeA.getTransactionHash()).isEqualTo(pmt);
     assertThat(pmtReceiptNodeA.isSuccess()).isTrue();
 
-    final Transaction pmtNodeA = besuA.rpc().getTransactionByHash(pmtHash);
-    final Transaction pmtNodeB = besuB.rpc().getTransactionByHash(pmtHash);
+    final Transaction pmtNodeA = besuA.rpc().getTransactionByHash(pmt);
+    final Transaction pmtNodeB = besuB.rpc().getTransactionByHash(pmt);
 
     assertThat(pmtNodeA.isProcessed()).isTrue();
     assertThat(pmtNodeA).usingRecursiveComparison().isEqualTo(pmtNodeB);
@@ -138,13 +138,13 @@ public class PrivacyContracDeploymentTest extends NetworkTest {
     final String key = new String(encodedHexB64, StandardCharsets.UTF_8);
 
     // Valid privacy transaction receipt
-    final PrivacyTransactionReceipt receiptNodeA = besuA.rpc().getPrivacyContractReceipt(pmtHash);
-    final PrivacyTransactionReceipt receiptNodeB = besuB.rpc().getPrivacyContractReceipt(pmtHash);
+    final PrivacyTransactionReceipt receiptNodeA = besuA.rpc().getPrivacyContractReceipt(pmt);
+    final PrivacyTransactionReceipt receiptNodeB = besuB.rpc().getPrivacyContractReceipt(pmt);
 
     assertThat(receiptNodeA.isSuccess()).isTrue();
     assertThat(receiptNodeA).usingRecursiveComparison().isEqualTo(receiptNodeB);
 
-    final PrivacyTransactionReceipt receiptNodeC = signerB.rpc().getPrivacyContractReceipt(pmtHash);
+    final PrivacyTransactionReceipt receiptNodeC = signerB.rpc().getPrivacyContractReceipt(pmt);
     assertThat(receiptNodeA).usingRecursiveComparison().isEqualTo(receiptNodeC);
 
     // Valid entries in both Orions

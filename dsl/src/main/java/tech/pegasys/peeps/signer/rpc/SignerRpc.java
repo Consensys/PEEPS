@@ -12,6 +12,7 @@
  */
 package tech.pegasys.peeps.signer.rpc;
 
+import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.rpc.NodeRpc;
 import tech.pegasys.peeps.signer.rpc.eea.SendPrivateTransactionResponse;
 import tech.pegasys.peeps.signer.rpc.eea.SendTransactionRequest;
@@ -32,7 +33,7 @@ public class SignerRpc extends NodeRpc {
     super(vertx, timeout, LOG);
   }
 
-  public String deployContractToPrivacyGroup(
+  public Hash deployContractToPrivacyGroup(
       final String sender,
       final String binary,
       final String privateSender,

@@ -13,6 +13,7 @@
 package tech.pegasys.peeps.node.rpc;
 
 import tech.pegasys.peeps.json.rpc.JsonRpcClient;
+import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.model.PrivacyTransactionReceipt;
 import tech.pegasys.peeps.node.model.Transaction;
 import tech.pegasys.peeps.node.model.TransactionReceipt;
@@ -59,16 +60,17 @@ public class NodeRpc extends JsonRpcClient {
     return post("admin_peers", ConnectedPeersResponse.class).getResult();
   }
 
-  public Optional<PrivacyTransactionReceipt> getPrivacyTransactionReceipt(final String hash) {
-    return post("priv_getTransactionReceipt", hash, GetPrivateTransactionResponse.class)
+  public Optional<PrivacyTransactionReceipt> getPrivacyTransactionReceipt(final Hash receipt) {
+    return post("priv_getTransactionReceipt", receipt, GetPrivateTransactionResponse.class)
         .getResult();
   }
 
-  public Optional<TransactionReceipt> getTransactionReceipt(final String hash) {
-    return post("eth_getTransactionReceipt", hash, GetTransactionResponse.class).getResult();
+  public Optional<TransactionReceipt> getTransactionReceipt(final Hash receipt) {
+    return post("eth_getTransactionReceipt", receipt, GetTransactionResponse.class).getResult();
   }
 
-  public Optional<Transaction> getTransactionByHash(final String hash) {
-    return post("eth_getTransactionByHash", hash, GetTransactionByHashResponse.class).getResult();
+  public Optional<Transaction> getTransactionByHash(final Hash transaction) {
+    return post("eth_getTransactionByHash", transaction, GetTransactionByHashResponse.class)
+        .getResult();
   }
 }

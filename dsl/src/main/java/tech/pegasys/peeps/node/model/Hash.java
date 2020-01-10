@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 ConsenSys AG.
+ * Copyright 2020 ConsenSys AG.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -10,23 +10,24 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package tech.pegasys.peeps.signer.rpc.eea;
-
-import tech.pegasys.peeps.node.model.Hash;
+package tech.pegasys.peeps.node.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Preconditions;
 
-public class SendPrivateTransactionResponse {
+public class Hash {
 
-  private final Hash result;
+  private final String hash;
 
   @JsonCreator
-  public SendPrivateTransactionResponse(@JsonProperty("result") final Hash result) {
-    this.result = result;
+  public Hash(final String hash) {
+    Preconditions.checkArgument(!hash.isBlank(), "an empty hash is not allowed");
+
+    this.hash = hash;
   }
 
-  public Hash getResult() {
-    return result;
+  @Override
+  public String toString() {
+    return hash;
   }
 }

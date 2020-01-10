@@ -14,6 +14,7 @@ package tech.pegasys.peeps.node.rpc;
 
 import static tech.pegasys.peeps.util.Await.awaitData;
 
+import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.model.PrivacyTransactionReceipt;
 import tech.pegasys.peeps.node.model.Transaction;
 import tech.pegasys.peeps.node.model.TransactionReceipt;
@@ -26,27 +27,27 @@ public class NodeRpcExpectingData {
     this.rpc = rpc;
   }
 
-  public PrivacyTransactionReceipt getPrivacyContractReceipt(final String receiptHash) {
+  public PrivacyTransactionReceipt getPrivacyContractReceipt(final Hash receipt) {
     return awaitData(
-            () -> rpc.getPrivacyTransactionReceipt(receiptHash),
+            () -> rpc.getPrivacyTransactionReceipt(receipt),
             "Failed to retrieve the private transaction receipt with hash: %s",
-            receiptHash)
+            receipt)
         .get();
   }
 
-  public TransactionReceipt getTransactionReceipt(final String receiptHash) {
+  public TransactionReceipt getTransactionReceipt(final Hash receipt) {
     return awaitData(
-            () -> rpc.getTransactionReceipt(receiptHash),
+            () -> rpc.getTransactionReceipt(receipt),
             "Failed to retrieve the transaction receipt with hash: %s",
-            receiptHash)
+            receipt)
         .get();
   }
 
-  public Transaction getTransactionByHash(final String hash) {
+  public Transaction getTransactionByHash(final Hash transaction) {
     return awaitData(
-            () -> rpc.getTransactionByHash(hash),
+            () -> rpc.getTransactionByHash(transaction),
             "Failed to retrieve the transaction with hash: %s",
-            hash)
+            transaction)
         .get();
   }
 }

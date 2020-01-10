@@ -17,6 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import tech.pegasys.peeps.node.Besu;
 import tech.pegasys.peeps.node.BesuConfigurationBuilder;
+import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.model.TransactionReceipt;
 import tech.pegasys.peeps.privacy.Orion;
 import tech.pegasys.peeps.privacy.OrionConfigurationBuilder;
@@ -154,7 +155,7 @@ public class Network implements Closeable {
 
   // TODO restructure, maybe Supplier related or a utility on network?
   // TODO stricter typing than String
-  public void awaitConsensusOn(final String receiptHash, final Besu besuA, final Besu besuB) {
+  public void awaitConsensusOn(final Hash receiptHash, final Besu besuA, final Besu besuB) {
     Await.await(
         () -> {
           final TransactionReceipt pmtReceiptNodeA = besuA.rpc().getTransactionReceipt(receiptHash);

@@ -12,6 +12,7 @@
  */
 package tech.pegasys.peeps.signer.rpc;
 
+import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.rpc.NodeRpcExpectingData;
 import tech.pegasys.peeps.privacy.Orion;
 
@@ -31,7 +32,7 @@ public class SignerRpcExpectingData extends NodeRpcExpectingData {
   }
 
   // TODO could config a EthSigner to be bound to a node & orion setup?
-  public String deployContractToPrivacyGroup(
+  public Hash deployContractToPrivacyGroup(
       final String binary, final Orion sender, final Orion... recipients) {
     final String[] privateRecipients = new String[recipients.length];
     for (int i = 0; i < recipients.length; i++) {
