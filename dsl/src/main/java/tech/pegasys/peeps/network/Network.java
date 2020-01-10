@@ -25,6 +25,7 @@ import tech.pegasys.peeps.privacy.Orion;
 import tech.pegasys.peeps.privacy.OrionConfigurationBuilder;
 import tech.pegasys.peeps.signer.EthSigner;
 import tech.pegasys.peeps.signer.EthSignerConfigurationBuilder;
+import tech.pegasys.peeps.signer.SignerWallet;
 import tech.pegasys.peeps.util.PathGenerator;
 
 import java.io.Closeable;
@@ -110,15 +111,16 @@ public class Network implements Closeable {
     return manager;
   }
 
-  public EthSigner addSigner(final EthSignerConfigurationBuilder config, final Besu downstream) {
+  public EthSigner addSigner(final SignerWallet wallet, final Besu downstream) {
     final EthSigner signer =
         new EthSigner(
-            config
+            new EthSignerConfigurationBuilder()
                 .withVertx(vertx)
                 .withContainerNetwork(network)
                 .withIpAddress(subnet.getAddressAndIncrement())
                 .withDownstream(downstream)
                 .withChainId(downstream.chainId())
+                .witWallet(wallet)
                 .build());
 
     signers.add(signer);

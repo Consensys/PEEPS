@@ -26,7 +26,6 @@ import tech.pegasys.peeps.node.model.PrivacyTransactionReceipt;
 import tech.pegasys.peeps.node.model.Transaction;
 import tech.pegasys.peeps.node.model.TransactionReceipt;
 import tech.pegasys.peeps.signer.EthSigner;
-import tech.pegasys.peeps.signer.EthSignerConfigurationBuilder;
 import tech.pegasys.peeps.signer.SignerWallet;
 
 import java.nio.charset.StandardCharsets;
@@ -65,8 +64,7 @@ public class PrivacyContracDeploymentTest extends NetworkTest {
                 .withNodePrivateKeyFile(NodeKeys.BOOTNODE.getPrivateKeyFile())
                 .withPrivacyManagerPublicKey(OrionKeys.ALPHA.getPublicKey()));
 
-    this.signerA =
-        network.addSigner(new EthSignerConfigurationBuilder().witWallet(SignerWallet.ALPHA), besuA);
+    this.signerA = network.addSigner(SignerWallet.ALPHA, besuA);
 
     this.orionB =
         network.addPrivacyManager(
@@ -86,8 +84,7 @@ public class PrivacyContracDeploymentTest extends NetworkTest {
                 .withBootnodeEnodeAddress(bootnodeEnodeAddress)
                 .withPrivacyManagerPublicKey(OrionKeys.BETA.getPublicKey()));
 
-    this.signerB =
-        network.addSigner(new EthSignerConfigurationBuilder().witWallet(SignerWallet.BETA), besuB);
+    this.signerB = network.addSigner(SignerWallet.BETA, besuB);
   }
 
   @Test
