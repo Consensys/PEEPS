@@ -12,7 +12,10 @@
  */
 package tech.pegasys.peeps.util;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 import org.awaitility.Awaitility;
 import org.awaitility.core.ConditionTimeoutException;
@@ -21,6 +24,20 @@ import org.awaitility.core.ThrowingRunnable;
 public class Await {
 
   private static final int DEFAULT_TIMEOUT_IN_SECONDS = 20;
+
+  public static <T> T awaitData(
+      final Supplier<T> operation,
+      final String errorMessage,
+      final Object... errorMessageParameters) {
+
+    await(
+        () -> {
+          assertThat(operation.get()).isNotNull();
+        },
+        String.format(errorMessage, errorMessageParameters));
+
+    return operation.get();
+  }
 
   public static void await(final ThrowingRunnable condition, final String conditionTimeoutMessage) {
     try {

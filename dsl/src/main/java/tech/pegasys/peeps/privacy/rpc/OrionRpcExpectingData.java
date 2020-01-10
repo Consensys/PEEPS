@@ -12,11 +12,7 @@
  */
 package tech.pegasys.peeps.privacy.rpc;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import tech.pegasys.peeps.util.Await;
-
-import java.util.function.Supplier;
+import static tech.pegasys.peeps.util.Await.awaitData;
 
 public class OrionRpcExpectingData {
 
@@ -27,25 +23,12 @@ public class OrionRpcExpectingData {
   }
 
   public String send(final String to, final String payload) {
-    return awaitRpc(
+    return awaitData(
         () -> rpc.send(to, payload), "Failed to sent payload: %s, to peer: %s", payload, to);
   }
 
   public String receive(final String receipt) {
-    return awaitRpc(() -> rpc.receive(receipt), "Failed to retrieve payload with key: %s", receipt);
-  }
-
-  private String awaitRpc(
-      final Supplier<String> rpc,
-      final String errorMessage,
-      final Object... errorMessageParameters) {
-
-    Await.await(
-        () -> {
-          assertThat(rpc.get()).isNotBlank();
-        },
-        String.format(errorMessage, errorMessageParameters));
-
-    return rpc.get();
+    return awaitData(
+        () -> rpc.receive(receipt), "Failed to retrieve payload with key: %s", receipt);
   }
 }

@@ -12,15 +12,11 @@
  */
 package tech.pegasys.peeps.node.rpc;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static tech.pegasys.peeps.util.Await.awaitData;
 
 import tech.pegasys.peeps.node.model.PrivacyTransactionReceipt;
 import tech.pegasys.peeps.node.model.Transaction;
 import tech.pegasys.peeps.node.model.TransactionReceipt;
-import tech.pegasys.peeps.util.Await;
-
-import java.util.Optional;
-import java.util.function.Supplier;
 
 public class NodeRpcExpectingData {
 
@@ -31,37 +27,26 @@ public class NodeRpcExpectingData {
   }
 
   public PrivacyTransactionReceipt getPrivacyContractReceipt(final String receiptHash) {
-    return awaitRpc(
-        () -> rpc.getPrivacyTransactionReceipt(receiptHash),
-        "Failed to retrieve the private transaction receipt with hash: %s",
-        receiptHash);
+    return awaitData(
+            () -> rpc.getPrivacyTransactionReceipt(receiptHash),
+            "Failed to retrieve the private transaction receipt with hash: %s",
+            receiptHash)
+        .get();
   }
 
   public TransactionReceipt getTransactionReceipt(final String receiptHash) {
-    return awaitRpc(
-        () -> rpc.getTransactionReceipt(receiptHash),
-        "Failed to retrieve the transaction receipt with hash: %s",
-        receiptHash);
+    return awaitData(
+            () -> rpc.getTransactionReceipt(receiptHash),
+            "Failed to retrieve the transaction receipt with hash: %s",
+            receiptHash)
+        .get();
   }
 
   public Transaction getTransactionByHash(final String hash) {
-    return awaitRpc(
-        () -> rpc.getTransactionByHash(hash),
-        "Failed to retrieve the transaction with hash: %s",
-        hash);
-  }
-
-  private <T> T awaitRpc(
-      final Supplier<Optional<T>> rpc,
-      final String errorMessage,
-      final Object... errorMessageParameters) {
-
-    Await.await(
-        () -> {
-          assertThat(rpc.get()).isPresent();
-        },
-        String.format(errorMessage, errorMessageParameters));
-
-    return rpc.get().get();
+    return awaitData(
+            () -> rpc.getTransactionByHash(hash),
+            "Failed to retrieve the transaction with hash: %s",
+            hash)
+        .get();
   }
 }
