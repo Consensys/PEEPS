@@ -37,15 +37,10 @@ import io.vertx.core.Vertx;
 
 public class Network implements Closeable {
 
-  // TODO cater for one-many & many-one for Besu/Orion
-  // TODO cater for one-many for Besu/EthSigner
-
   private final List<NetworkMember> members;
   private final List<Besu> nodes;
   private final List<EthSigner> signers;
   private final List<Orion> privacyManagers;
-
-  // TODO relationship mappings
 
   private final Subnet subnet;
   private final org.testcontainers.containers.Network network;
@@ -59,10 +54,8 @@ public class Network implements Closeable {
     this.members = new ArrayList<>();
     this.signers = new ArrayList<>();
     this.nodes = new ArrayList<>();
-
     this.pathGenerator = new PathGenerator(configurationDirectory);
     this.vertx = Vertx.vertx();
-
     this.subnet = new Subnet();
     this.network = subnet.createContainerNetwork();
   }
@@ -82,19 +75,6 @@ public class Network implements Closeable {
     stop();
     vertx.close();
     network.close();
-  }
-
-  private void awaitConnectivity() {
-
-    nodes.parallelStream().forEach(node -> node.awaitConnectivity(nodes));
-    privacyManagers
-        .parallelStream()
-        .forEach(privacyManger -> privacyManger.awaitConnectivity(privacyManagers));
-
-    // TODO code : need relationship between signers & besus
-    //
-    // signerA.awaitConnectivity(besuA);
-    // signerB.awaitConnectivity(besuB);
   }
 
   public Besu addNode(final BesuConfigurationBuilder config) {
@@ -128,13 +108,6 @@ public class Network implements Closeable {
     members.add(manager);
 
     return manager;
-  }
-
-  private List<String> privacyManagerBootnodeUrls() {
-    return privacyManagers
-        .parallelStream()
-        .map(manager -> manager.getPeerNetworkAddress())
-        .collect(Collectors.toList());
   }
 
   public EthSigner addSigner(final EthSignerConfigurationBuilder config, final Besu downstream) {
@@ -180,5 +153,25 @@ public class Network implements Closeable {
           }
         },
         "Consensus was not reached in time for receipt hash: " + transaction);
+  }
+
+  private void awaitConnectivity() {
+
+    nodes.parallelStream().forEach(node -> node.awaitConnectivity(nodes));
+    privacyManagers
+        .parallelStream()
+        .forEach(privacyManger -> privacyManger.awaitConnectivity(privacyManagers));
+
+    // TODO code signers connecting to their downstream (encapsulated)
+    //
+    // signerA.awaitConnectivity(besuA);
+    // signerB.awaitConnectivity(besuB);
+  }
+
+  private List<String> privacyManagerBootnodeUrls() {
+    return privacyManagers
+        .parallelStream()
+        .map(manager -> manager.getPeerNetworkAddress())
+        .collect(Collectors.toList());
   }
 }
