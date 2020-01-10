@@ -154,9 +154,11 @@ public class Network implements Closeable {
     return signer;
   }
 
-  // TODO restructure, maybe Supplier related or a utility on network? - should be on Blockchain or
-  // done nodes/signer/privManagers
-  public void awaitConsensusOn(final Hash transaction) {
+  /**
+   * Waits until either all nodes in the network reach consensus on the Transaction Receipt (that
+   * includes a block hash), or exceptions when wait time has been exceeded.
+   */
+  public void awaitConsensusOnTransactionReciept(final Hash transaction) {
     checkState(nodes.size() > 1, "There must be two or more nodes to be able to wait on consensus");
 
     await(
