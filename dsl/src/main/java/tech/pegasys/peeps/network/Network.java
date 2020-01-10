@@ -23,6 +23,7 @@ import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.model.TransactionReceipt;
 import tech.pegasys.peeps.privacy.Orion;
 import tech.pegasys.peeps.privacy.OrionConfigurationBuilder;
+import tech.pegasys.peeps.privacy.OrionKeyPair;
 import tech.pegasys.peeps.signer.EthSigner;
 import tech.pegasys.peeps.signer.EthSignerConfigurationBuilder;
 import tech.pegasys.peeps.signer.SignerWallet;
@@ -93,16 +94,17 @@ public class Network implements Closeable {
     return besu;
   }
 
-  public Orion addPrivacyManager(final OrionConfigurationBuilder config) {
+  public Orion addPrivacyManager(final OrionKeyPair... keys) {
 
     final Orion manager =
         new Orion(
-            config
+            new OrionConfigurationBuilder()
                 .withVertx(vertx)
                 .withContainerNetwork(network)
                 .withIpAddress(subnet.getAddressAndIncrement())
                 .withFileSystemConfigurationFile(pathGenerator.uniqueFile())
                 .withBootnodeUrls(privacyManagerBootnodeUrls())
+                .withKeyPairs(keys)
                 .build());
 
     privacyManagers.add(manager);

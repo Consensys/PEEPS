@@ -16,7 +16,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.nio.file.Path;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 import io.vertx.core.Vertx;
@@ -34,13 +34,15 @@ public class OrionConfigurationBuilder {
   private String ipAddress;
   private Vertx vertx;
 
-  public OrionConfigurationBuilder withPrivateKeys(final String... privKeys) {
-    this.privKeys = Arrays.asList(privKeys);
-    return this;
-  }
+  public OrionConfigurationBuilder withKeyPairs(final OrionKeyPair... keyPairs) {
+    this.pubKeys = new ArrayList<>();
+    this.privKeys = new ArrayList<>();
 
-  public OrionConfigurationBuilder withPublicKeys(final String... pubKeys) {
-    this.pubKeys = Arrays.asList(pubKeys);
+    for (final OrionKeyPair keyPair : keyPairs) {
+      pubKeys.add(keyPair.getPublicKey());
+      privKeys.add(keyPair.getPrivateKey());
+    }
+
     return this;
   }
 

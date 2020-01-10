@@ -13,7 +13,7 @@
 package tech.pegasys.peeps.privacy;
 
 // TODO maybe not use an enum?
-public enum OrionKeys {
+public enum OrionKeyPair {
   ALPHA("privacy/keys/key_0"),
   BETA("privacy/keys/key_1"),
   GAMMA("privacy/keys/key_2");
@@ -24,7 +24,7 @@ public enum OrionKeys {
   private final String pubKey;
   private final String privKey;
 
-  OrionKeys(final String name) {
+  OrionKeyPair(final String name) {
     privKey = String.format(PRIVATE_KEY_FILENAME, name);
     pubKey = String.format(PUBLIC_KEY_FILENAME, name);
   }

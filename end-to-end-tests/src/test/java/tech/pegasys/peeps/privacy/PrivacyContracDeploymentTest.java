@@ -50,11 +50,7 @@ public class PrivacyContracDeploymentTest extends NetworkTest {
   protected void setUpNetwork(final Network network) {
     this.network = network;
 
-    this.orionA =
-        network.addPrivacyManager(
-            new OrionConfigurationBuilder()
-                .withPrivateKeys(OrionKeys.ALPHA.getPrivateKey())
-                .withPublicKeys(OrionKeys.ALPHA.getPublicKey()));
+    this.orionA = network.addPrivacyManager(OrionKeyPair.ALPHA);
 
     // TODO Besu -> Orion
     this.besuA =
@@ -62,15 +58,11 @@ public class PrivacyContracDeploymentTest extends NetworkTest {
             new BesuConfigurationBuilder()
                 .withPrivacyUrl(orionA.getNetworkRpcAddress())
                 .withNodePrivateKeyFile(NodeKeys.BOOTNODE.getPrivateKeyFile())
-                .withPrivacyManagerPublicKey(OrionKeys.ALPHA.getPublicKey()));
+                .withPrivacyManagerPublicKey(OrionKeyPair.ALPHA.getPublicKey()));
 
     this.signerA = network.addSigner(SignerWallet.ALPHA, besuA);
 
-    this.orionB =
-        network.addPrivacyManager(
-            new OrionConfigurationBuilder()
-                .withPrivateKeys(OrionKeys.BETA.getPrivateKey())
-                .withPublicKeys(OrionKeys.BETA.getPublicKey()));
+    this.orionB = network.addPrivacyManager(OrionKeyPair.BETA);
 
     // TODO fits as a function of Besu
     // TODO better typing then String - create ENODE Address
@@ -82,7 +74,7 @@ public class PrivacyContracDeploymentTest extends NetworkTest {
             new BesuConfigurationBuilder()
                 .withPrivacyUrl(orionB.getNetworkRpcAddress())
                 .withBootnodeEnodeAddress(bootnodeEnodeAddress)
-                .withPrivacyManagerPublicKey(OrionKeys.BETA.getPublicKey()));
+                .withPrivacyManagerPublicKey(OrionKeyPair.BETA.getPublicKey()));
 
     this.signerB = network.addSigner(SignerWallet.BETA, besuB);
   }
