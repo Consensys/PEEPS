@@ -60,13 +60,9 @@ public class EthSignerConfigurationBuilder {
     return this;
   }
 
-  public EthSignerConfigurationBuilder withKeyFile(final String keyFile) {
-    this.keyFile = keyFile;
-    return this;
-  }
-
-  public EthSignerConfigurationBuilder withPasswordFile(final String passwordFile) {
-    this.passwordFile = passwordFile;
+  public EthSignerConfigurationBuilder witWallet(final SignerWallet wallet) {
+    this.keyFile = wallet.getKeyResource();
+    this.passwordFile = wallet.getPasswordResource();
     return this;
   }
 

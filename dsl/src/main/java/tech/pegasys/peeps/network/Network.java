@@ -118,6 +118,7 @@ public class Network implements Closeable {
                 .withContainerNetwork(network)
                 .withIpAddress(subnet.getAddressAndIncrement())
                 .withDownstream(downstream)
+                .withChainId(downstream.chainId())
                 .build());
 
     signers.add(signer);

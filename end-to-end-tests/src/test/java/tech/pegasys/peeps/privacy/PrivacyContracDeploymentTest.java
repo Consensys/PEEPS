@@ -27,11 +27,9 @@ import tech.pegasys.peeps.node.model.Transaction;
 import tech.pegasys.peeps.node.model.TransactionReceipt;
 import tech.pegasys.peeps.signer.EthSigner;
 import tech.pegasys.peeps.signer.EthSignerConfigurationBuilder;
-import tech.pegasys.peeps.signer.SignerKeys;
+import tech.pegasys.peeps.signer.SignerWallet;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Base64;
@@ -56,8 +54,8 @@ public class PrivacyContracDeploymentTest extends NetworkTest {
     this.orionA =
         network.addPrivacyManager(
             new OrionConfigurationBuilder()
-                .withPrivateKeys(OrionKeys.ONE.getPrivateKey())
-                .withPublicKeys(OrionKeys.ONE.getPublicKey()));
+                .withPrivateKeys(OrionKeys.ALPHA.getPrivateKey())
+                .withPublicKeys(OrionKeys.ALPHA.getPublicKey()));
 
     // TODO Besu -> Orion
     this.besuA =
@@ -65,26 +63,16 @@ public class PrivacyContracDeploymentTest extends NetworkTest {
             new BesuConfigurationBuilder()
                 .withPrivacyUrl(orionA.getNetworkRpcAddress())
                 .withNodePrivateKeyFile(NodeKeys.BOOTNODE.getPrivateKeyFile())
-                .withPrivacyManagerPublicKey(OrionKeys.ONE.getPublicKey()));
+                .withPrivacyManagerPublicKey(OrionKeys.ALPHA.getPublicKey()));
 
     this.signerA =
-        network.addSigner(
-            new EthSignerConfigurationBuilder()
-                .withChainId(besuA.chainId())
-                .withKeyFile(SignerKeys.WALLET_A.getKeyResource())
-                .withPasswordFile(SignerKeys.WALLET_A.getPasswordResource()),
-            besuA);
-
-    // TODO More typing then a String - URI, URL, File or Path
-    final List<String> orionBootnodes = new ArrayList<>();
-    orionBootnodes.add(orionA.getPeerNetworkAddress());
+        network.addSigner(new EthSignerConfigurationBuilder().witWallet(SignerWallet.ALPHA), besuA);
 
     this.orionB =
         network.addPrivacyManager(
             new OrionConfigurationBuilder()
-                .withPrivateKeys(OrionKeys.TWO.getPrivateKey())
-                .withPublicKeys(OrionKeys.TWO.getPublicKey())
-                .withBootnodeUrls(orionBootnodes));
+                .withPrivateKeys(OrionKeys.BETA.getPrivateKey())
+                .withPublicKeys(OrionKeys.BETA.getPublicKey()));
 
     // TODO fits as a function of Besu
     // TODO better typing then String - create ENODE Address
@@ -96,15 +84,10 @@ public class PrivacyContracDeploymentTest extends NetworkTest {
             new BesuConfigurationBuilder()
                 .withPrivacyUrl(orionB.getNetworkRpcAddress())
                 .withBootnodeEnodeAddress(bootnodeEnodeAddress)
-                .withPrivacyManagerPublicKey(OrionKeys.TWO.getPublicKey()));
+                .withPrivacyManagerPublicKey(OrionKeys.BETA.getPublicKey()));
 
     this.signerB =
-        network.addSigner(
-            new EthSignerConfigurationBuilder()
-                .withChainId(besuB.chainId())
-                .withKeyFile(SignerKeys.WALLET_B.getKeyResource())
-                .withPasswordFile(SignerKeys.WALLET_B.getPasswordResource()),
-            besuB);
+        network.addSigner(new EthSignerConfigurationBuilder().witWallet(SignerWallet.BETA), besuB);
   }
 
   @Test

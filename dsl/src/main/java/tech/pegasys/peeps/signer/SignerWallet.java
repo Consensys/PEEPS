@@ -12,14 +12,14 @@
  */
 package tech.pegasys.peeps.signer;
 
-public enum SignerKeys {
-  WALLET_A("signer/account/funded/wallet_a.v3", "signer/account/funded/wallet_a.pass"),
-  WALLET_B("signer/account/funded/wallet_b.v3", "signer/account/funded/wallet_b.pass");
+public enum SignerWallet {
+  ALPHA("signer/account/funded/wallet_a.v3", "signer/account/funded/wallet_a.pass"),
+  BETA("signer/account/funded/wallet_b.v3", "signer/account/funded/wallet_b.pass");
 
   private final String keyResource;
   private final String passwordResource;
 
-  SignerKeys(final String keyResource, final String passwordResource) {
+  SignerWallet(final String keyResource, final String passwordResource) {
     this.keyResource = keyResource;
     this.passwordResource = passwordResource;
   }
