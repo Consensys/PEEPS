@@ -112,19 +112,21 @@ public class PrivacyContracDeploymentTest extends NetworkTest {
     // TODO no in-line comments - implement clean code!
 
     // TODO create type Hash
-    final String simpleStorageContractReceiptHash =
+    final String pmtHash =
         signerA.rpc().deployContractToPrivacyGroup(SimpleStorage.BINARY, orionA, orionB);
 
     // TODO entire network - i.e. all Nodes, don't pass them in
     // Valid transaction receipt for the privacy contract deployment
-    network.awaitConsensusOn(simpleStorageContractReceiptHash, besuA, besuB);
+    network.awaitConsensusOn(pmtHash, besuA, besuB);
 
     // Valid privacy marker transaction
-    final TransactionReceipt pmtReceiptNodeA =
-        besuA.rpc().getTransactionReceipt(simpleStorageContractReceiptHash);
-    final String hash = pmtReceiptNodeA.getTransactionHash();
-    final Transaction pmtNodeA = besuA.rpc().getTransactionByHash(hash);
-    final Transaction pmtNodeB = besuB.rpc().getTransactionByHash(hash);
+    final TransactionReceipt pmtReceiptNodeA = besuA.rpc().getTransactionReceipt(pmtHash);
+
+    assertThat(pmtReceiptNodeA.getTransactionHash()).isEqualTo(pmtHash);
+    assertThat(pmtReceiptNodeA.isSuccess()).isTrue();
+
+    final Transaction pmtNodeA = besuA.rpc().getTransactionByHash(pmtHash);
+    final Transaction pmtNodeB = besuB.rpc().getTransactionByHash(pmtHash);
 
     assertThat(pmtNodeA.isProcessed()).isTrue();
     assertThat(pmtNodeA).usingRecursiveComparison().isEqualTo(pmtNodeB);
@@ -136,16 +138,13 @@ public class PrivacyContracDeploymentTest extends NetworkTest {
     final String key = new String(encodedHexB64, StandardCharsets.UTF_8);
 
     // Valid privacy transaction receipt
-    final PrivacyTransactionReceipt receiptNodeA =
-        besuA.rpc().getPrivacyContractReceipt(simpleStorageContractReceiptHash);
-    final PrivacyTransactionReceipt receiptNodeB =
-        besuB.rpc().getPrivacyContractReceipt(simpleStorageContractReceiptHash);
+    final PrivacyTransactionReceipt receiptNodeA = besuA.rpc().getPrivacyContractReceipt(pmtHash);
+    final PrivacyTransactionReceipt receiptNodeB = besuB.rpc().getPrivacyContractReceipt(pmtHash);
 
     assertThat(receiptNodeA.isSuccess()).isTrue();
     assertThat(receiptNodeA).usingRecursiveComparison().isEqualTo(receiptNodeB);
 
-    final PrivacyTransactionReceipt receiptNodeC =
-        signerB.rpc().getPrivacyContractReceipt(simpleStorageContractReceiptHash);
+    final PrivacyTransactionReceipt receiptNodeC = signerB.rpc().getPrivacyContractReceipt(pmtHash);
     assertThat(receiptNodeA).usingRecursiveComparison().isEqualTo(receiptNodeC);
 
     // Valid entries in both Orions
