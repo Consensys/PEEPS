@@ -52,6 +52,7 @@ public class EthSigner implements NetworkMember {
   private final GenericContainer<?> ethSigner;
   private final SignerRpcExpectingData rpc;
   private final SignerRpc signerRpc;
+  private final Besu downstream;
 
   // TODO need to know about the Besu we are talking to, can output docker logs
   // TODO for privacy transaction need the Orion logs too
@@ -69,13 +70,12 @@ public class EthSigner implements NetworkMember {
 
     LOG.info("EthSigner command line {}", commandLineOptions);
 
+    this.downstream = config.getDownstream();
     this.ethSigner =
         container.withCommand(commandLineOptions.toArray(new String[0])).waitingFor(liveliness());
 
     this.signerRpc = new SignerRpc(config.getVertx(), DOWNSTREAM_TIMEOUT);
-    this.rpc =
-        new SignerRpcExpectingData(
-            signerRpc, () -> getLogs(), () -> config.getDownstream().getLogs());
+    this.rpc = new SignerRpcExpectingData(signerRpc, () -> getLogs(), () -> downstream.getLogs());
   }
 
   @Override
@@ -111,6 +111,12 @@ public class EthSigner implements NetworkMember {
 
   public SignerRpcExpectingData rpc() {
     return rpc;
+  }
+
+  public void awaitConnectivityToDownstream() {
+    await(
+        () -> assertThat(signerRpc.enode()).isEqualTo(downstream.enodeId()),
+        String.format("Failed to connect to node: %s", downstream.enodeId()));
   }
 
   private String getLogs() {
@@ -201,11 +207,5 @@ public class EthSigner implements NetworkMember {
     commandLineOptions.add(CONTAINER_PASSWORD_FILE);
     container.withClasspathResourceMapping(
         config.getPasswordFile(), CONTAINER_PASSWORD_FILE, BindMode.READ_ONLY);
-  }
-
-  public void awaitConnectivity(final Besu node) {
-    await(
-        () -> assertThat(signerRpc.enode()).isEqualTo(node.enodeId()),
-        String.format("Failed to connect to node: %s", node.enodeId()));
   }
 }

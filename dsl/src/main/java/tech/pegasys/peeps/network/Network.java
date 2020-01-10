@@ -145,13 +145,12 @@ public class Network implements Closeable {
           final TransactionReceipt firstReceipt = receipts.get(0);
 
           for (final TransactionReceipt receipt : receipts) {
-
             assertThat(receipt).isNotNull();
             assertThat(receipt.isSuccess()).isTrue();
             assertThat(receipt).usingRecursiveComparison().isEqualTo(firstReceipt);
           }
         },
-        "Consensus was not reached in time for receipt hash: " + transaction);
+        "Consensus was not reached in time for Transaction Receipt with hash: " + transaction);
   }
 
   private void awaitConnectivity() {
@@ -160,11 +159,7 @@ public class Network implements Closeable {
     privacyManagers
         .parallelStream()
         .forEach(privacyManger -> privacyManger.awaitConnectivity(privacyManagers));
-
-    // TODO code signers connecting to their downstream (encapsulated)
-    //
-    // signerA.awaitConnectivity(besuA);
-    // signerB.awaitConnectivity(besuB);
+    signers.parallelStream().forEach(signer -> signer.awaitConnectivityToDownstream());
   }
 
   private List<String> privacyManagerBootnodeUrls() {

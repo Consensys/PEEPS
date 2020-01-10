@@ -48,7 +48,8 @@ public class Besu implements NetworkMember {
   private static final String AM_I_ALIVE_ENDPOINT = "/liveness";
   private static final int ALIVE_STATUS_CODE = 200;
 
-  private static final String BESU_IMAGE = "hyperledger/besu:latest";
+  //  private static final String BESU_IMAGE = "hyperledger/besu:latest";
+  private static final String BESU_IMAGE = "hyperledger/devlop";
   private static final int CONTAINER_HTTP_RPC_PORT = 8545;
   private static final int CONTAINER_WS_RPC_PORT = 8546;
   private static final int CONTAINER_P2P_PORT = 30303;
