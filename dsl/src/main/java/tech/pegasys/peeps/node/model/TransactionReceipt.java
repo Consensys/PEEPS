@@ -23,26 +23,26 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 public class TransactionReceipt {
 
   private final Address sender;
-  private final String transactionIndex;
-  private final String status;
+  private final Hash blockHash;
+  private final Hash transactionHash;
 
   // TODO stricter typing than String
-  private final String blockHash;
   private final String blockNumber;
   private final String cumulativeGasUsed;
   private final String gasUsed;
-  private final String transactionHash;
   private final String logsBloom;
+  private final String transactionIndex;
+  private final String status;
 
   private Address recipient;
   private Address contract;
 
   @JsonCreator
   public TransactionReceipt(
-      @JsonProperty("blockHash") final String blockHash,
+      @JsonProperty("blockHash") final Hash blockHash,
       @JsonProperty("blockNumber") final String blockNumber,
       @JsonProperty("from") final Address from,
-      @JsonProperty("transactionHash") final String transactionHash,
+      @JsonProperty("transactionHash") final Hash transactionHash,
       @JsonProperty("transactionIndex") final String transactionIndex,
       @JsonProperty("status") final String status,
       @JsonProperty("cumulativeGasUsed") final String cumulativeGasUsed,
@@ -81,7 +81,7 @@ public class TransactionReceipt {
     return Optional.ofNullable(recipient);
   }
 
-  public String getBlockHash() {
+  public Hash getBlockHash() {
     return blockHash;
   }
 
@@ -93,7 +93,7 @@ public class TransactionReceipt {
     return transactionIndex;
   }
 
-  public String getTransactionHash() {
+  public Hash getTransactionHash() {
     return transactionHash;
   }
 

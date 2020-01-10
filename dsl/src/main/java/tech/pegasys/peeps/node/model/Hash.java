@@ -12,8 +12,10 @@
  */
 package tech.pegasys.peeps.node.model;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.google.common.base.Preconditions;
+import com.fasterxml.jackson.annotation.JsonValue;
 
 public class Hash {
 
@@ -21,13 +23,25 @@ public class Hash {
 
   @JsonCreator
   public Hash(final String hash) {
-    Preconditions.checkArgument(!hash.isBlank(), "an empty hash is not allowed");
+    checkArgument(hash != null, "A null hash is not allowed");
+    checkArgument(!hash.isBlank(), "An empty hash is not allowed");
 
     this.hash = hash;
   }
 
   @Override
+  @JsonValue
   public String toString() {
     return hash;
+  }
+
+  @Override
+  public int hashCode() {
+    return hash.hashCode();
+  }
+
+  @Override
+  public boolean equals(final Object other) {
+    return other instanceof Hash && hash.equals(((Hash) other).hash);
   }
 }

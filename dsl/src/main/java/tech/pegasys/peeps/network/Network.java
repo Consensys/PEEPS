@@ -13,6 +13,7 @@
 package tech.pegasys.peeps.network;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import tech.pegasys.peeps.node.Besu;
@@ -153,18 +154,29 @@ public class Network implements Closeable {
     return signer;
   }
 
-  // TODO restructure, maybe Supplier related or a utility on network?
-  // TODO stricter typing than String
-  public void awaitConsensusOn(final Hash receiptHash, final Besu besuA, final Besu besuB) {
+  // TODO restructure, maybe Supplier related or a utility on network? - should be on Blockchain or
+  // done nodes/signer/privManagers
+  public void awaitConsensusOn(final Hash transaction) {
+    checkState(nodes.size() > 1, "There must be two or more nodes to be able to wait on consensus");
+
     Await.await(
         () -> {
-          final TransactionReceipt pmtReceiptNodeA = besuA.rpc().getTransactionReceipt(receiptHash);
-          final TransactionReceipt pmtReceiptNodeB = besuB.rpc().getTransactionReceipt(receiptHash);
+          final List<TransactionReceipt> receipts =
+              nodes
+                  .parallelStream()
+                  .map(node -> node.rpc().getTransactionReceipt(transaction))
+                  .collect(Collectors.toList());
 
-          assertThat(pmtReceiptNodeA).isNotNull();
-          assertThat(pmtReceiptNodeA.isSuccess()).isTrue();
-          assertThat(pmtReceiptNodeA).usingRecursiveComparison().isEqualTo(pmtReceiptNodeB);
+          assertThat(receipts.size()).isEqualTo(nodes.size());
+          final TransactionReceipt firstReceipt = receipts.get(0);
+
+          for (final TransactionReceipt receipt : receipts) {
+
+            assertThat(receipt).isNotNull();
+            assertThat(receipt.isSuccess()).isTrue();
+            assertThat(receipt).usingRecursiveComparison().isEqualTo(firstReceipt);
+          }
         },
-        "Consensus was not reached in time for receipt hash: " + receiptHash);
+        "Consensus was not reached in time for receipt hash: " + transaction);
   }
 }

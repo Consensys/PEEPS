@@ -34,16 +34,20 @@ public class Await {
         () -> {
           assertThat(operation.get()).isNotNull();
         },
-        String.format(errorMessage, errorMessageParameters));
+        errorMessage,
+        errorMessageParameters);
 
     return operation.get();
   }
 
-  public static void await(final ThrowingRunnable condition, final String conditionTimeoutMessage) {
+  public static void await(
+      final ThrowingRunnable condition,
+      final String errorMessage,
+      final Object... errorMessageParameters) {
     try {
       await(DEFAULT_TIMEOUT_IN_SECONDS, condition);
     } catch (final ConditionTimeoutException e) {
-      throw new AssertionError(conditionTimeoutMessage);
+      throw new AssertionError(String.format(errorMessage, errorMessageParameters));
     }
   }
 
