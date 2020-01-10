@@ -58,6 +58,7 @@ public class PrivacyContracDeploymentTest extends NetworkTest {
                 .withPrivateKeys(OrionKeys.ONE.getPrivateKey())
                 .withPublicKeys(OrionKeys.ONE.getPublicKey()));
 
+    // TODO Besu -> Orion
     this.besuA =
         network.addNode(
             new BesuConfigurationBuilder()
@@ -84,7 +85,8 @@ public class PrivacyContracDeploymentTest extends NetworkTest {
                 .withPublicKeys(OrionKeys.TWO.getPublicKey())
                 .withBootnodeUrls(orionBootnodes));
 
-    // TODO better typing then String
+    // TODO fits as a function of Besu
+    // TODO better typing then String - create ENODE Address
     final String bootnodeEnodeAddress =
         NodeKeys.BOOTNODE.getEnodeAddress(besuA.ipAddress(), besuA.p2pPort());
 
@@ -109,14 +111,17 @@ public class PrivacyContracDeploymentTest extends NetworkTest {
 
     // TODO no in-line comments - implement clean code!
 
-    final String receiptHash =
+    // TODO create type Hash
+    final String simpleStorageContractReceiptHash =
         signerA.rpc().deployContractToPrivacyGroup(SimpleStorage.BINARY, orionA, orionB);
 
+    // TODO entire network - i.e. all Nodes, don't pass them in
     // Valid transaction receipt for the privacy contract deployment
-    network.awaitConsensusOn(receiptHash, besuA, besuB);
+    network.awaitConsensusOn(simpleStorageContractReceiptHash, besuA, besuB);
 
     // Valid privacy marker transaction
-    final TransactionReceipt pmtReceiptNodeA = besuA.rpc().getTransactionReceipt(receiptHash);
+    final TransactionReceipt pmtReceiptNodeA =
+        besuA.rpc().getTransactionReceipt(simpleStorageContractReceiptHash);
     final String hash = pmtReceiptNodeA.getTransactionHash();
     final Transaction pmtNodeA = besuA.rpc().getTransactionByHash(hash);
     final Transaction pmtNodeB = besuB.rpc().getTransactionByHash(hash);
@@ -132,15 +137,15 @@ public class PrivacyContracDeploymentTest extends NetworkTest {
 
     // Valid privacy transaction receipt
     final PrivacyTransactionReceipt receiptNodeA =
-        besuA.rpc().getPrivacyContractReceipt(receiptHash);
+        besuA.rpc().getPrivacyContractReceipt(simpleStorageContractReceiptHash);
     final PrivacyTransactionReceipt receiptNodeB =
-        besuB.rpc().getPrivacyContractReceipt(receiptHash);
+        besuB.rpc().getPrivacyContractReceipt(simpleStorageContractReceiptHash);
 
     assertThat(receiptNodeA.isSuccess()).isTrue();
     assertThat(receiptNodeA).usingRecursiveComparison().isEqualTo(receiptNodeB);
 
     final PrivacyTransactionReceipt receiptNodeC =
-        signerB.rpc().getPrivacyContractReceipt(receiptHash);
+        signerB.rpc().getPrivacyContractReceipt(simpleStorageContractReceiptHash);
     assertThat(receiptNodeA).usingRecursiveComparison().isEqualTo(receiptNodeC);
 
     // Valid entries in both Orions

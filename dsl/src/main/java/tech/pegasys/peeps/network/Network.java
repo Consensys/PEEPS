@@ -35,7 +35,6 @@ import io.vertx.core.Vertx;
 
 public class Network implements Closeable {
 
-  // TODO do not be hard coded as two nodes - flexibility in nodes & stack
   // TODO cater for one-many & many-one for Besu/Orion
   // TODO cater for one-many for Besu/EthSigner
 
