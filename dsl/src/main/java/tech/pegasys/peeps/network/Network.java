@@ -15,6 +15,7 @@ package tech.pegasys.peeps.network;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static org.assertj.core.api.Assertions.assertThat;
+import static tech.pegasys.peeps.util.Await.await;
 
 import tech.pegasys.peeps.node.Besu;
 import tech.pegasys.peeps.node.BesuConfigurationBuilder;
@@ -24,7 +25,6 @@ import tech.pegasys.peeps.privacy.Orion;
 import tech.pegasys.peeps.privacy.OrionConfigurationBuilder;
 import tech.pegasys.peeps.signer.EthSigner;
 import tech.pegasys.peeps.signer.EthSignerConfigurationBuilder;
-import tech.pegasys.peeps.util.Await;
 import tech.pegasys.peeps.util.PathGenerator;
 
 import java.io.Closeable;
@@ -159,7 +159,7 @@ public class Network implements Closeable {
   public void awaitConsensusOn(final Hash transaction) {
     checkState(nodes.size() > 1, "There must be two or more nodes to be able to wait on consensus");
 
-    Await.await(
+    await(
         () -> {
           final List<TransactionReceipt> receipts =
               nodes

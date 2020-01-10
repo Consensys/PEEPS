@@ -16,6 +16,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static io.vertx.core.buffer.Buffer.buffer;
 import static org.assertj.core.api.Assertions.assertThat;
+import static tech.pegasys.peeps.util.Await.await;
 import static tech.pegasys.peeps.util.ClasspathResources.read;
 import static tech.pegasys.peeps.util.HexFormatter.ensureHexPrefix;
 
@@ -25,7 +26,6 @@ import tech.pegasys.peeps.node.genesis.Genesis;
 import tech.pegasys.peeps.node.rpc.NodeRpc;
 import tech.pegasys.peeps.node.rpc.NodeRpcExpectingData;
 import tech.pegasys.peeps.node.rpc.admin.NodeInfo;
-import tech.pegasys.peeps.util.Await;
 
 import java.util.List;
 import java.util.Set;
@@ -168,7 +168,7 @@ public class Besu implements NetworkMember {
   }
 
   private void awaitPeerIdConnections(final Set<String> peerIds) {
-    Await.await(
+    await(
         () -> assertThat(nodeRpc.getConnectedPeerIds().containsAll(peerIds)).isTrue(),
         String.format("Failed to connect in time to peers: %s", peerIds));
   }

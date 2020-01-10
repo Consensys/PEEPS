@@ -13,12 +13,12 @@
 package tech.pegasys.peeps.signer;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static tech.pegasys.peeps.util.Await.await;
 
 import tech.pegasys.peeps.network.NetworkMember;
 import tech.pegasys.peeps.node.Besu;
 import tech.pegasys.peeps.signer.rpc.SignerRpc;
 import tech.pegasys.peeps.signer.rpc.SignerRpcExpectingData;
-import tech.pegasys.peeps.util.Await;
 
 import java.time.Duration;
 import java.util.List;
@@ -197,7 +197,7 @@ public class EthSigner implements NetworkMember {
   }
 
   public void awaitConnectivity(final Besu node) {
-    Await.await(
+    await(
         () -> assertThat(signerRpc.enode()).isEqualTo(node.enodeId()),
         String.format("Failed to connect to node: %s", node.enodeId()));
   }
