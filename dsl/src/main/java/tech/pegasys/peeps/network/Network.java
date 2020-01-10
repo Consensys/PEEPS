@@ -117,8 +117,7 @@ public class Network implements Closeable {
                 .withVertx(vertx)
                 .withContainerNetwork(network)
                 .withIpAddress(subnet.getAddressAndIncrement())
-                .withDownstreamHost(downstream.ipAddress())
-                .withDownstreamPort(downstream.httpRpcPort())
+                .withDownstream(downstream)
                 .build());
 
     signers.add(signer);

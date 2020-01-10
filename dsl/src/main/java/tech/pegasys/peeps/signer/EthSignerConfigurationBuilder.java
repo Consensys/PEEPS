@@ -15,14 +15,15 @@ package tech.pegasys.peeps.signer;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import tech.pegasys.peeps.node.Besu;
+
 import io.vertx.core.Vertx;
 import org.testcontainers.containers.Network;
 
 public class EthSignerConfigurationBuilder {
 
   private long chainId;
-  private String downstreamHost;
-  private int downstreamPort;
+  private Besu downstream;
 
   // TODO these into their own builder, not node related but test container related
   private Network containerNetwork;
@@ -54,13 +55,8 @@ public class EthSignerConfigurationBuilder {
     return this;
   }
 
-  public EthSignerConfigurationBuilder withDownstreamHost(final String downstreamHost) {
-    this.downstreamHost = downstreamHost;
-    return this;
-  }
-
-  public EthSignerConfigurationBuilder withDownstreamPort(final int downstreamPort) {
-    this.downstreamPort = downstreamPort;
+  public EthSignerConfigurationBuilder withDownstream(final Besu downstream) {
+    this.downstream = downstream;
     return this;
   }
 
@@ -76,8 +72,7 @@ public class EthSignerConfigurationBuilder {
 
   public EthSignerConfiguration build() {
     checkArgument(chainId > 0, "Chain ID must be set as larger than zero");
-    checkNotNull(downstreamHost, "Downstream host is mandatory");
-    checkArgument(downstreamPort > 0, "Downstream Port must be set as larger than zero");
+    checkNotNull(downstream, "Downstream node mandatory");
     checkNotNull(vertx, "A Vertx instance is mandatory");
     checkNotNull(ipAddress, "Container IP Address is mandatory");
     checkNotNull(containerNetwork, "Container network is mandatory");
@@ -85,13 +80,6 @@ public class EthSignerConfigurationBuilder {
     checkNotNull(passwordFile, "The password file is mandatory");
 
     return new EthSignerConfiguration(
-        chainId,
-        downstreamHost,
-        downstreamPort,
-        containerNetwork,
-        ipAddress,
-        vertx,
-        keyFile,
-        passwordFile);
+        chainId, downstream, containerNetwork, ipAddress, vertx, keyFile, passwordFile);
   }
 }

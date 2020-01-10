@@ -26,6 +26,7 @@ import tech.pegasys.peeps.node.genesis.Genesis;
 import tech.pegasys.peeps.node.rpc.NodeRpc;
 import tech.pegasys.peeps.node.rpc.NodeRpcExpectingData;
 import tech.pegasys.peeps.node.rpc.admin.NodeInfo;
+import tech.pegasys.peeps.util.DockerLogs;
 
 import java.util.List;
 import java.util.Set;
@@ -153,9 +154,8 @@ public class Besu implements NetworkMember {
     awaitPeerIdConnections(excludeSelf(expectedPeerIds(peers)));
   }
 
-  public void log() {
-    LOG.info("Besu Container {}", besu.getContainerId());
-    LOG.info(besu.getLogs());
+  public String getLogs() {
+    return DockerLogs.format("Besu", besu);
   }
 
   public NodeRpcExpectingData rpc() {

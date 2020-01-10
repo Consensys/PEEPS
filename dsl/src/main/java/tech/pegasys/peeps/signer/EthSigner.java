@@ -19,6 +19,7 @@ import tech.pegasys.peeps.network.NetworkMember;
 import tech.pegasys.peeps.node.Besu;
 import tech.pegasys.peeps.signer.rpc.SignerRpc;
 import tech.pegasys.peeps.signer.rpc.SignerRpcExpectingData;
+import tech.pegasys.peeps.util.DockerLogs;
 
 import java.time.Duration;
 import java.util.List;
@@ -72,7 +73,9 @@ public class EthSigner implements NetworkMember {
         container.withCommand(commandLineOptions.toArray(new String[0])).waitingFor(liveliness());
 
     this.signerRpc = new SignerRpc(config.getVertx(), DOWNSTREAM_TIMEOUT);
-    this.rpc = new SignerRpcExpectingData(signerRpc);
+    this.rpc =
+        new SignerRpcExpectingData(
+            signerRpc, () -> getLogs(), () -> config.getDownstream().getLogs());
   }
 
   @Override
@@ -108,6 +111,10 @@ public class EthSigner implements NetworkMember {
 
   public SignerRpcExpectingData rpc() {
     return rpc;
+  }
+
+  private String getLogs() {
+    return DockerLogs.format("EthSigner", ethSigner);
   }
 
   private HttpWaitStrategy liveliness() {
@@ -159,13 +166,13 @@ public class EthSigner implements NetworkMember {
   private void addDownstreamPort(
       final EthSignerConfiguration config, final List<String> commandLineOptions) {
     commandLineOptions.add("--downstream-http-port");
-    commandLineOptions.add(String.valueOf(config.getDownstreamPort()));
+    commandLineOptions.add(String.valueOf(config.getDownstream().httpRpcPort()));
   }
 
   private void addDownstreamHost(
       final EthSignerConfiguration config, final List<String> commandLineOptions) {
     commandLineOptions.add("--downstream-http-host");
-    commandLineOptions.add(config.getDownstreamHost());
+    commandLineOptions.add(config.getDownstream().ipAddress());
   }
 
   private void addContainerNetwork(
