@@ -16,19 +16,19 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import tech.pegasys.peeps.privacy.Orion;
 
+import java.nio.file.Path;
+
 import io.vertx.core.Vertx;
 import org.testcontainers.containers.Network;
 
 public class BesuConfigurationBuilder {
 
   // TODO move these into the test
-  private static final String DEFAULT_GENESIS_FILE = "node/genesis/eth_hash.json";
-
-  // TODO move these into the test
   private static final String DEFAULT_PRIVACY_MARKER_SIGNER_PRIVATE_KEY_FILE =
       "node/keys/pmt_signing.priv";
 
-  private String genesisFile;
+  private Path genesisFile;
+
   private String privacyManagerPublicKeyFile;
   private String privacyMarkerSigningPrivateKeyFile;
   private String privacyTransactionManagerUrl;
@@ -42,11 +42,10 @@ public class BesuConfigurationBuilder {
   private Vertx vertx;
 
   public BesuConfigurationBuilder() {
-    this.genesisFile = DEFAULT_GENESIS_FILE;
     this.privacyMarkerSigningPrivateKeyFile = DEFAULT_PRIVACY_MARKER_SIGNER_PRIVATE_KEY_FILE;
   }
 
-  public BesuConfigurationBuilder withGenesisFile(final String genesisFile) {
+  public BesuConfigurationBuilder withGenesisFile(final Path genesisFile) {
     this.genesisFile = genesisFile;
     return this;
   }

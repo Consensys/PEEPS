@@ -16,9 +16,8 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 
-import org.testcontainers.containers.Network;
-
 import io.vertx.core.Vertx;
+import org.testcontainers.containers.Network;
 
 public class OrionConfiguration {
 
@@ -50,7 +49,7 @@ public class OrionConfiguration {
   }
 
   public Path getFileSystemConfigurationFile() {
-	  return fileSystemConfigurationFile;
+    return fileSystemConfigurationFile;
   }
 
   public String getIpAddress() {

@@ -48,7 +48,7 @@ public class OrionConfigurationFile {
     }
 
     LOG.info(
-        "Creating Orion config at: {}, with contents:\n{}",
+        "Creating Orion config file\n\tLocation: {} \n\tContents: {}",
         confg.getFileSystemConfigurationFile(),
         content.toString());
 

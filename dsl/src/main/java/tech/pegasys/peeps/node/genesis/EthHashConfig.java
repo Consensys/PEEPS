@@ -12,19 +12,22 @@
  */
 package tech.pegasys.peeps.node.genesis;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonGetter;
 
-public class GenesisConfiguration {
+public class EthHashConfig {
 
-  private final long chainId;
+  private final int fixeddifficulty;
 
-  @JsonCreator
-  public GenesisConfiguration(@JsonProperty("chainId") final long chainId) {
-    this.chainId = chainId;
+  public EthHashConfig() {
+    this(100);
   }
 
-  public long getChainId() {
-    return chainId;
+  public EthHashConfig(final int fixeddifficulty) {
+    this.fixeddifficulty = fixeddifficulty;
+  }
+
+  @JsonGetter("fixeddifficulty")
+  public int getFixeddifficulty() {
+    return fixeddifficulty;
   }
 }

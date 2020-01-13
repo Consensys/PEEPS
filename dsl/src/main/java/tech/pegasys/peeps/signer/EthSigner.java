@@ -66,7 +66,7 @@ public class EthSigner implements NetworkMember {
     addContainerIpAddress(config, container);
     addFileBasedSigner(config, commandLineOptions, container);
 
-    LOG.info("EthSigner command line {}", commandLineOptions);
+    LOG.info("EthSigner command line: {}", commandLineOptions);
 
     this.downstream = config.getDownstream();
     this.ethSigner =
@@ -143,10 +143,10 @@ public class EthSigner implements NetworkMember {
 
   private void logContainerNetworkDetails() {
     if (ethSigner.getNetwork() == null) {
-      LOG.info("EthSigner Container {} has no network", ethSigner.getContainerId());
+      LOG.info("EthSigner Container: {}, has no network", ethSigner.getContainerId());
     } else {
       LOG.info(
-          "EthSigner Container {}, IP address: {}, Network: {}",
+          "EthSigner Container: {}, IP address: {}, Network: {}",
           ethSigner.getContainerId(),
           ethSigner.getContainerIpAddress(),
           ethSigner.getNetwork().getId());
@@ -155,7 +155,7 @@ public class EthSigner implements NetworkMember {
 
   private void logPortMappings() {
     LOG.info(
-        "EthSigner Container {}, HTTP RPC port mapping: {} -> {}",
+        "EthSigner Container: {}, HTTP RPC port mapping: {} -> {}",
         ethSigner.getContainerId(),
         CONTAINER_HTTP_RPC_PORT,
         ethSigner.getMappedPort(CONTAINER_HTTP_RPC_PORT));

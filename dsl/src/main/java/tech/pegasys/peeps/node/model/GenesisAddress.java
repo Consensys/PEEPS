@@ -19,17 +19,17 @@ import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 
-public class Address {
+public class GenesisAddress {
 
-  private static final Pattern REGEX = Pattern.compile("^0x[a-fA-F0-9]{40}$");
+  private static final Pattern REGEX = Pattern.compile("^[a-fA-F0-9]{40}$");
 
   private final String hex;
 
-  public Address(final String address) {
+  public GenesisAddress(final String address) {
     checkNotNull(address);
     checkArgument(
         REGEX.matcher(address).matches(),
-        "Address: %s, does not comply with expected regex for an Ethereum address: %s.",
+        "Address: %s, does not comply with expected regex for an Ethereum genesis address: %s.",
         address,
         REGEX);
 
@@ -43,7 +43,7 @@ public class Address {
 
   @Override
   public String toString() {
-    return "Address [hex=" + hex + "]";
+    return "GenesisAddress [hex=" + hex + "]";
   }
 
   @Override
@@ -59,7 +59,7 @@ public class Address {
     if (this == obj) return true;
     if (obj == null) return false;
     if (getClass() != obj.getClass()) return false;
-    Address other = (Address) obj;
+    GenesisAddress other = (GenesisAddress) obj;
     if (hex == null) {
       if (other.hex != null) return false;
     } else if (!hex.equals(other.hex)) return false;

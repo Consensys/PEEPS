@@ -13,7 +13,6 @@
 package tech.pegasys.peeps.privacy;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static tech.pegasys.peeps.privacy.OrionConfigurationFile.write;
 import static tech.pegasys.peeps.privacy.rpc.send.SendPayload.generateUniquePayload;
 
 import tech.pegasys.peeps.network.NetworkMember;
@@ -60,21 +59,14 @@ public class Orion implements NetworkMember {
 
   public Orion(final OrionConfiguration config) {
 
-    write(config);
-
     final GenericContainer<?> container = new GenericContainer<>(ORION_IMAGE);
     addContainerNetwork(config, container);
     addContainerIpAddress(config, container);
     addPrivateKeys(config, container);
     addPublicKeys(config, container);
+    addConfigurationFile(config, container);
 
-    this.orion =
-        container
-            .withCommand(CONTAINER_CONFIG_FILE)
-            .withCopyFileToContainer(
-                MountableFile.forHostPath(config.getFileSystemConfigurationFile()),
-                CONTAINER_CONFIG_FILE)
-            .waitingFor(liveliness());
+    this.orion = container.withCommand(CONTAINER_CONFIG_FILE).waitingFor(liveliness());
 
     this.orionNetworkAddress =
         String.format("http://%s:%s", config.getIpAddress(), CONTAINER_PEER_TO_PEER_PORT);
@@ -179,15 +171,15 @@ public class Orion implements NetworkMember {
   }
 
   private void logOrionDetails() {
-    LOG.info("Orion Container {}, ID: {}", orion.getContainerId(), id);
+    LOG.info("Orion Container: {}, ID: {}", orion.getContainerId(), id);
   }
 
   private void logContainerNetworkDetails() {
     if (orion.getNetwork() == null) {
-      LOG.info("Orion Container {} has no network", orion.getContainerId());
+      LOG.info("Orion Container: {}, has no network", orion.getContainerId());
     } else {
       LOG.info(
-          "Orion Container {}, IP address: {}, Network: {}",
+          "Orion Container: {}, IP address: {}, Network: {}",
           orion.getContainerId(),
           orion.getContainerIpAddress(),
           orion.getNetwork().getId());
@@ -196,7 +188,7 @@ public class Orion implements NetworkMember {
 
   private void logPortMappings() {
     LOG.info(
-        "Orion Container {}, HTTP RPC port mapping: {} -> {}, p2p port mapping: {} -> {}",
+        "Orion Container: {}, HTTP RPC port mapping: {} -> {}, p2p port mapping: {} -> {}",
         orion.getContainerId(),
         CONTAINER_HTTP_RPC_PORT,
         orion.getMappedPort(CONTAINER_HTTP_RPC_PORT),
@@ -219,5 +211,11 @@ public class Orion implements NetworkMember {
       final OrionConfiguration config, final GenericContainer<?> container) {
     container.withCreateContainerCmdModifier(
         modifier -> modifier.withIpv4Address(config.getIpAddress()));
+  }
+
+  private void addConfigurationFile(
+      final OrionConfiguration config, final GenericContainer<?> container) {
+    container.withCopyFileToContainer(
+        MountableFile.forHostPath(config.getFileSystemConfigurationFile()), CONTAINER_CONFIG_FILE);
   }
 }

@@ -17,12 +17,22 @@ import static com.google.common.base.Preconditions.checkState;
 import static org.assertj.core.api.Assertions.assertThat;
 import static tech.pegasys.peeps.util.Await.await;
 
+import tech.pegasys.peeps.json.Json;
 import tech.pegasys.peeps.node.Besu;
 import tech.pegasys.peeps.node.BesuConfigurationBuilder;
+import tech.pegasys.peeps.node.genesis.EthHashConfig;
+import tech.pegasys.peeps.node.genesis.Genesis;
+import tech.pegasys.peeps.node.genesis.GenesisAccount;
+import tech.pegasys.peeps.node.genesis.GenesisAccounts;
+import tech.pegasys.peeps.node.genesis.GenesisConfig;
+import tech.pegasys.peeps.node.genesis.GenesisConfigEthHash;
+import tech.pegasys.peeps.node.model.GenesisAddress;
 import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.model.TransactionReceipt;
 import tech.pegasys.peeps.privacy.Orion;
+import tech.pegasys.peeps.privacy.OrionConfiguration;
 import tech.pegasys.peeps.privacy.OrionConfigurationBuilder;
+import tech.pegasys.peeps.privacy.OrionConfigurationFile;
 import tech.pegasys.peeps.privacy.OrionKeyPair;
 import tech.pegasys.peeps.signer.EthSigner;
 import tech.pegasys.peeps.signer.EthSignerConfigurationBuilder;
@@ -30,14 +40,23 @@ import tech.pegasys.peeps.signer.SignerWallet;
 import tech.pegasys.peeps.util.PathGenerator;
 
 import java.io.Closeable;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import io.vertx.core.Vertx;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class Network implements Closeable {
+
+  private static final Logger LOG = LogManager.getLogger();
 
   private final List<NetworkMember> members;
   private final List<Besu> nodes;
@@ -80,12 +99,48 @@ public class Network implements Closeable {
   }
 
   public Besu addNode(final BesuConfigurationBuilder config) {
+
+    // TODO temp hack - hardcode to EthHash, use input switch
+    // TODO create genesis file
+    // TODO can be path instead of String?
+    // TODO delay creation of alloc & extra data until after all nodes addded & validators /
+    // accounts known
+    final Path genesisFile = pathGenerator.uniqueFile();
+
+    final Map<GenesisAddress, GenesisAccount> genesisAccounts =
+        GenesisAccounts.of(GenesisAccounts.ALPHA, GenesisAccounts.BETA, GenesisAccounts.GAMMA);
+
+    final GenesisConfig genesisConfig = new GenesisConfigEthHash(1234, new EthHashConfig());
+    final Genesis besuGenesis = new Genesis(genesisConfig, genesisAccounts);
+
+    final String encodedBesuGenesis = Json.encode(besuGenesis);
+    LOG.info(
+        "Creating Besu genesis file\n\tLocation: {} \n\tContents: {}",
+        genesisFile,
+        encodedBesuGenesis);
+
+    try {
+      Files.write(
+          genesisFile,
+          encodedBesuGenesis.getBytes(StandardCharsets.UTF_8),
+          StandardOpenOption.CREATE);
+    } catch (final IOException e) {
+      final String message =
+          String.format(
+              "Problem creating the Besu config file in the file system: %s, %s",
+              genesisFile, e.getLocalizedMessage());
+      throw new IllegalStateException(message);
+    }
+
+    ;
+
     final Besu besu =
         new Besu(
             config
                 .withVertx(vertx)
                 .withContainerNetwork(network)
                 .withIpAddress(subnet.getAddressAndIncrement())
+                .withGenesisFile(genesisFile)
                 .build());
 
     nodes.add(besu);
@@ -96,16 +151,20 @@ public class Network implements Closeable {
 
   public Orion addPrivacyManager(final OrionKeyPair... keys) {
 
-    final Orion manager =
-        new Orion(
-            new OrionConfigurationBuilder()
-                .withVertx(vertx)
-                .withContainerNetwork(network)
-                .withIpAddress(subnet.getAddressAndIncrement())
-                .withFileSystemConfigurationFile(pathGenerator.uniqueFile())
-                .withBootnodeUrls(privacyManagerBootnodeUrls())
-                .withKeyPairs(keys)
-                .build());
+    final OrionConfiguration configuration =
+        new OrionConfigurationBuilder()
+            .withVertx(vertx)
+            .withContainerNetwork(network)
+            .withIpAddress(subnet.getAddressAndIncrement())
+            .withFileSystemConfigurationFile(pathGenerator.uniqueFile())
+            .withBootnodeUrls(privacyManagerBootnodeUrls())
+            .withKeyPairs(keys)
+            .build();
+
+    // TODO encapsulate?
+    OrionConfigurationFile.write(configuration);
+
+    final Orion manager = new Orion(configuration);
 
     privacyManagers.add(manager);
     members.add(manager);

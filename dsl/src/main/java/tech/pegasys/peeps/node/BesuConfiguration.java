@@ -12,6 +12,7 @@
  */
 package tech.pegasys.peeps.node;
 
+import java.nio.file.Path;
 import java.util.Optional;
 
 import io.vertx.core.Vertx;
@@ -19,7 +20,7 @@ import org.testcontainers.containers.Network;
 
 public class BesuConfiguration {
 
-  private final String genesisFile;
+  private final Path genesisFile;
   private final String enclavePublicKeyFile;
   private final String cors;
   private final String nodePrivateKeyFile;
@@ -33,7 +34,7 @@ public class BesuConfiguration {
   private final Vertx vertx;
 
   public BesuConfiguration(
-      final String genesisFile,
+      final Path genesisFile,
       final String privacyManagerPublicKeyFile,
       final String privacyUrl,
       final String privacyMarkerSigningPrivateKeyFile,
@@ -55,7 +56,7 @@ public class BesuConfiguration {
     this.bootnodeEnodeAddress = bootnodeEnodeAddress;
   }
 
-  public String getGenesisFile() {
+  public Path getGenesisFile() {
     return genesisFile;
   }
 

@@ -12,21 +12,87 @@
  */
 package tech.pegasys.peeps.node.genesis;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import tech.pegasys.peeps.node.model.GenesisAddress;
 
+import java.util.Map;
+
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
+@JsonInclude(Include.NON_NULL)
 public class Genesis {
 
-  private final GenesisConfiguration config;
+  private final GenesisConfig config;
+  private final Map<GenesisAddress, GenesisAccount> accountBalances;
+  private final String extraData;
 
-  @JsonCreator
-  public Genesis(@JsonProperty("config") final GenesisConfiguration config) {
+  public Genesis(
+      final GenesisConfig config, final Map<GenesisAddress, GenesisAccount> accountBalances) {
     this.config = config;
+    this.accountBalances = accountBalances;
+
+    // TODO "extraData": "%extraData%" - dyanmic based on IBFT2 / Clique validator set
+    this.extraData = null;
   }
 
   @JsonGetter("config")
-  public GenesisConfiguration getConfig() {
+  public GenesisConfig getConfig() {
     return config;
+  }
+
+  @JsonGetter("extraData")
+  public String getExtraData() {
+    return extraData;
+  }
+
+  @JsonGetter("alloc")
+  public Map<GenesisAddress, GenesisAccount> getAccounts() {
+    return accountBalances;
+  }
+
+  @JsonGetter("nonce")
+  public String getNonce() {
+    return "0x0";
+  }
+
+  @JsonGetter("timestamp")
+  public String getTimestamp() {
+    return "0x58ee40ba";
+  }
+
+  @JsonGetter("gasLimit")
+  public String getGasLimit() {
+    return "0x47b760";
+  }
+
+  @JsonGetter("difficulty")
+  public String getDifficulty() {
+    return "0x1";
+  }
+
+  @JsonGetter("mixHash")
+  public String getMixHash() {
+    return "0x0000000000000000000000000000000000000000000000000000000000000000";
+  }
+
+  @JsonGetter("coinbase")
+  public String getCoinbase() {
+    return "0x0000000000000000000000000000000000000000";
+  }
+
+  @JsonGetter("number")
+  public String getNumber() {
+    return "0x0";
+  }
+
+  @JsonGetter("gasUsed")
+  public String getGasUsed() {
+    return "0x0";
+  }
+
+  @JsonGetter("parentHash")
+  public String getParentHash() {
+    return "0x0000000000000000000000000000000000000000000000000000000000000000";
   }
 }

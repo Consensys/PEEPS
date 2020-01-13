@@ -13,16 +13,11 @@
 package tech.pegasys.peeps.node;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
-import static io.vertx.core.buffer.Buffer.buffer;
 import static org.assertj.core.api.Assertions.assertThat;
 import static tech.pegasys.peeps.util.Await.await;
-import static tech.pegasys.peeps.util.ClasspathResources.read;
 import static tech.pegasys.peeps.util.HexFormatter.ensureHexPrefix;
 
-import tech.pegasys.peeps.json.Json;
 import tech.pegasys.peeps.network.NetworkMember;
-import tech.pegasys.peeps.node.genesis.Genesis;
 import tech.pegasys.peeps.node.rpc.NodeRpc;
 import tech.pegasys.peeps.node.rpc.NodeRpcExpectingData;
 import tech.pegasys.peeps.node.rpc.admin.NodeInfo;
@@ -40,6 +35,7 @@ import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.utility.MountableFile;
 
 public class Besu implements NetworkMember {
 
@@ -74,7 +70,9 @@ public class Besu implements NetworkMember {
     final List<String> commandLineOptions = standardCommandLineOptions();
 
     this.ipAddress = config.getIpAddress();
-    this.chainId = loadGenesis(config.getGenesisFile()).getConfig().getChainId();
+
+    // TODO generate this and pass in?
+    this.chainId = 4004;
 
     addPeerToPeerHost(config, commandLineOptions);
     addCorsOrigins(config, commandLineOptions);
@@ -85,7 +83,7 @@ public class Besu implements NetworkMember {
     addGenesisFile(config, commandLineOptions, container);
     addPrivacy(config, commandLineOptions, container);
 
-    LOG.info("Besu command line {}", commandLineOptions);
+    LOG.info("Besu command line: {}", commandLineOptions);
 
     this.besu =
         container.withCommand(commandLineOptions.toArray(new String[0])).waitingFor(liveliness());
@@ -194,20 +192,9 @@ public class Besu implements NetworkMember {
         .forPort(CONTAINER_HTTP_RPC_PORT);
   }
 
-  private Genesis loadGenesis(final String resourcePath) {
-    LOG.info("Loading genesis from resource location: %s", resourcePath);
-    final String genesis = read(resourcePath);
-    checkState(
-        !genesis.isBlank(),
-        "Genesis file at resource location: %s, must not be blank",
-        resourcePath);
-
-    return Json.decode(buffer(genesis), Genesis.class);
-  }
-
   private void logPortMappings() {
     LOG.info(
-        "Besu Container {}, HTTP RPC port mapping: {} -> {}, WS RPC port mapping: {} -> {}, p2p port mapping: {} -> {}",
+        "Besu Container: {}, HTTP RPC port mapping: {} -> {}, WS RPC port mapping: {} -> {}, p2p port mapping: {} -> {}",
         besu.getContainerId(),
         CONTAINER_HTTP_RPC_PORT,
         besu.getMappedPort(CONTAINER_HTTP_RPC_PORT),
@@ -219,10 +206,10 @@ public class Besu implements NetworkMember {
 
   private void logContainerNetworkDetails() {
     if (besu.getNetwork() == null) {
-      LOG.info("Besu Container {} has no network", besu.getContainerId());
+      LOG.info("Besu Container: {}, has no network", besu.getContainerId());
     } else {
       LOG.info(
-          "Besu Container {}, IP address: {}, Network: {}",
+          "Besu Container: {}, IP address: {}, Network: {}",
           besu.getContainerId(),
           besu.getContainerIpAddress(),
           besu.getNetwork().getId());
@@ -292,8 +279,8 @@ public class Besu implements NetworkMember {
       final GenericContainer<?> container) {
     commandLineOptions.add("--genesis-file");
     commandLineOptions.add(CONTAINER_GENESIS_FILE);
-    container.withClasspathResourceMapping(
-        config.getGenesisFile(), CONTAINER_GENESIS_FILE, BindMode.READ_ONLY);
+    container.withCopyFileToContainer(
+        MountableFile.forHostPath(config.getGenesisFile()), CONTAINER_GENESIS_FILE);
   }
 
   private void addPrivacy(
