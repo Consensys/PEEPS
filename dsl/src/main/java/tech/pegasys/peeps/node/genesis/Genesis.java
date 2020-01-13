@@ -13,6 +13,7 @@
 package tech.pegasys.peeps.node.genesis;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Genesis {
@@ -24,6 +25,7 @@ public class Genesis {
     this.config = config;
   }
 
+  @JsonGetter("config")
   public GenesisConfiguration getConfig() {
     return config;
   }

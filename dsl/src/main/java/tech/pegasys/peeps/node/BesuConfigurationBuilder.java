@@ -22,7 +22,7 @@ import org.testcontainers.containers.Network;
 public class BesuConfigurationBuilder {
 
   // TODO move these into the test
-  private static final String DEFAULT_GENESIS_FILE = "node/genesis/eth_hash_4004.json";
+  private static final String DEFAULT_GENESIS_FILE = "node/genesis/eth_hash.json";
 
   // TODO move these into the test
   private static final String DEFAULT_PRIVACY_MARKER_SIGNER_PRIVATE_KEY_FILE =
