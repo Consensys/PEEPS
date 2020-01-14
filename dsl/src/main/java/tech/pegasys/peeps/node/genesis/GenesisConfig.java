@@ -12,7 +12,9 @@
  */
 package tech.pegasys.peeps.node.genesis;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public abstract class GenesisConfig {
 
@@ -22,7 +24,8 @@ public abstract class GenesisConfig {
 
   private final long chainId;
 
-  public GenesisConfig(final long chainId) {
+  @JsonCreator
+  public GenesisConfig(@JsonProperty("chainId") final long chainId) {
     this.chainId = chainId;
   }
 

@@ -60,7 +60,6 @@ public class Besu implements NetworkMember {
   private final NodeRpc nodeRpc;
   private final NodeRpcExpectingData rpc;
   private final String ipAddress;
-  private final long chainId;
   private String nodeId;
   private String enodeId;
 
@@ -70,9 +69,6 @@ public class Besu implements NetworkMember {
     final List<String> commandLineOptions = standardCommandLineOptions();
 
     this.ipAddress = config.getIpAddress();
-
-    // TODO generate this and pass in?
-    this.chainId = 4004;
 
     addPeerToPeerHost(config, commandLineOptions);
     addCorsOrigins(config, commandLineOptions);
@@ -143,10 +139,6 @@ public class Besu implements NetworkMember {
 
   public int p2pPort() {
     return CONTAINER_P2P_PORT;
-  }
-
-  public long chainId() {
-    return chainId;
   }
 
   public void awaitConnectivity(final List<Besu> peers) {

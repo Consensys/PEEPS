@@ -67,6 +67,10 @@ public class Network implements Closeable {
   private final org.testcontainers.containers.Network network;
   private final PathGenerator pathGenerator;
   private final Vertx vertx;
+  private final Path genesisFile;
+
+  // TODO create this - shared genesis
+  private final Genesis genesis;
 
   public Network(final Path configurationDirectory) {
     checkNotNull(configurationDirectory, "Path to configuration directory is mandatory");
@@ -79,6 +83,11 @@ public class Network implements Closeable {
     this.vertx = Vertx.vertx();
     this.subnet = new Subnet();
     this.network = subnet.createContainerNetwork();
+    this.genesisFile = pathGenerator.uniqueFile();
+
+    // TODO these must be done elsewhere - allow for the test to change consensus during setUp()
+    this.genesis = createGenesis();
+    writeGenesisFile();
   }
 
   public void start() {
@@ -98,22 +107,25 @@ public class Network implements Closeable {
     network.close();
   }
 
-  public Besu addNode(final BesuConfigurationBuilder config) {
-
-    // TODO temp hack - hardcode to EthHash, use input switch
-    // TODO create genesis file
-    // TODO can be path instead of String?
-    // TODO delay creation of alloc & extra data until after all nodes addded & validators /
-    // accounts known
-    final Path genesisFile = pathGenerator.uniqueFile();
+  // TODO move to after public methods
+  private Genesis createGenesis() {
 
     final Map<GenesisAddress, GenesisAccount> genesisAccounts =
         GenesisAccounts.of(GenesisAccounts.ALPHA, GenesisAccounts.BETA, GenesisAccounts.GAMMA);
 
-    final GenesisConfig genesisConfig = new GenesisConfigEthHash(1234, new EthHashConfig());
-    final Genesis besuGenesis = new Genesis(genesisConfig, genesisAccounts);
+    // TODO temp hack - hardcode to EthHash, use input switch
+    // TODO temp hack - hardcoded chainid
+    final long chainId = 1234;
+    final GenesisConfig genesisConfig = new GenesisConfigEthHash(chainId, new EthHashConfig());
+    return new Genesis(genesisConfig, genesisAccounts);
+  }
 
-    final String encodedBesuGenesis = Json.encode(besuGenesis);
+  private void writeGenesisFile() {
+
+    // TODO delay creation of alloc & extra data until after all nodes addded & validators /
+    // accounts known
+
+    final String encodedBesuGenesis = Json.encode(genesis);
     LOG.info(
         "Creating Besu genesis file\n\tLocation: {} \n\tContents: {}",
         genesisFile,
@@ -131,8 +143,9 @@ public class Network implements Closeable {
               genesisFile, e.getLocalizedMessage());
       throw new IllegalStateException(message);
     }
+  }
 
-    ;
+  public Besu addNode(final BesuConfigurationBuilder config) {
 
     final Besu besu =
         new Besu(
@@ -180,7 +193,7 @@ public class Network implements Closeable {
                 .withContainerNetwork(network)
                 .withIpAddress(subnet.getAddressAndIncrement())
                 .withDownstream(downstream)
-                .withChainId(downstream.chainId())
+                .withChainId(genesis.getConfig().getChainId())
                 .witWallet(wallet)
                 .build());
 

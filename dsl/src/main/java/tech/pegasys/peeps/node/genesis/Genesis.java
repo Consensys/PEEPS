@@ -16,9 +16,11 @@ import tech.pegasys.peeps.node.model.GenesisAddress;
 
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonInclude(Include.NON_NULL)
 public class Genesis {
@@ -27,8 +29,10 @@ public class Genesis {
   private final Map<GenesisAddress, GenesisAccount> accountBalances;
   private final String extraData;
 
+  @JsonCreator
   public Genesis(
-      final GenesisConfig config, final Map<GenesisAddress, GenesisAccount> accountBalances) {
+      @JsonProperty("config") final GenesisConfig config,
+      @JsonProperty("alloc") final Map<GenesisAddress, GenesisAccount> accountBalances) {
     this.config = config;
     this.accountBalances = accountBalances;
 
@@ -68,7 +72,7 @@ public class Genesis {
 
   @JsonGetter("difficulty")
   public String getDifficulty() {
-    return "0x1";
+    return "0x10000";
   }
 
   @JsonGetter("mixHash")
