@@ -88,6 +88,10 @@ public class BesuConfiguration {
     return vertx;
   }
 
+  public boolean isPrivacyEnabled() {
+    return privacyUrl != null;
+  }
+
   public String getPrivacyUrl() {
     return privacyUrl;
   }

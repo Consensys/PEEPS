@@ -20,7 +20,9 @@ import tech.pegasys.peeps.contract.SimpleStorage;
 import tech.pegasys.peeps.network.Network;
 import tech.pegasys.peeps.node.Besu;
 import tech.pegasys.peeps.node.BesuConfigurationBuilder;
+import tech.pegasys.peeps.node.GenesisAccounts;
 import tech.pegasys.peeps.node.NodeKeys;
+import tech.pegasys.peeps.node.model.Address;
 import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.model.PrivacyTransactionReceipt;
 import tech.pegasys.peeps.node.model.Transaction;
@@ -37,70 +39,73 @@ import org.junit.jupiter.api.Test;
 
 public class PrivacyContracDeploymentTest extends NetworkTest {
 
-  private Network network;
-  private Besu besuA;
-  private Orion orionA;
-  private EthSigner signerA;
+  private Besu nodeAlpha;
+  private Orion privacyManagerAlpha;
+  private EthSigner signerAlpha;
 
-  private Besu besuB;
-  private EthSigner signerB;
-  private Orion orionB;
+  private Besu nodeBeta;
+  private EthSigner signerBeta;
+  private Orion privacyManagerBeta;
 
   @Override
   protected void setUpNetwork(final Network network) {
-    this.network = network;
 
-    this.orionA = network.addPrivacyManager(OrionKeyPair.ALPHA);
+    this.privacyManagerAlpha = network.addPrivacyManager(OrionKeyPair.ALPHA);
 
     // TODO Besu -> Orion
     // TODO Orion can expose it's public keys, choose the first
-    this.besuA =
+    this.nodeAlpha =
         network.addNode(
             new BesuConfigurationBuilder()
-                .withPrivacyUrl(orionA)
+                .withPrivacyUrl(privacyManagerAlpha)
                 .withNodePrivateKeyFile(NodeKeys.BOOTNODE.getPrivateKeyFile())
                 .withPrivacyManagerPublicKey(OrionKeyPair.ALPHA.getPublicKey()));
 
-    this.signerA = network.addSigner(SignerWallet.ALPHA, besuA);
+    this.signerAlpha = network.addSigner(SignerWallet.ALPHA, nodeAlpha);
 
-    this.orionB = network.addPrivacyManager(OrionKeyPair.BETA);
+    this.privacyManagerBeta = network.addPrivacyManager(OrionKeyPair.BETA);
 
     // TODO move this into Network, same approach as Orions, add enodeAddress to Besu
     // TODO fits as a function of Besu
     // TODO better typing then String - create ENODE Address
     final String bootnodeEnodeAddress =
-        NodeKeys.BOOTNODE.getEnodeAddress(besuA.ipAddress(), besuA.p2pPort());
+        NodeKeys.BOOTNODE.getEnodeAddress(nodeAlpha.ipAddress(), nodeAlpha.p2pPort());
 
-    this.besuB =
+    this.nodeBeta =
         network.addNode(
             new BesuConfigurationBuilder()
-                .withPrivacyUrl(orionB)
+                .withPrivacyUrl(privacyManagerBeta)
                 .withBootnodeEnodeAddress(bootnodeEnodeAddress)
                 .withPrivacyManagerPublicKey(OrionKeyPair.BETA.getPublicKey()));
 
-    this.signerB = network.addSigner(SignerWallet.BETA, besuB);
+    this.signerBeta = network.addSigner(SignerWallet.BETA, nodeBeta);
   }
 
   @Test
   public void deploymentMustSucceed() throws DecoderException {
 
+    // TODO why gamma unlocked in signerAlpha?
+    final Address sender = GenesisAccounts.GAMMA.address();
     final Hash pmt =
-        signerA.rpc().deployContractToPrivacyGroup(SimpleStorage.BINARY, orionA, orionB);
+        signerAlpha
+            .rpc()
+            .deployContractToPrivacyGroup(
+                sender, SimpleStorage.BINARY, privacyManagerAlpha, privacyManagerBeta);
 
     // TODO no in-line comments - implement clean code!
 
     // TODO entire network - i.e. all Nodes, don't pass them in
     // Valid transaction receipt for the privacy contract deployment
-    network.awaitConsensusOnTransactionReciept(pmt);
+    network().awaitConsensusOnTransactionReciept(pmt);
 
     // Valid privacy marker transaction
-    final TransactionReceipt pmtReceiptNodeA = besuA.rpc().getTransactionReceipt(pmt);
+    final TransactionReceipt pmtReceiptNodeA = nodeAlpha.rpc().getTransactionReceipt(pmt);
 
     assertThat(pmtReceiptNodeA.getTransactionHash()).isEqualTo(pmt);
     assertThat(pmtReceiptNodeA.isSuccess()).isTrue();
 
-    final Transaction pmtNodeA = besuA.rpc().getTransactionByHash(pmt);
-    final Transaction pmtNodeB = besuB.rpc().getTransactionByHash(pmt);
+    final Transaction pmtNodeA = nodeAlpha.rpc().getTransactionByHash(pmt);
+    final Transaction pmtNodeB = nodeBeta.rpc().getTransactionByHash(pmt);
 
     assertThat(pmtNodeA.isProcessed()).isTrue();
     assertThat(pmtNodeA).usingRecursiveComparison().isEqualTo(pmtNodeB);
@@ -112,18 +117,18 @@ public class PrivacyContracDeploymentTest extends NetworkTest {
     final String key = new String(encodedHexB64, StandardCharsets.UTF_8);
 
     // Valid privacy transaction receipt
-    final PrivacyTransactionReceipt receiptNodeA = besuA.rpc().getPrivacyContractReceipt(pmt);
-    final PrivacyTransactionReceipt receiptNodeB = besuB.rpc().getPrivacyContractReceipt(pmt);
+    final PrivacyTransactionReceipt receiptNodeA = nodeAlpha.rpc().getPrivacyContractReceipt(pmt);
+    final PrivacyTransactionReceipt receiptNodeB = nodeBeta.rpc().getPrivacyContractReceipt(pmt);
 
     assertThat(receiptNodeA.isSuccess()).isTrue();
     assertThat(receiptNodeA).usingRecursiveComparison().isEqualTo(receiptNodeB);
 
-    final PrivacyTransactionReceipt receiptNodeC = signerB.rpc().getPrivacyContractReceipt(pmt);
+    final PrivacyTransactionReceipt receiptNodeC = signerBeta.rpc().getPrivacyContractReceipt(pmt);
     assertThat(receiptNodeA).usingRecursiveComparison().isEqualTo(receiptNodeC);
 
     // Valid entries in both Orions
-    final String payloadOrionA = orionA.getPayload(key);
-    final String payloadOrionB = orionB.getPayload(key);
+    final String payloadOrionA = privacyManagerAlpha.getPayload(key);
+    final String payloadOrionB = privacyManagerBeta.getPayload(key);
 
     assertThat(payloadOrionA).isNotNull();
     assertThat(payloadOrionA).isEqualTo(payloadOrionB);

@@ -77,7 +77,10 @@ public class Besu implements NetworkMember {
     addContainerIpAddress(ipAddress, container);
     addNodePrivateKey(config, commandLineOptions, container);
     addGenesisFile(config, commandLineOptions, container);
-    addPrivacy(config, commandLineOptions, container);
+
+    if (config.isPrivacyEnabled()) {
+      addPrivacy(config, commandLineOptions, container);
+    }
 
     LOG.info("Besu command line: {}", commandLineOptions);
 

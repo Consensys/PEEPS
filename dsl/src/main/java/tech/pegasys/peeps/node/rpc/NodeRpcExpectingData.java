@@ -14,10 +14,13 @@ package tech.pegasys.peeps.node.rpc;
 
 import static tech.pegasys.peeps.util.Await.awaitData;
 
+import tech.pegasys.peeps.node.model.Address;
 import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.model.PrivacyTransactionReceipt;
 import tech.pegasys.peeps.node.model.Transaction;
 import tech.pegasys.peeps.node.model.TransactionReceipt;
+
+import org.apache.tuweni.units.ethereum.Wei;
 
 public class NodeRpcExpectingData {
 
@@ -49,5 +52,10 @@ public class NodeRpcExpectingData {
             "Failed to retrieve the transaction with hash: %s",
             transaction)
         .get();
+  }
+
+  public Wei getBalance(final Address account) {
+    return awaitData(
+        () -> rpc.getBalance(account), "Failed to retrieve the balance for address: %s", account);
   }
 }

@@ -13,6 +13,7 @@
 package tech.pegasys.peeps.node.rpc;
 
 import tech.pegasys.peeps.json.rpc.JsonRpcClient;
+import tech.pegasys.peeps.node.model.Address;
 import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.model.PrivacyTransactionReceipt;
 import tech.pegasys.peeps.node.model.Transaction;
@@ -21,6 +22,7 @@ import tech.pegasys.peeps.node.rpc.admin.ConnectedPeer;
 import tech.pegasys.peeps.node.rpc.admin.ConnectedPeersResponse;
 import tech.pegasys.peeps.node.rpc.admin.NodeInfo;
 import tech.pegasys.peeps.node.rpc.admin.NodeInfoResponse;
+import tech.pegasys.peeps.node.rpc.eth.GetBalanceResponse;
 import tech.pegasys.peeps.node.rpc.eth.GetTransactionByHashResponse;
 import tech.pegasys.peeps.node.rpc.eth.GetTransactionResponse;
 import tech.pegasys.peeps.node.rpc.priv.GetPrivateTransactionResponse;
@@ -34,6 +36,7 @@ import java.util.stream.Collectors;
 import io.vertx.core.Vertx;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.tuweni.units.ethereum.Wei;
 
 public class NodeRpc extends JsonRpcClient {
 
@@ -61,16 +64,20 @@ public class NodeRpc extends JsonRpcClient {
   }
 
   public Optional<PrivacyTransactionReceipt> getPrivacyTransactionReceipt(final Hash receipt) {
-    return post("priv_getTransactionReceipt", receipt, GetPrivateTransactionResponse.class)
+    return post("priv_getTransactionReceipt", GetPrivateTransactionResponse.class, receipt)
         .getResult();
   }
 
   public Optional<TransactionReceipt> getTransactionReceipt(final Hash receipt) {
-    return post("eth_getTransactionReceipt", receipt, GetTransactionResponse.class).getResult();
+    return post("eth_getTransactionReceipt", GetTransactionResponse.class, receipt).getResult();
   }
 
   public Optional<Transaction> getTransactionByHash(final Hash transaction) {
-    return post("eth_getTransactionByHash", transaction, GetTransactionByHashResponse.class)
+    return post("eth_getTransactionByHash", GetTransactionByHashResponse.class, transaction)
         .getResult();
+  }
+
+  public Wei getBalance(final Address account) {
+    return post("eth_getBalance", GetBalanceResponse.class, account, "latest").getResult();
   }
 }

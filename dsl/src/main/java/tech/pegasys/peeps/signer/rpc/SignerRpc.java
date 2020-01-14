@@ -12,10 +12,13 @@
  */
 package tech.pegasys.peeps.signer.rpc;
 
+import tech.pegasys.peeps.node.model.Address;
 import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.rpc.NodeRpc;
-import tech.pegasys.peeps.signer.rpc.eea.SendPrivateTransactionResponse;
-import tech.pegasys.peeps.signer.rpc.eea.SendTransactionRequest;
+import tech.pegasys.peeps.signer.rpc.eea.SendPrivacyTransactionRequest;
+import tech.pegasys.peeps.signer.rpc.eea.SendPrivacyTransactionResponse;
+import tech.pegasys.peeps.signer.rpc.eth.SendTransactionRequest;
+import tech.pegasys.peeps.signer.rpc.eth.SendTransactionResponse;
 import tech.pegasys.peeps.signer.rpc.net.EnodeResponse;
 
 import java.time.Duration;
@@ -23,6 +26,7 @@ import java.time.Duration;
 import io.vertx.core.Vertx;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.tuweni.units.ethereum.Wei;
 
 public class SignerRpc extends NodeRpc {
 
@@ -33,16 +37,25 @@ public class SignerRpc extends NodeRpc {
     super(vertx, timeout, LOG);
   }
 
+  // TODO all the RPCs should use addresses and privacy address instead of String
   public Hash deployContractToPrivacyGroup(
-      final String sender,
+      final Address sender,
       final String binary,
       final String privateSender,
       final String[] privateRecipients) {
     return post(
             "eea_sendTransaction",
-            new SendTransactionRequest(
-                sender, NO_RECIPIENT, binary, privateSender, privateRecipients),
-            SendPrivateTransactionResponse.class)
+            SendPrivacyTransactionResponse.class,
+            new SendPrivacyTransactionRequest(
+                sender.getAddress(), NO_RECIPIENT, binary, privateSender, privateRecipients))
+        .getResult();
+  }
+
+  public Hash transfer(final Address sender, final Address receiver, final Wei amount) {
+    return post(
+            "eth_sendTransaction",
+            SendTransactionResponse.class,
+            new SendTransactionRequest(sender, receiver, null, amount))
         .getResult();
   }
 

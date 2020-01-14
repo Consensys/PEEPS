@@ -12,6 +12,7 @@
  */
 package tech.pegasys.peeps.signer.rpc;
 
+import tech.pegasys.peeps.node.model.Address;
 import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.rpc.NodeRpcExpectingData;
 import tech.pegasys.peeps.privacy.Orion;
@@ -20,18 +21,14 @@ import java.util.function.Supplier;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.tuweni.units.ethereum.Wei;
 
 public class SignerRpcExpectingData extends NodeRpcExpectingData {
 
   private static final Logger LOG = LogManager.getLogger();
 
-  // TODO better typing
-  // TODO enter / stored in the wallet file as address - can be read in EthSigner
-  private final String senderAccount = "0xf17f52151ebef6c7334fad080c5704d77216b732";
-  //  private final String senderAccount = "0x627306090abab3a6e1400e9345bc60c78a8bef57";
-
   private final SignerRpc rpc;
-  final Supplier<String> signerLogs;
+  private final Supplier<String> signerLogs;
   private final Supplier<String> downstreamLogs;
 
   public SignerRpcExpectingData(
@@ -45,19 +42,26 @@ public class SignerRpcExpectingData extends NodeRpcExpectingData {
   }
 
   public Hash deployContractToPrivacyGroup(
-      final String binary, final Orion sender, final Orion... recipients) {
-    final String[] privateRecipients = new String[recipients.length];
-    for (int i = 0; i < recipients.length; i++) {
-      privateRecipients[i] = recipients[i].getId();
+      final Address sender,
+      final String binary,
+      final Orion privacySender,
+      final Orion... privacyRecipients) {
+    final String[] privateRecipients = new String[privacyRecipients.length];
+    for (int i = 0; i < privacyRecipients.length; i++) {
+      privateRecipients[i] = privacyRecipients[i].getId();
     }
 
     try {
       return rpc.deployContractToPrivacyGroup(
-          senderAccount, binary, sender.getId(), privateRecipients);
+          sender, binary, privacySender.getId(), privateRecipients);
     } catch (final RuntimeException e) {
       LOG.error(signerLogs.get());
       LOG.error(downstreamLogs.get());
       throw e;
     }
+  }
+
+  public Hash transfer(final Address sender, final Address receiver, final long amount) {
+    return rpc.transfer(sender, receiver, Wei.valueOf(amount));
   }
 }

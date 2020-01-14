@@ -83,7 +83,12 @@ public abstract class RpcClient {
               if (result.statusCode() == HTTP_STATUS_OK) {
                 result.bodyHandler(
                     body -> {
-                      log.info("Container {}, {}: {}, {}", containerId, relativeUri, json, body);
+                      log.info(
+                          "Container {}, relative URL: {}, request: {}, response: {}",
+                          containerId,
+                          relativeUri,
+                          json,
+                          body);
                       future.complete(Json.decode(body, clazz));
                     });
               } else {

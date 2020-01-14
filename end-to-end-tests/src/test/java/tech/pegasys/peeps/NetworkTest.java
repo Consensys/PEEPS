@@ -40,4 +40,9 @@ public abstract class NetworkTest {
   }
 
   protected abstract void setUpNetwork(Network network);
+
+  // TODO replace this with await consensus on?
+  protected Network network() {
+    return network;
+  }
 }

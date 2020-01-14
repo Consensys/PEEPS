@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 ConsenSys AG.
+ * Copyright 2020 ConsenSys AG.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -10,64 +10,50 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package tech.pegasys.peeps.signer.rpc.eea;
+package tech.pegasys.peeps.signer.rpc.eth;
+
+import tech.pegasys.peeps.node.model.Address;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import org.apache.tuweni.units.ethereum.Wei;
 
+@JsonInclude(Include.NON_NULL)
 public class SendTransactionRequest {
-
   /* Default gas price of 1000 wei.*/
   private static final String DEFAULT_GAS_PRICE = "0x3E8";
 
   /* Default gas limit of 3000000 wei. */
   private static final String DEFAULT_GAS_LIMIT = "0x2DC6C0";
 
-  // TODO better typing than String
-  private final String sender;
-  private final String recipient;
+  private final Address sender;
+  private final Address recipient;
   private final String data;
-  private final String privateSender;
-  private final String[] privateRecipients;
+  private final Wei value;
 
   public SendTransactionRequest(
-      final String sender,
-      final String recipient,
-      final String data,
-      final String privateSender,
-      final String[] privateRecipients) {
+      final Address sender, final Address recipient, final String data, final Wei value) {
     this.sender = sender;
     this.recipient = recipient;
     this.data = data;
-    this.privateSender = privateSender;
-    this.privateRecipients = privateRecipients;
+    this.value = value;
   }
 
   @JsonGetter("from")
-  public String getSender() {
+  public Address getSender() {
     return sender;
   }
 
   @JsonInclude(Include.NON_NULL)
   @JsonGetter("to")
-  public String getRecipient() {
+  public Address getRecipient() {
     return recipient;
   }
 
   @JsonGetter("data")
   public String getData() {
     return data;
-  }
-
-  @JsonGetter("privateFrom")
-  public String getPrivateSender() {
-    return privateSender;
-  }
-
-  @JsonGetter("privateFor")
-  public String[] getPrivateRecipients() {
-    return privateRecipients;
   }
 
   @JsonGetter("restriction")
@@ -83,5 +69,10 @@ public class SendTransactionRequest {
   @JsonGetter("gasPrice")
   public String getGasPrice() {
     return DEFAULT_GAS_PRICE;
+  }
+
+  @JsonGetter("value")
+  public String getValue() {
+    return value.toShortHexString();
   }
 }

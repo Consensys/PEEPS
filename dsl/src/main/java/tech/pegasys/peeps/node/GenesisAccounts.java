@@ -10,9 +10,12 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package tech.pegasys.peeps.node.genesis;
+package tech.pegasys.peeps.node;
 
+import tech.pegasys.peeps.node.genesis.GenesisAccount;
+import tech.pegasys.peeps.node.model.Address;
 import tech.pegasys.peeps.node.model.GenesisAddress;
+import tech.pegasys.peeps.util.HexFormatter;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -37,17 +40,23 @@ public enum GenesisAccounts {
 
   private static final String DEFAULT_BALANCE = "0xad78ebc5ac6200000";
 
-  private final GenesisAddress address;
+  private final GenesisAddress genesisAddres;
+  private final Address address;
 
-  private GenesisAccounts(final String address) {
-    this.address = new GenesisAddress(address);
+  private GenesisAccounts(final String genesisAddres) {
+    this.genesisAddres = new GenesisAddress(genesisAddres);
+    this.address = new Address(HexFormatter.ensureHexPrefix(genesisAddres));
+  }
+
+  public Address address() {
+    return address;
   }
 
   public static Map<GenesisAddress, GenesisAccount> of(final GenesisAccounts... accounts) {
     final Map<GenesisAddress, GenesisAccount> mapped = new HashMap<>();
 
     for (final GenesisAccounts account : accounts) {
-      mapped.put(account.address, new GenesisAccount(DEFAULT_BALANCE));
+      mapped.put(account.genesisAddres, new GenesisAccount(DEFAULT_BALANCE));
     }
 
     return Collections.unmodifiableMap(mapped);

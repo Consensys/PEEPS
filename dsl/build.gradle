@@ -24,6 +24,7 @@ jar {
 }
 
 dependencies {
+  implementation 'org.apache.tuweni:tuweni-units'
   implementation 'org.assertj:assertj-core'
   implementation 'org.awaitility:awaitility'
   implementation 'com.google.guava:guava'

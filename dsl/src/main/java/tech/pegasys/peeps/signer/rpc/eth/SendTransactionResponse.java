@@ -10,19 +10,19 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package tech.pegasys.peeps.signer.rpc.eea;
+package tech.pegasys.peeps.signer.rpc.eth;
 
 import tech.pegasys.peeps.node.model.Hash;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class SendPrivateTransactionResponse {
+public class SendTransactionResponse {
 
   private final Hash result;
 
   @JsonCreator
-  public SendPrivateTransactionResponse(@JsonProperty("result") final Hash result) {
+  public SendTransactionResponse(@JsonProperty("result") final Hash result) {
     this.result = result;
   }
 
