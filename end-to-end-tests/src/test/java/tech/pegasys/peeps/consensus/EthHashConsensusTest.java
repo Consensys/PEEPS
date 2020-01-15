@@ -22,6 +22,8 @@ import tech.pegasys.peeps.node.GenesisAccounts;
 import tech.pegasys.peeps.node.NodeKeys;
 import tech.pegasys.peeps.node.model.Address;
 import tech.pegasys.peeps.node.model.Hash;
+import tech.pegasys.peeps.node.model.Transaction;
+import tech.pegasys.peeps.node.model.TransactionReceipt;
 import tech.pegasys.peeps.privacy.OrionKeyPair;
 import tech.pegasys.peeps.signer.EthSigner;
 import tech.pegasys.peeps.signer.SignerWallet;
@@ -62,23 +64,35 @@ public class EthHashConsensusTest extends NetworkTest {
   @Test
   public void consensusAfterMiningMustHappen() {
 
+    // TODO why GAMMA in EthSigner as the unlocked account?
     final Address sender = GenesisAccounts.GAMMA.address();
     final Address receiver = GenesisAccounts.BETA.address();
-    final long amount = 5000L;
+    final Wei transderAmount = Wei.valueOf(5000L);
 
     final Wei senderStartingBalance = nodeAlpha.rpc().getBalance(sender);
     final Wei receiverStartingBalance = nodeAlpha.rpc().getBalance(receiver);
 
-    final Hash transfer = signerAlpha.rpc().transfer(sender, receiver, amount);
+    final Hash receipt = signerAlpha.rpc().transfer(sender, receiver, transderAmount);
 
-    network().awaitConsensusOnTransactionReciept(transfer);
+    network().awaitConsensusOnTransactionReciept(receipt);
 
     final Wei senderEndBalance = nodeAlpha.rpc().getBalance(sender);
     final Wei receiverEndBalance = nodeAlpha.rpc().getBalance(receiver);
 
-    // TODO assert change in balances is correct
-
     assertThat(senderEndBalance).isEqualTo(nodeBeta.rpc().getBalance(sender));
     assertThat(receiverEndBalance).isEqualTo(nodeBeta.rpc().getBalance(receiver));
+
+    final TransactionReceipt transferReceipt = nodeAlpha.rpc().getTransactionReceipt(receipt);
+    assertThat(transferReceipt.isSuccess()).isTrue();
+
+    final Transaction transfer =
+        nodeAlpha.rpc().getTransactionByHash(transferReceipt.getTransactionHash());
+    final Wei transferCost = transferReceipt.getGasUsed().priceFor(transfer.getGasPrice());
+    assertThat(senderEndBalance)
+        .isEqualTo(senderStartingBalance.subtract(transderAmount).subtract(transferCost));
+    assertThat(receiverEndBalance).isEqualTo(receiverStartingBalance.add(transderAmount));
   }
+
+  // TODO assert functions
+
 }

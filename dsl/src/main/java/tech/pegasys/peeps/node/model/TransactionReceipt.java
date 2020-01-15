@@ -18,6 +18,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
+import org.apache.tuweni.units.bigints.UInt256;
+import org.apache.tuweni.units.ethereum.Gas;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class TransactionReceipt {
@@ -25,11 +27,11 @@ public class TransactionReceipt {
   private final Address sender;
   private final Hash blockHash;
   private final Hash transactionHash;
+  private final Gas gasUsed;
 
   // TODO stricter typing than String
   private final String blockNumber;
   private final String cumulativeGasUsed;
-  private final String gasUsed;
   private final String logsBloom;
   private final String transactionIndex;
   private final String status;
@@ -55,7 +57,7 @@ public class TransactionReceipt {
     this.transactionIndex = transactionIndex;
     this.status = status;
     this.cumulativeGasUsed = cumulativeGasUsed;
-    this.gasUsed = gasUsed;
+    this.gasUsed = Gas.valueOf(UInt256.fromHexString(gasUsed));
     this.logsBloom = logsBloom;
   }
 
@@ -101,7 +103,7 @@ public class TransactionReceipt {
     return cumulativeGasUsed;
   }
 
-  public String getGasUsed() {
+  public Gas getGasUsed() {
     return gasUsed;
   }
 

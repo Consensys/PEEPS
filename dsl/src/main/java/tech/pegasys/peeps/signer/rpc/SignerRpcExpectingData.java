@@ -61,7 +61,7 @@ public class SignerRpcExpectingData extends NodeRpcExpectingData {
     }
   }
 
-  public Hash transfer(final Address sender, final Address receiver, final long amount) {
-    return rpc.transfer(sender, receiver, Wei.valueOf(amount));
+  public Hash transfer(final Address sender, final Address receiver, final Wei amount) {
+    return rpc.transfer(sender, receiver, amount);
   }
 }

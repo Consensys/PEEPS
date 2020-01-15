@@ -16,17 +16,20 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
+import org.apache.tuweni.units.bigints.UInt256;
+import org.apache.tuweni.units.ethereum.Gas;
+import org.apache.tuweni.units.ethereum.Wei;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Transaction {
 
   private final Address sender;
+  private final Gas gas;
+  private final Wei gasPrice;
 
   // TODO stricter typing than String
   private final String blockHash;
   private final String blockNumber;
-  private final String gas;
-  private final String gasPrice;
   private final String hash;
   private final String input;
   private final String nonce;
@@ -55,8 +58,8 @@ public class Transaction {
     this.sender = sender;
     this.blockHash = blockHash;
     this.blockNumber = blockNumber;
-    this.gas = gas;
-    this.gasPrice = gasPrice;
+    this.gas = Gas.valueOf(UInt256.fromHexString(gas));
+    this.gasPrice = Wei.valueOf(UInt256.fromHexString(gasPrice));
     this.hash = hash;
     this.input = input;
     this.nonce = nonce;
@@ -88,11 +91,11 @@ public class Transaction {
     return blockNumber;
   }
 
-  public String getGas() {
+  public Gas getGas() {
     return gas;
   }
 
-  public String getGasPrice() {
+  public Wei getGasPrice() {
     return gasPrice;
   }
 
