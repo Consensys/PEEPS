@@ -22,7 +22,6 @@ import tech.pegasys.peeps.node.Besu;
 import tech.pegasys.peeps.node.BesuConfigurationBuilder;
 import tech.pegasys.peeps.node.GenesisAccounts;
 import tech.pegasys.peeps.node.NodeKeys;
-import tech.pegasys.peeps.node.model.Address;
 import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.model.PrivacyTransactionReceipt;
 import tech.pegasys.peeps.node.model.Transaction;
@@ -35,6 +34,7 @@ import java.nio.charset.StandardCharsets;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
+import org.apache.tuweni.eth.Address;
 import org.junit.jupiter.api.Test;
 
 public class PrivacyContracDeploymentTest extends NetworkTest {

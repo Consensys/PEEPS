@@ -10,21 +10,10 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package tech.pegasys.peeps.node.genesis;
+package tech.pegasys.peeps.network;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
-
-public class GenesisConfigEthHash extends GenesisConfig {
-
-  private final EthHashConfig ethHash;
-
-  public GenesisConfigEthHash(final long chainId, final EthHashConfig ethHash) {
-    super(chainId);
-    this.ethHash = ethHash;
-  }
-
-  @JsonGetter("ethash")
-  public EthHashConfig getEthHash() {
-    return ethHash;
-  }
+public enum ConsensusMechanism {
+  ETH_HASH,
+  IBFT2,
+  CLIQUE
 }

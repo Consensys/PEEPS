@@ -12,7 +12,6 @@
  */
 package tech.pegasys.peeps.signer.rpc;
 
-import tech.pegasys.peeps.node.model.Address;
 import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.rpc.NodeRpcExpectingData;
 import tech.pegasys.peeps.privacy.Orion;
@@ -21,6 +20,7 @@ import java.util.function.Supplier;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.tuweni.eth.Address;
 import org.apache.tuweni.units.ethereum.Wei;
 
 public class SignerRpcExpectingData extends NodeRpcExpectingData {

@@ -12,7 +12,6 @@
  */
 package tech.pegasys.peeps.signer.rpc;
 
-import tech.pegasys.peeps.node.model.Address;
 import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.rpc.NodeRpc;
 import tech.pegasys.peeps.signer.rpc.eea.SendPrivacyTransactionRequest;
@@ -26,12 +25,13 @@ import java.time.Duration;
 import io.vertx.core.Vertx;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.tuweni.eth.Address;
 import org.apache.tuweni.units.ethereum.Wei;
 
 public class SignerRpc extends NodeRpc {
 
   private static final Logger LOG = LogManager.getLogger();
-  private static final String NO_RECIPIENT = null;
+  private static final Address NO_RECIPIENT = null;
 
   public SignerRpc(final Vertx vertx, final Duration timeout) {
     super(vertx, timeout, LOG);
@@ -47,7 +47,7 @@ public class SignerRpc extends NodeRpc {
             "eea_sendTransaction",
             SendPrivacyTransactionResponse.class,
             new SendPrivacyTransactionRequest(
-                sender.getAddress(), NO_RECIPIENT, binary, privateSender, privateRecipients))
+                sender, NO_RECIPIENT, binary, privateSender, privateRecipients))
         .getResult();
   }
 

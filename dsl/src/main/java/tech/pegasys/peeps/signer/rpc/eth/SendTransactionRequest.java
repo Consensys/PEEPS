@@ -12,11 +12,10 @@
  */
 package tech.pegasys.peeps.signer.rpc.eth;
 
-import tech.pegasys.peeps.node.model.Address;
-
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import org.apache.tuweni.eth.Address;
 import org.apache.tuweni.units.ethereum.Wei;
 
 @JsonInclude(Include.NON_NULL)
@@ -41,14 +40,14 @@ public class SendTransactionRequest {
   }
 
   @JsonGetter("from")
-  public Address getSender() {
-    return sender;
+  public String getSender() {
+    return sender.toHexString();
   }
 
   @JsonInclude(Include.NON_NULL)
   @JsonGetter("to")
-  public Address getRecipient() {
-    return recipient;
+  public String getRecipient() {
+    return recipient != null ? recipient.toHexString() : null;
   }
 
   @JsonGetter("data")

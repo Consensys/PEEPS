@@ -18,7 +18,6 @@ import tech.pegasys.peeps.node.Besu;
 import tech.pegasys.peeps.node.BesuConfigurationBuilder;
 import tech.pegasys.peeps.node.GenesisAccounts;
 import tech.pegasys.peeps.node.NodeKeys;
-import tech.pegasys.peeps.node.model.Address;
 import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.verification.ValueReceived;
 import tech.pegasys.peeps.node.verification.ValueSent;
@@ -26,6 +25,7 @@ import tech.pegasys.peeps.privacy.OrionKeyPair;
 import tech.pegasys.peeps.signer.EthSigner;
 import tech.pegasys.peeps.signer.SignerWallet;
 
+import org.apache.tuweni.eth.Address;
 import org.apache.tuweni.units.ethereum.Wei;
 import org.junit.jupiter.api.Test;
 

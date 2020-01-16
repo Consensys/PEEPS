@@ -13,7 +13,6 @@
 package tech.pegasys.peeps.node.rpc;
 
 import tech.pegasys.peeps.json.rpc.JsonRpcClient;
-import tech.pegasys.peeps.node.model.Address;
 import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.model.PrivacyTransactionReceipt;
 import tech.pegasys.peeps.node.model.Transaction;
@@ -24,7 +23,7 @@ import tech.pegasys.peeps.node.rpc.admin.NodeInfo;
 import tech.pegasys.peeps.node.rpc.admin.NodeInfoResponse;
 import tech.pegasys.peeps.node.rpc.eth.GetBalanceResponse;
 import tech.pegasys.peeps.node.rpc.eth.GetTransactionByHashResponse;
-import tech.pegasys.peeps.node.rpc.eth.GetTransactionResponse;
+import tech.pegasys.peeps.node.rpc.eth.GetTransactionReceiptResponse;
 import tech.pegasys.peeps.node.rpc.priv.GetPrivateTransactionResponse;
 
 import java.time.Duration;
@@ -36,6 +35,7 @@ import java.util.stream.Collectors;
 import io.vertx.core.Vertx;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.tuweni.eth.Address;
 import org.apache.tuweni.units.ethereum.Wei;
 
 public class NodeRpc extends JsonRpcClient {
@@ -69,7 +69,8 @@ public class NodeRpc extends JsonRpcClient {
   }
 
   public Optional<TransactionReceipt> getTransactionReceipt(final Hash receipt) {
-    return post("eth_getTransactionReceipt", GetTransactionResponse.class, receipt).getResult();
+    return post("eth_getTransactionReceipt", GetTransactionReceiptResponse.class, receipt)
+        .getResult();
   }
 
   public Optional<Transaction> getTransactionByHash(final Hash transaction) {
@@ -78,6 +79,7 @@ public class NodeRpc extends JsonRpcClient {
   }
 
   public Wei getBalance(final Address account) {
-    return post("eth_getBalance", GetBalanceResponse.class, account, "latest").getResult();
+    return post("eth_getBalance", GetBalanceResponse.class, account.toHexString(), "latest")
+        .getResult();
   }
 }

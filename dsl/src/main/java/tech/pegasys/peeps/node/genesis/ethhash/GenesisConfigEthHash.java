@@ -10,26 +10,23 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package tech.pegasys.peeps.node.verification;
+package tech.pegasys.peeps.node.genesis.ethhash;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import tech.pegasys.peeps.node.genesis.GenesisConfig;
 
-import tech.pegasys.peeps.node.rpc.NodeRpcExpectingData;
+import com.fasterxml.jackson.annotation.JsonGetter;
 
-import org.apache.tuweni.eth.Address;
-import org.apache.tuweni.units.ethereum.Wei;
+public class GenesisConfigEthHash extends GenesisConfig {
 
-public class AccountValue {
+  private final EthHashConfig ethHash;
 
-  private final Address account;
-  private final Wei value;
-
-  public AccountValue(final Address account, final Wei value) {
-    this.account = account;
-    this.value = value;
+  public GenesisConfigEthHash(final long chainId, final EthHashConfig ethHash) {
+    super(chainId);
+    this.ethHash = ethHash;
   }
 
-  public void verify(final NodeRpcExpectingData rpc) {
-    assertThat(rpc.getBalance(account)).isEqualTo(value);
+  @JsonGetter("ethash")
+  public EthHashConfig getConsensusConfig() {
+    return ethHash;
   }
 }

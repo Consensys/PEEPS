@@ -14,12 +14,12 @@ package tech.pegasys.peeps.node.verification;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import tech.pegasys.peeps.node.model.Address;
 import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.model.Transaction;
 import tech.pegasys.peeps.node.model.TransactionReceipt;
 import tech.pegasys.peeps.node.rpc.NodeRpcExpectingData;
 
+import org.apache.tuweni.eth.Address;
 import org.apache.tuweni.units.ethereum.Gas;
 import org.apache.tuweni.units.ethereum.Wei;
 

@@ -15,6 +15,7 @@ package tech.pegasys.peeps.signer.rpc.eea;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import org.apache.tuweni.eth.Address;
 
 public class SendPrivacyTransactionRequest {
 
@@ -24,16 +25,17 @@ public class SendPrivacyTransactionRequest {
   /* Default gas limit of 3000000 wei. */
   private static final String DEFAULT_GAS_LIMIT = "0x2DC6C0";
 
+  private final Address sender;
+  private final Address recipient;
+
   // TODO better typing than String
-  private final String sender;
-  private final String recipient;
   private final String data;
   private final String privateSender;
   private final String[] privateRecipients;
 
   public SendPrivacyTransactionRequest(
-      final String sender,
-      final String recipient,
+      final Address sender,
+      final Address recipient,
       final String data,
       final String privateSender,
       final String[] privateRecipients) {
@@ -46,13 +48,13 @@ public class SendPrivacyTransactionRequest {
 
   @JsonGetter("from")
   public String getSender() {
-    return sender;
+    return sender.toHexString();
   }
 
   @JsonInclude(Include.NON_NULL)
   @JsonGetter("to")
   public String getRecipient() {
-    return recipient;
+    return recipient != null ? recipient.toHexString() : null;
   }
 
   @JsonGetter("data")

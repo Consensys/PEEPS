@@ -16,6 +16,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
+import org.apache.tuweni.eth.Address;
 import org.apache.tuweni.units.bigints.UInt256;
 import org.apache.tuweni.units.ethereum.Gas;
 import org.apache.tuweni.units.ethereum.Wei;
@@ -43,7 +44,7 @@ public class Transaction {
 
   @JsonCreator
   public Transaction(
-      @JsonProperty("from") final Address sender,
+      @JsonProperty("from") final String sender,
       @JsonProperty("blockHash") final String blockHash,
       @JsonProperty("blockNumber") final String blockNumber,
       @JsonProperty("gas") final String gas,
@@ -55,7 +56,7 @@ public class Transaction {
       @JsonProperty("v") final String v,
       @JsonProperty("r") final String r,
       @JsonProperty("s") final String s) {
-    this.sender = sender;
+    this.sender = Address.fromHexString(sender);
     this.blockHash = blockHash;
     this.blockNumber = blockNumber;
     this.gas = Gas.valueOf(UInt256.fromHexString(gas));
@@ -70,11 +71,11 @@ public class Transaction {
   }
 
   @JsonSetter("to")
-  public void setRecipient(final Address recipient) {
-    this.recipient = recipient;
+  public void setRecipient(final String recipient) {
+    this.recipient = recipient == null ? null : Address.fromHexString(recipient);
   }
 
-  @JsonSetter("to")
+  @JsonSetter("transactionIndex")
   public void setTransactionIndex(final String transactionIndex) {
     this.transactionIndex = transactionIndex;
   }

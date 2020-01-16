@@ -14,9 +14,9 @@ package tech.pegasys.peeps.node.verification;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import tech.pegasys.peeps.node.model.Address;
 import tech.pegasys.peeps.node.rpc.NodeRpcExpectingData;
 
+import org.apache.tuweni.eth.Address;
 import org.apache.tuweni.units.ethereum.Wei;
 
 public class ValueReceived implements NodeValueTransition {

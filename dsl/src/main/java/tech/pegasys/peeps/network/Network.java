@@ -21,12 +21,14 @@ import tech.pegasys.peeps.json.Json;
 import tech.pegasys.peeps.node.Besu;
 import tech.pegasys.peeps.node.BesuConfigurationBuilder;
 import tech.pegasys.peeps.node.GenesisAccounts;
-import tech.pegasys.peeps.node.genesis.EthHashConfig;
 import tech.pegasys.peeps.node.genesis.Genesis;
 import tech.pegasys.peeps.node.genesis.GenesisAccount;
 import tech.pegasys.peeps.node.genesis.GenesisConfig;
-import tech.pegasys.peeps.node.genesis.GenesisConfigEthHash;
-import tech.pegasys.peeps.node.model.Address;
+import tech.pegasys.peeps.node.genesis.ethhash.EthHashConfig;
+import tech.pegasys.peeps.node.genesis.ethhash.GenesisConfigEthHash;
+import tech.pegasys.peeps.node.genesis.ibft2.GenesisConfigIbft2;
+import tech.pegasys.peeps.node.genesis.ibft2.Ibft2Config;
+import tech.pegasys.peeps.node.genesis.ibft2.Ibft2ExtraData;
 import tech.pegasys.peeps.node.model.GenesisAddress;
 import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.model.TransactionReceipt;
@@ -48,6 +50,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -57,6 +60,7 @@ import java.util.stream.Stream;
 import io.vertx.core.Vertx;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.tuweni.eth.Address;
 
 public class Network implements Closeable {
 
@@ -73,8 +77,7 @@ public class Network implements Closeable {
   private final Vertx vertx;
   private final Path genesisFile;
 
-  // TODO create this - shared genesis
-  private final Genesis genesis;
+  private Genesis genesis;
 
   public Network(final Path configurationDirectory) {
     checkNotNull(configurationDirectory, "Path to configuration directory is mandatory");
@@ -89,9 +92,7 @@ public class Network implements Closeable {
     this.network = subnet.createContainerNetwork();
     this.genesisFile = pathGenerator.uniqueFile();
 
-    // TODO these must be done elsewhere - allow for the test to change consensus during setUp()
-    this.genesis = createGenesis();
-    writeGenesisFile();
+    set(ConsensusMechanism.ETH_HASH);
   }
 
   public void start() {
@@ -109,6 +110,17 @@ public class Network implements Closeable {
     stop();
     vertx.close();
     network.close();
+  }
+
+  // TODO validators hacky, dynamically figure out after the nodes are all added
+  public void set(final ConsensusMechanism consensus, final Address... validators) {
+    checkState(nodes.isEmpty(), "Cannot change consensus mechanism after creating nodes");
+    checkState(signers.isEmpty(), "Cannot change consensus mechanism after creating signers");
+
+    this.genesis = createGenesis(consensus, validators);
+
+    // TODO write after all nodes are added - extraData
+    writeGenesisFile();
   }
 
   public Besu addNode(final BesuConfigurationBuilder config) {
@@ -210,16 +222,38 @@ public class Network implements Closeable {
     nodes.parallelStream().forEach(node -> node.verifyValue(values));
   }
 
-  private Genesis createGenesis() {
+  private Genesis createGenesis(final ConsensusMechanism consensus, final Address... validators) {
+    final long chainId = Math.round(Math.random() * Long.MAX_VALUE);
 
+    final GenesisConfig genesisConfig;
+
+    switch (consensus) {
+      case IBFT2:
+        genesisConfig = new GenesisConfigIbft2(chainId, new Ibft2Config());
+        break;
+      case ETH_HASH:
+      default:
+        genesisConfig = new GenesisConfigEthHash(chainId, new EthHashConfig());
+        break;
+    }
+
+    // TODO configurable somehow?
     final Map<GenesisAddress, GenesisAccount> genesisAccounts =
         GenesisAccounts.of(GenesisAccounts.ALPHA, GenesisAccounts.BETA, GenesisAccounts.GAMMA);
 
-    // TODO temp hack - hardcode to EthHash, use input switch
+    final String extraData;
 
-    final long chainId = Math.round(Math.random() * Long.MAX_VALUE);
-    final GenesisConfig genesisConfig = new GenesisConfigEthHash(chainId, new EthHashConfig());
-    return new Genesis(genesisConfig, genesisAccounts);
+    switch (consensus) {
+      case IBFT2:
+        extraData = Ibft2ExtraData.encode(Arrays.asList(validators)).toString();
+        break;
+      case ETH_HASH:
+      default:
+        extraData = null;
+        break;
+    }
+
+    return new Genesis(genesisConfig, genesisAccounts, extraData);
   }
 
   private void writeGenesisFile() {

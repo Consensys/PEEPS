@@ -32,12 +32,11 @@ public class Genesis {
   @JsonCreator
   public Genesis(
       @JsonProperty("config") final GenesisConfig config,
-      @JsonProperty("alloc") final Map<GenesisAddress, GenesisAccount> accountBalances) {
+      @JsonProperty("alloc") final Map<GenesisAddress, GenesisAccount> accountBalances,
+      final String extraData) {
     this.config = config;
     this.accountBalances = accountBalances;
-
-    // TODO "extraData": "%extraData%" - dyanmic based on IBFT2 / Clique validator set
-    this.extraData = null;
+    this.extraData = extraData;
   }
 
   @JsonGetter("config")

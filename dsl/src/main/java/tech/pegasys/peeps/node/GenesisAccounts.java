@@ -13,13 +13,14 @@
 package tech.pegasys.peeps.node;
 
 import tech.pegasys.peeps.node.genesis.GenesisAccount;
-import tech.pegasys.peeps.node.model.Address;
 import tech.pegasys.peeps.node.model.GenesisAddress;
 import tech.pegasys.peeps.util.HexFormatter;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.apache.tuweni.eth.Address;
 
 public enum GenesisAccounts {
   /*
@@ -45,7 +46,7 @@ public enum GenesisAccounts {
 
   private GenesisAccounts(final String genesisAddres) {
     this.genesisAddres = new GenesisAddress(genesisAddres);
-    this.address = new Address(HexFormatter.ensureHexPrefix(genesisAddres));
+    this.address = Address.fromHexString(HexFormatter.ensureHexPrefix(genesisAddres));
   }
 
   public Address address() {
