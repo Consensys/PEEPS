@@ -111,58 +111,6 @@ public class Network implements Closeable {
     network.close();
   }
 
-  public void verifyConsensusOnValue(final Address... accounts) {
-    checkState(
-        nodes.size() > 1, "There must be two or more nodes to be able to verify on consensus");
-
-    final Besu firstNode = nodes.get(0);
-    final Set<AccountValue> values =
-        Stream.of(accounts)
-            .parallel()
-            .map(account -> new AccountValue(account, firstNode.rpc().getBalance(account)))
-            .collect(Collectors.toSet());
-
-    nodes.parallelStream().forEach(node -> node.verifyValue(values));
-  }
-
-  // TODO move to after public methods
-  private Genesis createGenesis() {
-
-    final Map<GenesisAddress, GenesisAccount> genesisAccounts =
-        GenesisAccounts.of(GenesisAccounts.ALPHA, GenesisAccounts.BETA, GenesisAccounts.GAMMA);
-
-    // TODO temp hack - hardcode to EthHash, use input switch
-    // TODO temp hack - hardcoded chainid
-    final long chainId = 1234;
-    final GenesisConfig genesisConfig = new GenesisConfigEthHash(chainId, new EthHashConfig());
-    return new Genesis(genesisConfig, genesisAccounts);
-  }
-
-  private void writeGenesisFile() {
-
-    // TODO delay creation of alloc & extra data until after all nodes addded & validators /
-    // accounts known
-
-    final String encodedBesuGenesis = Json.encode(genesis);
-    LOG.info(
-        "Creating Besu genesis file\n\tLocation: {} \n\tContents: {}",
-        genesisFile,
-        encodedBesuGenesis);
-
-    try {
-      Files.write(
-          genesisFile,
-          encodedBesuGenesis.getBytes(StandardCharsets.UTF_8),
-          StandardOpenOption.CREATE);
-    } catch (final IOException e) {
-      final String message =
-          String.format(
-              "Problem creating the Besu config file in the file system: %s, %s",
-              genesisFile, e.getLocalizedMessage());
-      throw new IllegalStateException(message);
-    }
-  }
-
   public Besu addNode(final BesuConfigurationBuilder config) {
 
     final Besu besu =
@@ -246,6 +194,57 @@ public class Network implements Closeable {
           }
         },
         "Consensus was not reached in time for Transaction Receipt with hash: " + transaction);
+  }
+
+  public void verifyConsensusOnValue(final Address... accounts) {
+    checkState(
+        nodes.size() > 1, "There must be two or more nodes to be able to verify on consensus");
+
+    final Besu firstNode = nodes.get(0);
+    final Set<AccountValue> values =
+        Stream.of(accounts)
+            .parallel()
+            .map(account -> new AccountValue(account, firstNode.rpc().getBalance(account)))
+            .collect(Collectors.toSet());
+
+    nodes.parallelStream().forEach(node -> node.verifyValue(values));
+  }
+
+  private Genesis createGenesis() {
+
+    final Map<GenesisAddress, GenesisAccount> genesisAccounts =
+        GenesisAccounts.of(GenesisAccounts.ALPHA, GenesisAccounts.BETA, GenesisAccounts.GAMMA);
+
+    // TODO temp hack - hardcode to EthHash, use input switch
+    // TODO temp hack - hardcoded chainid
+    final long chainId = 1234;
+    final GenesisConfig genesisConfig = new GenesisConfigEthHash(chainId, new EthHashConfig());
+    return new Genesis(genesisConfig, genesisAccounts);
+  }
+
+  private void writeGenesisFile() {
+
+    // TODO delay creation of alloc & extra data until after all nodes addded & validators /
+    // accounts known
+
+    final String encodedBesuGenesis = Json.encode(genesis);
+    LOG.info(
+        "Creating Besu genesis file\n\tLocation: {} \n\tContents: {}",
+        genesisFile,
+        encodedBesuGenesis);
+
+    try {
+      Files.write(
+          genesisFile,
+          encodedBesuGenesis.getBytes(StandardCharsets.UTF_8),
+          StandardOpenOption.CREATE);
+    } catch (final IOException e) {
+      final String message =
+          String.format(
+              "Problem creating the Besu config file in the file system: %s, %s",
+              genesisFile, e.getLocalizedMessage());
+      throw new IllegalStateException(message);
+    }
   }
 
   private void awaitConnectivity() {

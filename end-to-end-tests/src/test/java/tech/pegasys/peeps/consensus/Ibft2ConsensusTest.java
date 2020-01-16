@@ -14,29 +14,75 @@ package tech.pegasys.peeps.consensus;
 
 import tech.pegasys.peeps.NetworkTest;
 import tech.pegasys.peeps.network.Network;
+import tech.pegasys.peeps.node.Besu;
+import tech.pegasys.peeps.node.BesuConfigurationBuilder;
+import tech.pegasys.peeps.node.GenesisAccounts;
+import tech.pegasys.peeps.node.NodeKeys;
+import tech.pegasys.peeps.node.model.Address;
+import tech.pegasys.peeps.node.model.Hash;
+import tech.pegasys.peeps.node.verification.ValueReceived;
+import tech.pegasys.peeps.node.verification.ValueSent;
+import tech.pegasys.peeps.privacy.OrionKeyPair;
+import tech.pegasys.peeps.signer.EthSigner;
+import tech.pegasys.peeps.signer.SignerWallet;
 
+import org.apache.tuweni.units.ethereum.Wei;
 import org.junit.jupiter.api.Test;
 
 public class Ibft2ConsensusTest extends NetworkTest {
+
+  private Besu nodeAlpha;
+  private EthSigner signerAlpha;
+
   @Override
   protected void setUpNetwork(final Network network) {
-    // TODO Auto-generated method stub
+    this.nodeAlpha =
+        network.addNode(
+            new BesuConfigurationBuilder()
+                .withNodePrivateKeyFile(NodeKeys.BOOTNODE.getPrivateKeyFile())
+                .withPrivacyManagerPublicKey(OrionKeyPair.ALPHA.getPublicKey()));
 
+    this.signerAlpha = network.addSigner(SignerWallet.ALPHA, nodeAlpha);
+
+    // TODO move this into Network, same approach as Orions, add enodeAddress to Besu
+    // TODO fits as a function of Besu
+    // TODO better typing then String - create ENODE Address
+    final String bootnodeEnodeAddress =
+        NodeKeys.BOOTNODE.getEnodeAddress(nodeAlpha.ipAddress(), nodeAlpha.p2pPort());
+
+    network.addNode(
+        new BesuConfigurationBuilder()
+            .withBootnodeEnodeAddress(bootnodeEnodeAddress)
+            .withPrivacyManagerPublicKey(OrionKeyPair.BETA.getPublicKey()));
+
+    // Choose IBFT 2 as consensus mechanism
   }
 
   @Test
   public void consensusAfterMiningMustHappen() {
 
-    // TODO no in-line comments - implement clean code!
+    // TODO The sender account should be retrieved from the Signer (as it know which accounts it has
+    // unlocked)
+    final Address sender = GenesisAccounts.GAMMA.address();
+    final Address receiver = GenesisAccounts.BETA.address();
+    final Wei transderAmount = Wei.valueOf(5000L);
 
-    // Network Two Besus, no EthSigners or Orions
+    network().verifyConsensusOnValue(sender, receiver);
 
-    // Choose IBFT 2 as consensus mechanism
+    final Wei senderStartBalance = nodeAlpha.rpc().getBalance(sender);
+    final Wei receiverStartBalance = nodeAlpha.rpc().getBalance(receiver);
 
-    // Mine: transfer
+    final Hash receipt = signerAlpha.rpc().transfer(sender, receiver, transderAmount);
 
-    // After suitable time / number of blocks both nodes but agree on state change &
-    // have identical receipt (block number)
+    network().awaitConsensusOnTransactionReciept(receipt);
 
+    // verify state transform
+    final ValueSent sent = new ValueSent(sender, senderStartBalance, receipt);
+    final ValueReceived received =
+        new ValueReceived(receiver, receiverStartBalance, transderAmount);
+
+    nodeAlpha.verifyTransition(sent, received);
+
+    network().verifyConsensusOnValue(sender, receiver);
   }
 }
