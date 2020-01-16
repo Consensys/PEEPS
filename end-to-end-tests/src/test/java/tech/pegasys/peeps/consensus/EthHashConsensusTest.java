@@ -12,8 +12,6 @@
  */
 package tech.pegasys.peeps.consensus;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import tech.pegasys.peeps.NetworkTest;
 import tech.pegasys.peeps.network.Network;
 import tech.pegasys.peeps.node.Besu;
@@ -22,8 +20,8 @@ import tech.pegasys.peeps.node.GenesisAccounts;
 import tech.pegasys.peeps.node.NodeKeys;
 import tech.pegasys.peeps.node.model.Address;
 import tech.pegasys.peeps.node.model.Hash;
-import tech.pegasys.peeps.node.model.Transaction;
-import tech.pegasys.peeps.node.model.TransactionReceipt;
+import tech.pegasys.peeps.node.verification.ReceivedValue;
+import tech.pegasys.peeps.node.verification.SentValue;
 import tech.pegasys.peeps.privacy.OrionKeyPair;
 import tech.pegasys.peeps.signer.EthSigner;
 import tech.pegasys.peeps.signer.SignerWallet;
@@ -35,7 +33,6 @@ public class EthHashConsensusTest extends NetworkTest {
 
   private Besu nodeAlpha;
   private EthSigner signerAlpha;
-  private Besu nodeBeta;
 
   @Override
   protected void setUpNetwork(final Network network) {
@@ -54,45 +51,41 @@ public class EthHashConsensusTest extends NetworkTest {
     final String bootnodeEnodeAddress =
         NodeKeys.BOOTNODE.getEnodeAddress(nodeAlpha.ipAddress(), nodeAlpha.p2pPort());
 
-    this.nodeBeta =
-        network.addNode(
-            new BesuConfigurationBuilder()
-                .withBootnodeEnodeAddress(bootnodeEnodeAddress)
-                .withPrivacyManagerPublicKey(OrionKeyPair.BETA.getPublicKey()));
+    network.addNode(
+        new BesuConfigurationBuilder()
+            .withBootnodeEnodeAddress(bootnodeEnodeAddress)
+            .withPrivacyManagerPublicKey(OrionKeyPair.BETA.getPublicKey()));
   }
 
   @Test
   public void consensusAfterMiningMustHappen() {
 
-    // TODO why GAMMA in EthSigner as the unlocked account?
+    // TODO The sender account should be retrieved from the Signer (as it know which accounts it has
+    // unlocked)
     final Address sender = GenesisAccounts.GAMMA.address();
     final Address receiver = GenesisAccounts.BETA.address();
     final Wei transderAmount = Wei.valueOf(5000L);
 
-    final Wei senderStartingBalance = nodeAlpha.rpc().getBalance(sender);
-    final Wei receiverStartingBalance = nodeAlpha.rpc().getBalance(receiver);
+    final Wei senderStartBalance = nodeAlpha.rpc().getBalance(sender);
+    final Wei receiverStartBalance = nodeAlpha.rpc().getBalance(receiver);
 
     final Hash receipt = signerAlpha.rpc().transfer(sender, receiver, transderAmount);
 
     network().awaitConsensusOnTransactionReciept(receipt);
 
-    final Wei senderEndBalance = nodeAlpha.rpc().getBalance(sender);
-    final Wei receiverEndBalance = nodeAlpha.rpc().getBalance(receiver);
+    // verify state transform
+    final SentValue sent = new SentValue(sender, senderStartBalance, receipt);
+    final ReceivedValue received =
+        new ReceivedValue(receiver, receiverStartBalance, transderAmount);
 
-    assertThat(senderEndBalance).isEqualTo(nodeBeta.rpc().getBalance(sender));
-    assertThat(receiverEndBalance).isEqualTo(nodeBeta.rpc().getBalance(receiver));
+    nodeAlpha.verify(sent, received);
 
-    final TransactionReceipt transferReceipt = nodeAlpha.rpc().getTransactionReceipt(receipt);
-    assertThat(transferReceipt.isSuccess()).isTrue();
+    // verify consensus (consistent state across network, e.g. account balances
 
-    final Transaction transfer =
-        nodeAlpha.rpc().getTransactionByHash(transferReceipt.getTransactionHash());
-    final Wei transferCost = transferReceipt.getGasUsed().priceFor(transfer.getGasPrice());
-    assertThat(senderEndBalance)
-        .isEqualTo(senderStartingBalance.subtract(transderAmount).subtract(transferCost));
-    assertThat(receiverEndBalance).isEqualTo(receiverStartingBalance.add(transderAmount));
+    //    final Wei senderEndBalance = nodeAlpha.rpc().getBalance(sender);
+
+    //  assertThat(senderEndBalance).isEqualTo(nodeBeta.rpc().getBalance(sender));
+    //  assertThat(receiverEndBalance).isEqualTo(nodeBeta.rpc().getBalance(receiver));
+
   }
-
-  // TODO assert functions
-
 }

@@ -26,6 +26,7 @@ public class Transaction {
   private final Address sender;
   private final Gas gas;
   private final Wei gasPrice;
+  private final Wei value;
 
   // TODO stricter typing than String
   private final String blockHash;
@@ -33,7 +34,6 @@ public class Transaction {
   private final String hash;
   private final String input;
   private final String nonce;
-  private final String value;
   private final String v;
   private final String r;
   private final String s;
@@ -63,7 +63,7 @@ public class Transaction {
     this.hash = hash;
     this.input = input;
     this.nonce = nonce;
-    this.value = value;
+    this.value = Wei.valueOf(UInt256.fromHexString(value));
     this.v = v;
     this.r = r;
     this.s = s;
@@ -111,7 +111,7 @@ public class Transaction {
     return nonce;
   }
 
-  public String getValue() {
+  public Wei getValue() {
     return value;
   }
 

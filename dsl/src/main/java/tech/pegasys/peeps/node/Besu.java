@@ -21,6 +21,7 @@ import tech.pegasys.peeps.network.NetworkMember;
 import tech.pegasys.peeps.node.rpc.NodeRpc;
 import tech.pegasys.peeps.node.rpc.NodeRpcExpectingData;
 import tech.pegasys.peeps.node.rpc.admin.NodeInfo;
+import tech.pegasys.peeps.node.verification.NodeValueTransition;
 import tech.pegasys.peeps.util.DockerLogs;
 
 import java.util.List;
@@ -154,6 +155,12 @@ public class Besu implements NetworkMember {
 
   public NodeRpcExpectingData rpc() {
     return rpc;
+  }
+
+  public void verify(final NodeValueTransition... changes) {
+    for (final NodeValueTransition change : changes) {
+      change.verify(rpc);
+    }
   }
 
   private String getNodeId() {
