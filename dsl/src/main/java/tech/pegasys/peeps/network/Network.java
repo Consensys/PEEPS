@@ -216,8 +216,8 @@ public class Network implements Closeable {
         GenesisAccounts.of(GenesisAccounts.ALPHA, GenesisAccounts.BETA, GenesisAccounts.GAMMA);
 
     // TODO temp hack - hardcode to EthHash, use input switch
-    // TODO temp hack - hardcoded chainid
-    final long chainId = 1234;
+
+    final long chainId = Math.round(Math.random() * Long.MAX_VALUE);
     final GenesisConfig genesisConfig = new GenesisConfigEthHash(chainId, new EthHashConfig());
     return new Genesis(genesisConfig, genesisAccounts);
   }
