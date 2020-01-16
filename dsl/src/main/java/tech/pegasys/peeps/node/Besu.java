@@ -21,12 +21,14 @@ import tech.pegasys.peeps.network.NetworkMember;
 import tech.pegasys.peeps.node.rpc.NodeRpc;
 import tech.pegasys.peeps.node.rpc.NodeRpcExpectingData;
 import tech.pegasys.peeps.node.rpc.admin.NodeInfo;
+import tech.pegasys.peeps.node.verification.AccountValue;
 import tech.pegasys.peeps.node.verification.NodeValueTransition;
 import tech.pegasys.peeps.util.DockerLogs;
 
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.google.common.collect.Lists;
 import org.apache.logging.log4j.LogManager;
@@ -157,10 +159,12 @@ public class Besu implements NetworkMember {
     return rpc;
   }
 
-  public void verify(final NodeValueTransition... changes) {
-    for (final NodeValueTransition change : changes) {
-      change.verify(rpc);
-    }
+  public void verifyTransition(final NodeValueTransition... changes) {
+    Stream.of(changes).parallel().forEach(change -> change.verify(rpc));
+  }
+
+  public void verifyValue(final Set<AccountValue> values) {
+    values.parallelStream().forEach(value -> value.verify(rpc));
   }
 
   private String getNodeId() {

@@ -19,13 +19,13 @@ import tech.pegasys.peeps.node.rpc.NodeRpcExpectingData;
 
 import org.apache.tuweni.units.ethereum.Wei;
 
-public class ReceivedValue implements NodeValueTransition {
+public class ValueReceived implements NodeValueTransition {
 
   private final Address receiver;
   private final Wei before;
   private final Wei value;
 
-  public ReceivedValue(final Address receiver, final Wei before, final Wei value) {
+  public ValueReceived(final Address receiver, final Wei before, final Wei value) {
     this.receiver = receiver;
     this.before = before;
     this.value = value;

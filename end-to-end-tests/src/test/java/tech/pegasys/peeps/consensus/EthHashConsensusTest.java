@@ -20,8 +20,8 @@ import tech.pegasys.peeps.node.GenesisAccounts;
 import tech.pegasys.peeps.node.NodeKeys;
 import tech.pegasys.peeps.node.model.Address;
 import tech.pegasys.peeps.node.model.Hash;
-import tech.pegasys.peeps.node.verification.ReceivedValue;
-import tech.pegasys.peeps.node.verification.SentValue;
+import tech.pegasys.peeps.node.verification.ValueReceived;
+import tech.pegasys.peeps.node.verification.ValueSent;
 import tech.pegasys.peeps.privacy.OrionKeyPair;
 import tech.pegasys.peeps.signer.EthSigner;
 import tech.pegasys.peeps.signer.SignerWallet;
@@ -66,6 +66,8 @@ public class EthHashConsensusTest extends NetworkTest {
     final Address receiver = GenesisAccounts.BETA.address();
     final Wei transderAmount = Wei.valueOf(5000L);
 
+    network().verifyConsensusOnValue(sender, receiver);
+
     final Wei senderStartBalance = nodeAlpha.rpc().getBalance(sender);
     final Wei receiverStartBalance = nodeAlpha.rpc().getBalance(receiver);
 
@@ -74,18 +76,12 @@ public class EthHashConsensusTest extends NetworkTest {
     network().awaitConsensusOnTransactionReciept(receipt);
 
     // verify state transform
-    final SentValue sent = new SentValue(sender, senderStartBalance, receipt);
-    final ReceivedValue received =
-        new ReceivedValue(receiver, receiverStartBalance, transderAmount);
+    final ValueSent sent = new ValueSent(sender, senderStartBalance, receipt);
+    final ValueReceived received =
+        new ValueReceived(receiver, receiverStartBalance, transderAmount);
 
-    nodeAlpha.verify(sent, received);
+    nodeAlpha.verifyTransition(sent, received);
 
-    // verify consensus (consistent state across network, e.g. account balances
-
-    //    final Wei senderEndBalance = nodeAlpha.rpc().getBalance(sender);
-
-    //  assertThat(senderEndBalance).isEqualTo(nodeBeta.rpc().getBalance(sender));
-    //  assertThat(receiverEndBalance).isEqualTo(nodeBeta.rpc().getBalance(receiver));
-
+    network().verifyConsensusOnValue(sender, receiver);
   }
 }

@@ -26,9 +26,11 @@ import tech.pegasys.peeps.node.genesis.Genesis;
 import tech.pegasys.peeps.node.genesis.GenesisAccount;
 import tech.pegasys.peeps.node.genesis.GenesisConfig;
 import tech.pegasys.peeps.node.genesis.GenesisConfigEthHash;
+import tech.pegasys.peeps.node.model.Address;
 import tech.pegasys.peeps.node.model.GenesisAddress;
 import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.model.TransactionReceipt;
+import tech.pegasys.peeps.node.verification.AccountValue;
 import tech.pegasys.peeps.privacy.Orion;
 import tech.pegasys.peeps.privacy.OrionConfiguration;
 import tech.pegasys.peeps.privacy.OrionConfigurationBuilder;
@@ -48,7 +50,9 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import io.vertx.core.Vertx;
 import org.apache.logging.log4j.LogManager;
@@ -105,6 +109,20 @@ public class Network implements Closeable {
     stop();
     vertx.close();
     network.close();
+  }
+
+  public void verifyConsensusOnValue(final Address... accounts) {
+    checkState(
+        nodes.size() > 1, "There must be two or more nodes to be able to verify on consensus");
+
+    final Besu firstNode = nodes.get(0);
+    final Set<AccountValue> values =
+        Stream.of(accounts)
+            .parallel()
+            .map(account -> new AccountValue(account, firstNode.rpc().getBalance(account)))
+            .collect(Collectors.toSet());
+
+    nodes.parallelStream().forEach(node -> node.verifyValue(values));
   }
 
   // TODO move to after public methods

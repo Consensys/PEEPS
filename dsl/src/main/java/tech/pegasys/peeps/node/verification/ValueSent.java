@@ -23,13 +23,13 @@ import tech.pegasys.peeps.node.rpc.NodeRpcExpectingData;
 import org.apache.tuweni.units.ethereum.Gas;
 import org.apache.tuweni.units.ethereum.Wei;
 
-public class SentValue implements NodeValueTransition {
+public class ValueSent implements NodeValueTransition {
 
   private final Address sender;
   private final Wei before;
   private final Hash transactionReceipt;
 
-  public SentValue(final Address sender, final Wei before, final Hash transactionReceipt) {
+  public ValueSent(final Address sender, final Wei before, final Hash transactionReceipt) {
     this.sender = sender;
     this.before = before;
     this.transactionReceipt = transactionReceipt;
