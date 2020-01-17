@@ -88,15 +88,16 @@ public class BesuConfiguration {
     return vertx;
   }
 
+  // TODO maybe split out privacy
   public boolean isPrivacyEnabled() {
     return privacyUrl != null;
   }
 
-  public String getPrivacyUrl() {
-    return privacyUrl;
+  public Optional<String> getPrivacyUrl() {
+    return Optional.ofNullable(privacyUrl);
   }
 
-  public String getPrivacyMarkerSigningPrivateKeyFile() {
-    return privacyMarkerSigningPrivateKeyFile;
+  public Optional<String> getPrivacyMarkerSigningPrivateKeyFile() {
+    return Optional.ofNullable(privacyMarkerSigningPrivateKeyFile);
   }
 }

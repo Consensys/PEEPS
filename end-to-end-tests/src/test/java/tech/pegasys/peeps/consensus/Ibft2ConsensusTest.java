@@ -22,7 +22,6 @@ import tech.pegasys.peeps.node.NodeKey;
 import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.verification.ValueReceived;
 import tech.pegasys.peeps.node.verification.ValueSent;
-import tech.pegasys.peeps.privacy.OrionKeyPair;
 import tech.pegasys.peeps.signer.EthSigner;
 import tech.pegasys.peeps.signer.SignerWallet;
 
@@ -44,11 +43,7 @@ public class Ibft2ConsensusTest extends NetworkTest {
 
     // TODO need to convert the public key to an address
 
-    this.nodeAlpha =
-        network.addNode(
-            new BesuConfigurationBuilder()
-                .withIdentity(NodeKey.ALPHA)
-                .withPrivacyManagerPublicKey(OrionKeyPair.ALPHA.getPublicKey()));
+    this.nodeAlpha = network.addNode(new BesuConfigurationBuilder().withIdentity(NodeKey.ALPHA));
 
     // TODO move this into Network, same approach as Orions, add enodeAddress to Besu
     // TODO fits as a function of Besu
@@ -59,8 +54,7 @@ public class Ibft2ConsensusTest extends NetworkTest {
     network.addNode(
         new BesuConfigurationBuilder()
             .withBootnodeEnodeAddress(bootnodeEnodeAddress)
-            .withIdentity(NodeKey.BETA)
-            .withPrivacyManagerPublicKey(OrionKeyPair.BETA.getPublicKey()));
+            .withIdentity(NodeKey.BETA));
 
     network.set(ConsensusMechanism.IBFT2, nodeAlpha);
 

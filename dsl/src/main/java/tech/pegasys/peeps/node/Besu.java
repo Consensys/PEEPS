@@ -12,6 +12,7 @@
  */
 package tech.pegasys.peeps.node;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.assertj.core.api.Assertions.assertThat;
 import static tech.pegasys.peeps.util.Await.await;
@@ -300,17 +301,27 @@ public class Besu implements NetworkMember {
       final BesuConfiguration config,
       final List<String> commandLineOptions,
       final GenericContainer<?> container) {
+
+    checkArgument(
+        config.getPrivacyUrl() != null && config.getPrivacyUrl().isPresent(),
+        "Privacy URL is mandatory when using Privacy");
+    checkArgument(
+        config.getPrivacyMarkerSigningPrivateKeyFile() != null
+            && config.getPrivacyMarkerSigningPrivateKeyFile().isPresent(),
+        "Private Marker Transaction key file is mandatory when using Privacy");
+
     commandLineOptions.add("--privacy-enabled");
     commandLineOptions.add("--privacy-url");
-    commandLineOptions.add(config.getPrivacyUrl());
+    commandLineOptions.add(config.getPrivacyUrl().get());
     commandLineOptions.add("--privacy-public-key-file");
     commandLineOptions.add(CONTAINER_PRIVACY_PUBLIC_KEY_FILE);
     container.withClasspathResourceMapping(
         config.getPrivacyPublicKeyFile(), CONTAINER_PRIVACY_PUBLIC_KEY_FILE, BindMode.READ_ONLY);
     commandLineOptions.add("--privacy-marker-transaction-signing-key-file");
     commandLineOptions.add(CONTAINER_PRIVACY_SIGNING_PRIVATE_KEY_FILE);
+
     container.withClasspathResourceMapping(
-        config.getPrivacyMarkerSigningPrivateKeyFile(),
+        config.getPrivacyMarkerSigningPrivateKeyFile().get(),
         CONTAINER_PRIVACY_SIGNING_PRIVATE_KEY_FILE,
         BindMode.READ_ONLY);
   }

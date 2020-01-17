@@ -94,7 +94,6 @@ public class BesuConfigurationBuilder {
 
   public BesuConfiguration build() {
     checkNotNull(genesisFile, "A genesis file path is mandatory");
-    checkNotNull(privacyManagerPublicKeyFile, "An privacy manager key file is mandatory");
     checkNotNull(identity, "A NodeKey is mandatory");
     checkNotNull(vertx, "A Vertx instance is mandatory");
     checkNotNull(ipAddress, "Container IP address is mandatory");

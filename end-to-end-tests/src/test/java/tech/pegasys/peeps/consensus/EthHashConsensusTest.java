@@ -21,7 +21,6 @@ import tech.pegasys.peeps.node.NodeKey;
 import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.verification.ValueReceived;
 import tech.pegasys.peeps.node.verification.ValueSent;
-import tech.pegasys.peeps.privacy.OrionKeyPair;
 import tech.pegasys.peeps.signer.EthSigner;
 import tech.pegasys.peeps.signer.SignerWallet;
 
@@ -50,8 +49,7 @@ public class EthHashConsensusTest extends NetworkTest {
     network.addNode(
         new BesuConfigurationBuilder()
             .withBootnodeEnodeAddress(bootnodeEnodeAddress)
-            .withIdentity(NodeKey.BETA)
-            .withPrivacyManagerPublicKey(OrionKeyPair.BETA.getPublicKey()));
+            .withIdentity(NodeKey.BETA));
   }
 
   @Test
