@@ -39,4 +39,8 @@ public enum NodeKey {
   public String getPrivateKeyFile() {
     return privKeyFile;
   }
+
+  public String getPublicKey() {
+    return pubKey;
+  }
 }

@@ -64,9 +64,9 @@ public class Besu implements NetworkMember {
   private final NodeRpc nodeRpc;
   private final NodeRpcExpectingData rpc;
   private final String ipAddress;
+  private final String nodeKey;
   private String nodeId;
   private String enodeId;
-  private String nodeKey;
 
   public Besu(final BesuConfiguration config) {
 
@@ -96,6 +96,7 @@ public class Besu implements NetworkMember {
 
     this.nodeRpc = new NodeRpc(config.getVertx());
     this.rpc = new NodeRpcExpectingData(nodeRpc);
+    this.nodeKey = config.getIdentity().getPublicKey();
   }
 
   @Override
@@ -111,7 +112,6 @@ public class Besu implements NetworkMember {
       final NodeInfo info = nodeRpc.nodeInfo();
       nodeId = info.getId();
       enodeId = info.getEnode();
-      nodeKey = enodeId.substring(enodeId.indexOf("node://"), enodeId.indexOf('@'));
 
       // TODO validate the node has the expected state, e.g. consensus, genesis,
       // networkId,

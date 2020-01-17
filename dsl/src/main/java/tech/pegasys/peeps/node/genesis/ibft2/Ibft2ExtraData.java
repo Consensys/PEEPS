@@ -14,16 +14,25 @@ package tech.pegasys.peeps.node.genesis.ibft2;
 
 import tech.pegasys.peeps.node.Besu;
 
+import java.security.Security;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.tuweni.bytes.Bytes;
 import org.apache.tuweni.crypto.Hash;
+import org.apache.tuweni.crypto.SECP256K1.Signature;
 import org.apache.tuweni.eth.Address;
 import org.apache.tuweni.rlp.RLP;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 public class Ibft2ExtraData {
+
+  // TODO do this static configuration somewhere sensible i.e. not here!
+  static {
+    Security.addProvider(new BouncyCastleProvider());
+  }
 
   public static Bytes encode(final Besu... validators) {
 
@@ -33,42 +42,27 @@ public class Ibft2ExtraData {
             .map(
                 validator ->
                     Address.fromBytes(
-                        Hash.keccak256(Bytes.fromHexStringLenient(validator.nodeKey()))))
+                        Hash.keccak256(Bytes.fromHexString(validator.nodeKey())).slice(12, 20)))
             .collect(Collectors.toList()));
   }
 
   private static Bytes encode(final List<Address> validators) {
     final byte[] vanityData = new byte[32];
-    final int round = 0;
+    final byte[] round = new byte[4];
     final byte[] votes = new byte[0];
+    final List<Signature> seals = Collections.emptyList();
 
     return RLP.encode(
         writer -> {
-          writer.writeByteArray(vanityData);
-          writer.writeList(validators, (rlp, validator) -> rlp.writeValue(validator.toBytes()));
-          writer.writeByteArray(votes);
-          writer.writeInt(round);
+          writer.writeList(
+              listWriter -> {
+                listWriter.writeByteArray(vanityData);
+                listWriter.writeList(
+                    validators, (rlp, validator) -> rlp.writeValue(validator.toBytes()));
+                listWriter.writeByteArray(votes);
+                listWriter.writeByteArray(round);
+                listWriter.writeList(seals, (rlp, committer) -> rlp.writeValue(committer.bytes()));
+              });
         });
-
-    /*
-        final BytesValueRLPOutput encoder = new BytesValueRLPOutput();
-       encoder.startList();
-       encoder.writeBytes(vanityData);
-       encoder.writeList(validators, (validator, rlp) -> rlp.writeBytes(validator));
-       if (vote.isPresent()) {
-         vote.get().writeTo(encoder);
-       } else {
-         encoder.writeNull();
-       }
-
-       if (encodingType != EncodingType.EXCLUDE_COMMIT_SEALS_AND_ROUND_NUMBER) {
-         encoder.writeInt(round);
-         if (encodingType != EncodingType.EXCLUDE_COMMIT_SEALS) {
-           encoder.writeList(seals, (committer, rlp) -> rlp.writeBytes(committer.encodedBytes()));
-         }
-       }
-       encoder.endList();
-    */
-
   }
 }

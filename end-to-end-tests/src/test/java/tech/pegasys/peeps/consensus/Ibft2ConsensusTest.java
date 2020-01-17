@@ -27,10 +27,8 @@ import tech.pegasys.peeps.signer.SignerWallet;
 
 import org.apache.tuweni.eth.Address;
 import org.apache.tuweni.units.ethereum.Wei;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-@Disabled
 public class Ibft2ConsensusTest extends NetworkTest {
 
   private Besu nodeAlpha;

@@ -30,6 +30,9 @@ dependencyManagement {
     // Awaitility
     dependency 'org.awaitility:awaitility:4.0.1'
 
+	// BouncyCastle
+    dependency 'org.bouncycastle:bcprov-jdk15on:1.64'
+    
     // Error prone
     dependency 'com.google.errorprone:error_prone_check_api:2.3.3'
     dependency 'com.google.errorprone:error_prone_core:2.3.3'
