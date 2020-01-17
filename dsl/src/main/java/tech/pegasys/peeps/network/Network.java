@@ -50,7 +50,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -113,13 +112,16 @@ public class Network implements Closeable {
   }
 
   // TODO validators hacky, dynamically figure out after the nodes are all added
-  public void set(final ConsensusMechanism consensus, final Address... validators) {
-    checkState(nodes.isEmpty(), "Cannot change consensus mechanism after creating nodes");
+  public void set(final ConsensusMechanism consensus, final Besu... validators) {
+
+    // TODO deny is network is live
+
+    // TODO delay node loading of genesis until after start
+    //    checkState(nodes.isEmpty(), "Cannot change consensus mechanism after creating nodes");
     checkState(signers.isEmpty(), "Cannot change consensus mechanism after creating signers");
 
     this.genesis = createGenesis(consensus, validators);
 
-    // TODO write after all nodes are added - extraData
     writeGenesisFile();
   }
 
@@ -222,7 +224,7 @@ public class Network implements Closeable {
     nodes.parallelStream().forEach(node -> node.verifyValue(values));
   }
 
-  private Genesis createGenesis(final ConsensusMechanism consensus, final Address... validators) {
+  private Genesis createGenesis(final ConsensusMechanism consensus, final Besu... validators) {
     final long chainId = Math.round(Math.random() * Long.MAX_VALUE);
 
     final GenesisConfig genesisConfig;
@@ -245,7 +247,7 @@ public class Network implements Closeable {
 
     switch (consensus) {
       case IBFT2:
-        extraData = Ibft2ExtraData.encode(Arrays.asList(validators)).toString();
+        extraData = Ibft2ExtraData.encode(validators).toString();
         break;
       case ETH_HASH:
       default:

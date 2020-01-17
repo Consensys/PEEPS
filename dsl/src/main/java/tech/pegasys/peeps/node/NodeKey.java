@@ -16,9 +16,9 @@ import static tech.pegasys.peeps.util.HexFormatter.removeAnyHexPrefix;
 
 import tech.pegasys.peeps.util.ClasspathResources;
 
-// TODO may don't use an enum?
-public enum NodeKeys {
-  BOOTNODE("node/keys/bootnode");
+public enum NodeKey {
+  ALPHA("node/keys/alpha"),
+  BETA("node/keys/beta");
 
   private static final String PRIVATE_KEY_FILENAME = "/key.priv";
   private static final String PUBLIC_KEY_FILENAME = "/key.pub";
@@ -26,7 +26,7 @@ public enum NodeKeys {
   private final String pubKey;
   private final String privKeyFile;
 
-  NodeKeys(final String keysDirectory) {
+  NodeKey(final String keysDirectory) {
 
     this.pubKey = removeAnyHexPrefix(ClasspathResources.read(keysDirectory + PUBLIC_KEY_FILENAME));
     this.privKeyFile = keysDirectory + PRIVATE_KEY_FILENAME;

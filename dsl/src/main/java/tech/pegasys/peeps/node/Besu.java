@@ -65,6 +65,7 @@ public class Besu implements NetworkMember {
   private final String ipAddress;
   private String nodeId;
   private String enodeId;
+  private String nodeKey;
 
   public Besu(final BesuConfiguration config) {
 
@@ -84,6 +85,8 @@ public class Besu implements NetworkMember {
     if (config.isPrivacyEnabled()) {
       addPrivacy(config, commandLineOptions, container);
     }
+
+    // TODO nodekey - create if absent in config
 
     LOG.info("Besu command line: {}", commandLineOptions);
 
@@ -107,6 +110,7 @@ public class Besu implements NetworkMember {
       final NodeInfo info = nodeRpc.nodeInfo();
       nodeId = info.getId();
       enodeId = info.getEnode();
+      nodeKey = enodeId.substring(enodeId.indexOf("node://"), enodeId.indexOf('@'));
 
       // TODO validate the node has the expected state, e.g. consensus, genesis,
       // networkId,
@@ -135,8 +139,13 @@ public class Besu implements NetworkMember {
     return ipAddress;
   }
 
+  // TODO these may not have a value, i.e. node not started :. optional
   public String enodeId() {
     return enodeId;
+  }
+
+  public String nodeKey() {
+    return nodeKey;
   }
 
   public int httpRpcPort() {
@@ -268,15 +277,13 @@ public class Besu implements NetworkMember {
       final BesuConfiguration config,
       final List<String> commandLineOptions,
       final GenericContainer<?> container) {
-    config
-        .getNodePrivateKeyFile()
-        .ifPresent(
-            file -> {
-              container.withClasspathResourceMapping(
-                  file, CONTAINER_NODE_PRIVATE_KEY_FILE, BindMode.READ_ONLY);
-              commandLineOptions.addAll(
-                  Lists.newArrayList("--node-private-key-file", CONTAINER_NODE_PRIVATE_KEY_FILE));
-            });
+
+    container.withClasspathResourceMapping(
+        config.getIdentity().getPrivateKeyFile(),
+        CONTAINER_NODE_PRIVATE_KEY_FILE,
+        BindMode.READ_ONLY);
+    commandLineOptions.addAll(
+        Lists.newArrayList("--node-private-key-file", CONTAINER_NODE_PRIVATE_KEY_FILE));
   }
 
   private void addGenesisFile(

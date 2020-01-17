@@ -23,7 +23,7 @@ public class BesuConfiguration {
   private final Path genesisFile;
   private final String enclavePublicKeyFile;
   private final String cors;
-  private final String nodePrivateKeyFile;
+  private final NodeKey identity;
   private final String bootnodeEnodeAddress;
   private final String privacyUrl;
   private final String privacyMarkerSigningPrivateKeyFile;
@@ -42,7 +42,7 @@ public class BesuConfiguration {
       final Network containerNetwork,
       final Vertx vertx,
       final String ipAddress,
-      final String nodePrivateKeyFile,
+      final NodeKey identity,
       final String bootnodeEnodeAddress) {
     this.genesisFile = genesisFile;
     this.enclavePublicKeyFile = privacyManagerPublicKeyFile;
@@ -52,7 +52,7 @@ public class BesuConfiguration {
     this.containerNetwork = containerNetwork;
     this.vertx = vertx;
     this.ipAddress = ipAddress;
-    this.nodePrivateKeyFile = nodePrivateKeyFile;
+    this.identity = identity;
     this.bootnodeEnodeAddress = bootnodeEnodeAddress;
   }
 
@@ -76,8 +76,8 @@ public class BesuConfiguration {
     return ipAddress;
   }
 
-  public Optional<String> getNodePrivateKeyFile() {
-    return Optional.ofNullable(nodePrivateKeyFile);
+  public NodeKey getIdentity() {
+    return identity;
   }
 
   public Optional<String> getBootnodeEnodeAddress() {

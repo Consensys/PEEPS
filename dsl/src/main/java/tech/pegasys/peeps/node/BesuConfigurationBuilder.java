@@ -28,12 +28,13 @@ public class BesuConfigurationBuilder {
       "node/keys/pmt_signing.priv";
 
   private Path genesisFile;
+  private NodeKey identity;
 
+  // TODO better typing then String
   private String privacyManagerPublicKeyFile;
   private String privacyMarkerSigningPrivateKeyFile;
   private String privacyTransactionManagerUrl;
   private String cors;
-  private String nodePrivateKeyFile;
   private String bootnodeEnodeAddress;
 
   // TODO these into their own builder, not node related but test container related
@@ -70,8 +71,8 @@ public class BesuConfigurationBuilder {
     return this;
   }
 
-  public BesuConfigurationBuilder withNodePrivateKeyFile(final String nodePrivateKeyFile) {
-    this.nodePrivateKeyFile = nodePrivateKeyFile;
+  public BesuConfigurationBuilder withIdentity(final NodeKey identity) {
+    this.identity = identity;
     return this;
   }
 
@@ -94,6 +95,7 @@ public class BesuConfigurationBuilder {
   public BesuConfiguration build() {
     checkNotNull(genesisFile, "A genesis file path is mandatory");
     checkNotNull(privacyManagerPublicKeyFile, "An privacy manager key file is mandatory");
+    checkNotNull(identity, "A NodeKey is mandatory");
     checkNotNull(vertx, "A Vertx instance is mandatory");
     checkNotNull(ipAddress, "Container IP address is mandatory");
     checkNotNull(containerNetwork, "Container network is mandatory");
@@ -107,7 +109,7 @@ public class BesuConfigurationBuilder {
         containerNetwork,
         vertx,
         ipAddress,
-        nodePrivateKeyFile,
+        identity,
         bootnodeEnodeAddress);
   }
 }

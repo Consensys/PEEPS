@@ -17,7 +17,7 @@ import tech.pegasys.peeps.network.Network;
 import tech.pegasys.peeps.node.Besu;
 import tech.pegasys.peeps.node.BesuConfigurationBuilder;
 import tech.pegasys.peeps.node.GenesisAccounts;
-import tech.pegasys.peeps.node.NodeKeys;
+import tech.pegasys.peeps.node.NodeKey;
 import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.verification.ValueReceived;
 import tech.pegasys.peeps.node.verification.ValueSent;
@@ -37,11 +37,7 @@ public class EthHashConsensusTest extends NetworkTest {
   @Override
   protected void setUpNetwork(final Network network) {
 
-    this.nodeAlpha =
-        network.addNode(
-            new BesuConfigurationBuilder()
-                .withNodePrivateKeyFile(NodeKeys.BOOTNODE.getPrivateKeyFile())
-                .withPrivacyManagerPublicKey(OrionKeyPair.ALPHA.getPublicKey()));
+    this.nodeAlpha = network.addNode(new BesuConfigurationBuilder().withIdentity(NodeKey.ALPHA));
 
     this.signerAlpha = network.addSigner(SignerWallet.ALPHA, nodeAlpha);
 
@@ -49,11 +45,12 @@ public class EthHashConsensusTest extends NetworkTest {
     // TODO fits as a function of Besu
     // TODO better typing then String - create ENODE Address
     final String bootnodeEnodeAddress =
-        NodeKeys.BOOTNODE.getEnodeAddress(nodeAlpha.ipAddress(), nodeAlpha.p2pPort());
+        NodeKey.ALPHA.getEnodeAddress(nodeAlpha.ipAddress(), nodeAlpha.p2pPort());
 
     network.addNode(
         new BesuConfigurationBuilder()
             .withBootnodeEnodeAddress(bootnodeEnodeAddress)
+            .withIdentity(NodeKey.BETA)
             .withPrivacyManagerPublicKey(OrionKeyPair.BETA.getPublicKey()));
   }
 

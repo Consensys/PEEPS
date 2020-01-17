@@ -13,11 +13,12 @@
 package tech.pegasys.peeps.consensus;
 
 import tech.pegasys.peeps.NetworkTest;
+import tech.pegasys.peeps.network.ConsensusMechanism;
 import tech.pegasys.peeps.network.Network;
 import tech.pegasys.peeps.node.Besu;
 import tech.pegasys.peeps.node.BesuConfigurationBuilder;
 import tech.pegasys.peeps.node.GenesisAccounts;
-import tech.pegasys.peeps.node.NodeKeys;
+import tech.pegasys.peeps.node.NodeKey;
 import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.verification.ValueReceived;
 import tech.pegasys.peeps.node.verification.ValueSent;
@@ -38,29 +39,32 @@ public class Ibft2ConsensusTest extends NetworkTest {
 
   @Override
   protected void setUpNetwork(final Network network) {
+
+    // Choose IBFT 2 as consensus mechanism
+
     // TODO need to convert the public key to an address
-    //	  network.set(ConsensusMechanism.IBFT2, NodeKeys.BOOTNODE.getPubKey());
 
     this.nodeAlpha =
         network.addNode(
             new BesuConfigurationBuilder()
-                .withNodePrivateKeyFile(NodeKeys.BOOTNODE.getPrivateKeyFile())
+                .withIdentity(NodeKey.ALPHA)
                 .withPrivacyManagerPublicKey(OrionKeyPair.ALPHA.getPublicKey()));
-
-    this.signerAlpha = network.addSigner(SignerWallet.ALPHA, nodeAlpha);
 
     // TODO move this into Network, same approach as Orions, add enodeAddress to Besu
     // TODO fits as a function of Besu
     // TODO better typing then String - create ENODE Address
     final String bootnodeEnodeAddress =
-        NodeKeys.BOOTNODE.getEnodeAddress(nodeAlpha.ipAddress(), nodeAlpha.p2pPort());
+        NodeKey.ALPHA.getEnodeAddress(nodeAlpha.ipAddress(), nodeAlpha.p2pPort());
 
     network.addNode(
         new BesuConfigurationBuilder()
             .withBootnodeEnodeAddress(bootnodeEnodeAddress)
+            .withIdentity(NodeKey.BETA)
             .withPrivacyManagerPublicKey(OrionKeyPair.BETA.getPublicKey()));
 
-    // Choose IBFT 2 as consensus mechanism
+    network.set(ConsensusMechanism.IBFT2, nodeAlpha);
+
+    this.signerAlpha = network.addSigner(SignerWallet.ALPHA, nodeAlpha);
   }
 
   @Test

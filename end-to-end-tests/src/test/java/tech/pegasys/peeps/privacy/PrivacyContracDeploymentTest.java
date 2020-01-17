@@ -21,7 +21,7 @@ import tech.pegasys.peeps.network.Network;
 import tech.pegasys.peeps.node.Besu;
 import tech.pegasys.peeps.node.BesuConfigurationBuilder;
 import tech.pegasys.peeps.node.GenesisAccounts;
-import tech.pegasys.peeps.node.NodeKeys;
+import tech.pegasys.peeps.node.NodeKey;
 import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.model.PrivacyTransactionReceipt;
 import tech.pegasys.peeps.node.model.Transaction;
@@ -58,7 +58,7 @@ public class PrivacyContracDeploymentTest extends NetworkTest {
         network.addNode(
             new BesuConfigurationBuilder()
                 .withPrivacyUrl(privacyManagerAlpha)
-                .withNodePrivateKeyFile(NodeKeys.BOOTNODE.getPrivateKeyFile())
+                .withIdentity(NodeKey.ALPHA)
                 .withPrivacyManagerPublicKey(OrionKeyPair.ALPHA.getPublicKey()));
 
     this.signerAlpha = network.addSigner(SignerWallet.ALPHA, nodeAlpha);
@@ -69,12 +69,13 @@ public class PrivacyContracDeploymentTest extends NetworkTest {
     // TODO fits as a function of Besu
     // TODO better typing then String - create ENODE Address
     final String bootnodeEnodeAddress =
-        NodeKeys.BOOTNODE.getEnodeAddress(nodeAlpha.ipAddress(), nodeAlpha.p2pPort());
+        NodeKey.ALPHA.getEnodeAddress(nodeAlpha.ipAddress(), nodeAlpha.p2pPort());
 
     this.nodeBeta =
         network.addNode(
             new BesuConfigurationBuilder()
                 .withPrivacyUrl(privacyManagerBeta)
+                .withIdentity(NodeKey.BETA)
                 .withBootnodeEnodeAddress(bootnodeEnodeAddress)
                 .withPrivacyManagerPublicKey(OrionKeyPair.BETA.getPublicKey()));
 
