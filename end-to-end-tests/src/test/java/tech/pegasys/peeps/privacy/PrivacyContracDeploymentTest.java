@@ -69,7 +69,7 @@ public class PrivacyContracDeploymentTest extends NetworkTest {
     // TODO fits as a function of Besu
     // TODO better typing then String - create ENODE Address
     final String bootnodeEnodeAddress =
-        NodeKey.ALPHA.getEnodeAddress(nodeAlpha.ipAddress(), nodeAlpha.p2pPort());
+        NodeKey.ALPHA.enodeAddress(nodeAlpha.ipAddress(), nodeAlpha.p2pPort());
 
     this.nodeBeta =
         network.addNode(

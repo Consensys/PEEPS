@@ -64,7 +64,7 @@ public class Besu implements NetworkMember {
   private final NodeRpc nodeRpc;
   private final NodeRpcExpectingData rpc;
   private final String ipAddress;
-  private final String nodeKey;
+  private final NodeKey identity;
   private String nodeId;
   private String enodeId;
 
@@ -87,8 +87,6 @@ public class Besu implements NetworkMember {
       addPrivacy(config, commandLineOptions, container);
     }
 
-    // TODO nodekey - create if absent in config
-
     LOG.info("Besu command line: {}", commandLineOptions);
 
     this.besu =
@@ -96,7 +94,7 @@ public class Besu implements NetworkMember {
 
     this.nodeRpc = new NodeRpc(config.getVertx());
     this.rpc = new NodeRpcExpectingData(nodeRpc);
-    this.nodeKey = config.getIdentity().getPublicKey();
+    this.identity = config.getIdentity();
   }
 
   @Override
@@ -145,8 +143,8 @@ public class Besu implements NetworkMember {
     return enodeId;
   }
 
-  public String nodeKey() {
-    return nodeKey;
+  public NodeKey identity() {
+    return identity;
   }
 
   public int httpRpcPort() {

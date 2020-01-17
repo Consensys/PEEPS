@@ -42,7 +42,8 @@ public class Ibft2ExtraData {
             .map(
                 validator ->
                     Address.fromBytes(
-                        Hash.keccak256(Bytes.fromHexString(validator.nodeKey())).slice(12, 20)))
+                        Hash.keccak256(Bytes.fromHexString(validator.identity().getPublicKey()))
+                            .slice(12, 20)))
             .collect(Collectors.toList()));
   }
 

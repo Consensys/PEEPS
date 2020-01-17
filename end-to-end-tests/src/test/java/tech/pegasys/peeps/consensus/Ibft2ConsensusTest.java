@@ -37,17 +37,13 @@ public class Ibft2ConsensusTest extends NetworkTest {
   @Override
   protected void setUpNetwork(final Network network) {
 
-    // Choose IBFT 2 as consensus mechanism
-
-    // TODO need to convert the public key to an address
-
     this.nodeAlpha = network.addNode(new BesuConfigurationBuilder().withIdentity(NodeKey.ALPHA));
 
     // TODO move this into Network, same approach as Orions, add enodeAddress to Besu
     // TODO fits as a function of Besu
     // TODO better typing then String - create ENODE Address
     final String bootnodeEnodeAddress =
-        NodeKey.ALPHA.getEnodeAddress(nodeAlpha.ipAddress(), nodeAlpha.p2pPort());
+        NodeKey.ALPHA.enodeAddress(nodeAlpha.ipAddress(), nodeAlpha.p2pPort());
 
     network.addNode(
         new BesuConfigurationBuilder()
