@@ -19,7 +19,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.tuweni.bytes.Bytes;
-import org.apache.tuweni.bytes.Bytes32;
 import org.apache.tuweni.crypto.Hash;
 import org.apache.tuweni.eth.Address;
 import org.apache.tuweni.rlp.RLP;
@@ -28,21 +27,17 @@ public class Ibft2ExtraData {
 
   public static Bytes encode(final Besu... validators) {
 
-    // TODO get the node public key from Besu
-    Stream.of(validators)
-        .parallel()
-        .map(
-            validator -> {
-              final Bytes32 a = Hash.keccak256(Bytes.fromHexStringLenient(validator.nodeKey()));
-
-              return null;
-            })
-        .collect(Collectors.toList());
-
-    return null;
+    return encode(
+        Stream.of(validators)
+            .parallel()
+            .map(
+                validator ->
+                    Address.fromBytes(
+                        Hash.keccak256(Bytes.fromHexStringLenient(validator.nodeKey()))))
+            .collect(Collectors.toList()));
   }
 
-  public static Bytes encode(final List<Address> validators) {
+  private static Bytes encode(final List<Address> validators) {
     final byte[] vanityData = new byte[32];
     final int round = 0;
     final byte[] votes = new byte[0];
