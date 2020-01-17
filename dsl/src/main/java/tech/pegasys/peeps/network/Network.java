@@ -21,6 +21,7 @@ import tech.pegasys.peeps.json.Json;
 import tech.pegasys.peeps.node.Besu;
 import tech.pegasys.peeps.node.BesuConfigurationBuilder;
 import tech.pegasys.peeps.node.GenesisAccounts;
+import tech.pegasys.peeps.node.NodeKey;
 import tech.pegasys.peeps.node.genesis.Genesis;
 import tech.pegasys.peeps.node.genesis.GenesisAccount;
 import tech.pegasys.peeps.node.genesis.GenesisConfig;
@@ -123,6 +124,10 @@ public class Network implements Closeable {
     this.genesis = createGenesis(consensus, validators);
 
     writeGenesisFile();
+  }
+
+  public Besu addNode(final NodeKey identity) {
+    return addNode(new BesuConfigurationBuilder().withIdentity(identity));
   }
 
   public Besu addNode(final BesuConfigurationBuilder config) {

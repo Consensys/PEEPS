@@ -88,9 +88,7 @@ public class PrivacyContracDeploymentTest extends NetworkTest {
 
     // TODO no in-line comments - implement clean code!
 
-    // TODO entire network - i.e. all Nodes, don't pass them in
-    // Valid transaction receipt for the privacy contract deployment
-    network().awaitConsensusOnTransactionReciept(pmt);
+    await().consensusOnTransactionReciept(pmt);
 
     // Valid privacy marker transaction
     final TransactionReceipt pmtReceiptNodeA = nodeAlpha.rpc().getTransactionReceipt(pmt);

@@ -12,7 +12,9 @@
  */
 package tech.pegasys.peeps;
 
+import tech.pegasys.peeps.network.AwaitNetwork;
 import tech.pegasys.peeps.network.Network;
+import tech.pegasys.peeps.network.VerifyNetwork;
 
 import java.nio.file.Path;
 
@@ -25,6 +27,8 @@ public abstract class NetworkTest {
   @TempDir Path configurationDirectory;
 
   private Network network;
+  private AwaitNetwork await;
+  private VerifyNetwork verify;
 
   @BeforeEach
   public void setUpNetwork() {
@@ -32,6 +36,9 @@ public abstract class NetworkTest {
     network = new Network(configurationDirectory);
     setUpNetwork(network);
     network.start();
+
+    await = new AwaitNetwork(network);
+    verify = new VerifyNetwork(network);
   }
 
   @AfterEach
@@ -41,8 +48,11 @@ public abstract class NetworkTest {
 
   protected abstract void setUpNetwork(Network network);
 
-  // TODO replace this with await consensus on?
-  protected Network network() {
-    return network;
+  protected AwaitNetwork await() {
+    return await;
+  }
+
+  protected VerifyNetwork verify() {
+    return verify;
   }
 }

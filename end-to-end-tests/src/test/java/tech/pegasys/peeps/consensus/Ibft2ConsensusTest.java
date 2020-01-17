@@ -16,7 +16,6 @@ import tech.pegasys.peeps.NetworkTest;
 import tech.pegasys.peeps.network.ConsensusMechanism;
 import tech.pegasys.peeps.network.Network;
 import tech.pegasys.peeps.node.Besu;
-import tech.pegasys.peeps.node.BesuConfigurationBuilder;
 import tech.pegasys.peeps.node.GenesisAccounts;
 import tech.pegasys.peeps.node.NodeKey;
 import tech.pegasys.peeps.node.model.Hash;
@@ -37,10 +36,8 @@ public class Ibft2ConsensusTest extends NetworkTest {
   @Override
   protected void setUpNetwork(final Network network) {
 
-    this.nodeAlpha = network.addNode(new BesuConfigurationBuilder().withIdentity(NodeKey.ALPHA));
-
-    network.addNode(new BesuConfigurationBuilder().withIdentity(NodeKey.BETA));
-
+    this.nodeAlpha = network.addNode(NodeKey.ALPHA);
+    network.addNode(NodeKey.BETA);
     network.set(ConsensusMechanism.IBFT2, nodeAlpha);
 
     this.signerAlpha = network.addSigner(SignerWallet.ALPHA, nodeAlpha);
@@ -55,14 +52,14 @@ public class Ibft2ConsensusTest extends NetworkTest {
     final Address receiver = GenesisAccounts.BETA.address();
     final Wei transderAmount = Wei.valueOf(5000L);
 
-    network().verifyConsensusOnValue(sender, receiver);
+    verify().consensusOnValue(sender, receiver);
 
     final Wei senderStartBalance = nodeAlpha.rpc().getBalance(sender);
     final Wei receiverStartBalance = nodeAlpha.rpc().getBalance(receiver);
 
     final Hash receipt = signerAlpha.rpc().transfer(sender, receiver, transderAmount);
 
-    network().awaitConsensusOnTransactionReciept(receipt);
+    await().consensusOnTransactionReciept(receipt);
 
     // verify state transform
     final ValueSent sent = new ValueSent(sender, senderStartBalance, receipt);
@@ -71,6 +68,6 @@ public class Ibft2ConsensusTest extends NetworkTest {
 
     nodeAlpha.verifyTransition(sent, received);
 
-    network().verifyConsensusOnValue(sender, receiver);
+    verify().consensusOnValue(sender, receiver);
   }
 }
