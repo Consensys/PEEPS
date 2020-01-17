@@ -127,6 +127,7 @@ public class Network implements Closeable {
 
   public Besu addNode(final BesuConfigurationBuilder config) {
 
+    // TODO supplier for the genesis file?
     final Besu besu =
         new Besu(
             config
@@ -134,12 +135,20 @@ public class Network implements Closeable {
                 .withContainerNetwork(network)
                 .withIpAddress(subnet.getAddressAndIncrement())
                 .withGenesisFile(genesisFile)
+                .withBootnodeEnodeAddress(bootnodeEnodeAddresses())
                 .build());
 
     nodes.add(besu);
     members.add(besu);
 
     return besu;
+  }
+
+  private String bootnodeEnodeAddresses() {
+    return nodes
+        .parallelStream()
+        .map(node -> node.identity().enodeAddress(node.ipAddress(), node.p2pPort()))
+        .collect(Collectors.joining(","));
   }
 
   public Orion addPrivacyManager(final OrionKeyPair... keys) {

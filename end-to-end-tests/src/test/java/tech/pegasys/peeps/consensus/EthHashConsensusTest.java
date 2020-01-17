@@ -40,16 +40,7 @@ public class EthHashConsensusTest extends NetworkTest {
 
     this.signerAlpha = network.addSigner(SignerWallet.ALPHA, nodeAlpha);
 
-    // TODO move this into Network, same approach as Orions, add enodeAddress to Besu
-    // TODO fits as a function of Besu
-    // TODO better typing then String - create ENODE Address
-    final String bootnodeEnodeAddress =
-        NodeKey.ALPHA.enodeAddress(nodeAlpha.ipAddress(), nodeAlpha.p2pPort());
-
-    network.addNode(
-        new BesuConfigurationBuilder()
-            .withBootnodeEnodeAddress(bootnodeEnodeAddress)
-            .withIdentity(NodeKey.BETA));
+    network.addNode(new BesuConfigurationBuilder().withIdentity(NodeKey.BETA));
   }
 
   @Test

@@ -39,16 +39,7 @@ public class Ibft2ConsensusTest extends NetworkTest {
 
     this.nodeAlpha = network.addNode(new BesuConfigurationBuilder().withIdentity(NodeKey.ALPHA));
 
-    // TODO move this into Network, same approach as Orions, add enodeAddress to Besu
-    // TODO fits as a function of Besu
-    // TODO better typing then String - create ENODE Address
-    final String bootnodeEnodeAddress =
-        NodeKey.ALPHA.enodeAddress(nodeAlpha.ipAddress(), nodeAlpha.p2pPort());
-
-    network.addNode(
-        new BesuConfigurationBuilder()
-            .withBootnodeEnodeAddress(bootnodeEnodeAddress)
-            .withIdentity(NodeKey.BETA));
+    network.addNode(new BesuConfigurationBuilder().withIdentity(NodeKey.BETA));
 
     network.set(ConsensusMechanism.IBFT2, nodeAlpha);
 

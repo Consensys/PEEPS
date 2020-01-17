@@ -65,18 +65,11 @@ public class PrivacyContracDeploymentTest extends NetworkTest {
 
     this.privacyManagerBeta = network.addPrivacyManager(OrionKeyPair.BETA);
 
-    // TODO move this into Network, same approach as Orions, add enodeAddress to Besu
-    // TODO fits as a function of Besu
-    // TODO better typing then String - create ENODE Address
-    final String bootnodeEnodeAddress =
-        NodeKey.ALPHA.enodeAddress(nodeAlpha.ipAddress(), nodeAlpha.p2pPort());
-
     this.nodeBeta =
         network.addNode(
             new BesuConfigurationBuilder()
                 .withPrivacyUrl(privacyManagerBeta)
                 .withIdentity(NodeKey.BETA)
-                .withBootnodeEnodeAddress(bootnodeEnodeAddress)
                 .withPrivacyManagerPublicKey(OrionKeyPair.BETA.getPublicKey()));
 
     this.signerBeta = network.addSigner(SignerWallet.BETA, nodeBeta);
