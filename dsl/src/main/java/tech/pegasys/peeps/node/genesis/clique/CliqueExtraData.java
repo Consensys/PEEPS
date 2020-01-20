@@ -14,7 +14,6 @@ package tech.pegasys.peeps.node.genesis.clique;
 
 import tech.pegasys.peeps.node.Besu;
 
-import java.security.Security;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -22,14 +21,8 @@ import java.util.stream.Stream;
 import org.apache.tuweni.bytes.Bytes;
 import org.apache.tuweni.crypto.Hash;
 import org.apache.tuweni.eth.Address;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 public class CliqueExtraData {
-
-  // TODO do this static configuration somewhere sensible i.e. not here!
-  static {
-    Security.addProvider(new BouncyCastleProvider());
-  }
 
   public static Bytes encode(final Besu... validators) {
 

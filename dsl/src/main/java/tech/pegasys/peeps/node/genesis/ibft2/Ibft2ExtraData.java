@@ -14,7 +14,6 @@ package tech.pegasys.peeps.node.genesis.ibft2;
 
 import tech.pegasys.peeps.node.Besu;
 
-import java.security.Security;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,14 +24,8 @@ import org.apache.tuweni.crypto.Hash;
 import org.apache.tuweni.crypto.SECP256K1.Signature;
 import org.apache.tuweni.eth.Address;
 import org.apache.tuweni.rlp.RLP;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 public class Ibft2ExtraData {
-
-  // TODO do this static configuration somewhere sensible i.e. not here!
-  static {
-    Security.addProvider(new BouncyCastleProvider());
-  }
 
   public static Bytes encode(final Besu... validators) {
 
