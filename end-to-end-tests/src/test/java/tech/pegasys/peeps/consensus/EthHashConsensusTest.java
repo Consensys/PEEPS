@@ -13,6 +13,7 @@
 package tech.pegasys.peeps.consensus;
 
 import tech.pegasys.peeps.NetworkTest;
+import tech.pegasys.peeps.network.ConsensusMechanism;
 import tech.pegasys.peeps.network.Network;
 import tech.pegasys.peeps.node.Besu;
 import tech.pegasys.peeps.node.GenesisAccounts;
@@ -36,8 +37,8 @@ public class EthHashConsensusTest extends NetworkTest {
   protected void setUpNetwork(final Network network) {
 
     this.nodeAlpha = network.addNode(NodeKey.ALPHA);
-
     network.addNode(NodeKey.BETA);
+    network.set(ConsensusMechanism.ETH_HASH);
 
     this.signerAlpha = network.addSigner(SignerWallet.ALPHA, nodeAlpha);
   }

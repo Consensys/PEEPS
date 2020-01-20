@@ -25,6 +25,9 @@ import tech.pegasys.peeps.node.NodeKey;
 import tech.pegasys.peeps.node.genesis.Genesis;
 import tech.pegasys.peeps.node.genesis.GenesisAccount;
 import tech.pegasys.peeps.node.genesis.GenesisConfig;
+import tech.pegasys.peeps.node.genesis.clique.CliqueConfig;
+import tech.pegasys.peeps.node.genesis.clique.CliqueExtraData;
+import tech.pegasys.peeps.node.genesis.clique.GenesisConfigClique;
 import tech.pegasys.peeps.node.genesis.ethhash.EthHashConfig;
 import tech.pegasys.peeps.node.genesis.ethhash.GenesisConfigEthHash;
 import tech.pegasys.peeps.node.genesis.ibft2.GenesisConfigIbft2;
@@ -244,6 +247,9 @@ public class Network implements Closeable {
     final GenesisConfig genesisConfig;
 
     switch (consensus) {
+      case CLIQUE:
+        genesisConfig = new GenesisConfigClique(chainId, new CliqueConfig());
+        break;
       case IBFT2:
         genesisConfig = new GenesisConfigIbft2(chainId, new Ibft2Config());
         break;
@@ -260,6 +266,9 @@ public class Network implements Closeable {
     final String extraData;
 
     switch (consensus) {
+      case CLIQUE:
+        extraData = CliqueExtraData.encode(validators).toString();
+        break;
       case IBFT2:
         extraData = Ibft2ExtraData.encode(validators).toString();
         break;

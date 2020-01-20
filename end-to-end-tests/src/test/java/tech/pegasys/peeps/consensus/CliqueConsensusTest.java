@@ -13,30 +13,61 @@
 package tech.pegasys.peeps.consensus;
 
 import tech.pegasys.peeps.NetworkTest;
+import tech.pegasys.peeps.network.ConsensusMechanism;
 import tech.pegasys.peeps.network.Network;
+import tech.pegasys.peeps.node.Besu;
+import tech.pegasys.peeps.node.GenesisAccounts;
+import tech.pegasys.peeps.node.NodeKey;
+import tech.pegasys.peeps.node.model.Hash;
+import tech.pegasys.peeps.node.verification.ValueReceived;
+import tech.pegasys.peeps.node.verification.ValueSent;
+import tech.pegasys.peeps.signer.EthSigner;
+import tech.pegasys.peeps.signer.SignerWallet;
 
+import org.apache.tuweni.eth.Address;
+import org.apache.tuweni.units.ethereum.Wei;
 import org.junit.jupiter.api.Test;
 
 public class CliqueConsensusTest extends NetworkTest {
+
+  private Besu nodeAlpha;
+  private EthSigner signerAlpha;
+
   @Override
   protected void setUpNetwork(final Network network) {
-    // TODO Auto-generated method stub
 
+    this.nodeAlpha = network.addNode(NodeKey.ALPHA);
+    network.addNode(NodeKey.BETA);
+    network.set(ConsensusMechanism.CLIQUE, nodeAlpha);
+
+    this.signerAlpha = network.addSigner(SignerWallet.ALPHA, nodeAlpha);
   }
 
   @Test
   public void consensusAfterMiningMustHappen() {
 
-    // TODO no in-line comments - implement clean code!
+    // TODO The sender account should be retrieved from the Signer (as it know which accounts it has
+    // unlocked)
+    final Address sender = GenesisAccounts.GAMMA.address();
+    final Address receiver = GenesisAccounts.BETA.address();
+    final Wei transderAmount = Wei.valueOf(5000L);
 
-    // Network Two Besus, no EthSigners or Orions
+    verify().consensusOnValue(sender, receiver);
 
-    // Choose Clique as consensus mechanism
+    final Wei senderStartBalance = nodeAlpha.rpc().getBalance(sender);
+    final Wei receiverStartBalance = nodeAlpha.rpc().getBalance(receiver);
 
-    // Mine: transfer
+    final Hash receipt = signerAlpha.rpc().transfer(sender, receiver, transderAmount);
 
-    // After suitable time / number of blocks both nodes but agree on state change &
-    // have identical receipt (block number)
+    await().consensusOnTransactionReciept(receipt);
 
+    // verify state transform
+    final ValueSent sent = new ValueSent(sender, senderStartBalance, receipt);
+    final ValueReceived received =
+        new ValueReceived(receiver, receiverStartBalance, transderAmount);
+
+    nodeAlpha.verifyTransition(sent, received);
+
+    verify().consensusOnValue(sender, receiver);
   }
 }
