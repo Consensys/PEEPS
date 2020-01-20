@@ -37,6 +37,7 @@ import tech.pegasys.peeps.node.genesis.ibft2.Ibft2Config;
 import tech.pegasys.peeps.node.model.GenesisAddress;
 import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.model.TransactionReceipt;
+import tech.pegasys.peeps.node.rpc.NodeRpcExpectingData;
 import tech.pegasys.peeps.node.verification.AccountValue;
 import tech.pegasys.peeps.privacy.Orion;
 import tech.pegasys.peeps.privacy.OrionConfiguration;
@@ -46,6 +47,7 @@ import tech.pegasys.peeps.privacy.OrionKeyPair;
 import tech.pegasys.peeps.signer.EthSigner;
 import tech.pegasys.peeps.signer.EthSignerConfigurationBuilder;
 import tech.pegasys.peeps.signer.SignerWallet;
+import tech.pegasys.peeps.signer.rpc.SignerRpcExpectingData;
 import tech.pegasys.peeps.util.PathGenerator;
 
 import java.io.Closeable;
@@ -55,6 +57,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -71,9 +74,9 @@ public class Network implements Closeable {
   private static final Logger LOG = LogManager.getLogger();
 
   private final List<NetworkMember> members;
-  private final List<Besu> nodes;
-  private final List<EthSigner> signers;
-  private final List<Orion> privacyManagers;
+  private final Map<OrionKeyPair, Orion> privacyManagers;
+  private final Map<SignerWallet, EthSigner> signers;
+  private final Map<NodeKey, Besu> nodes;
 
   private final Subnet subnet;
   private final org.testcontainers.containers.Network network;
@@ -86,10 +89,10 @@ public class Network implements Closeable {
   public Network(final Path configurationDirectory) {
     checkNotNull(configurationDirectory, "Path to configuration directory is mandatory");
 
-    this.privacyManagers = new ArrayList<>();
+    this.privacyManagers = new HashMap<>();
     this.members = new ArrayList<>();
-    this.signers = new ArrayList<>();
-    this.nodes = new ArrayList<>();
+    this.signers = new HashMap<>();
+    this.nodes = new HashMap<>();
     this.pathGenerator = new PathGenerator(configurationDirectory);
     this.vertx = Vertx.vertx();
     this.subnet = new Subnet();
@@ -114,6 +117,20 @@ public class Network implements Closeable {
     stop();
     vertx.close();
     network.close();
+  }
+
+  // TODO temporary hack to support overloading of set with varargs
+  public void set(final ConsensusMechanism consensus) {
+    set(consensus, (Besu) null);
+  }
+
+  public void set(final ConsensusMechanism consensus, final NodeKey... validators) {
+    set(
+        consensus,
+        Stream.of(validators)
+            .parallel()
+            .map(validator -> nodes.get(validator))
+            .toArray((Besu[]::new)));
   }
 
   // TODO validators hacky, dynamically figure out after the nodes are all added
@@ -147,7 +164,7 @@ public class Network implements Closeable {
                 .withBootnodeEnodeAddress(bootnodeEnodeAddresses())
                 .build());
 
-    nodes.add(besu);
+    nodes.put(besu.identity(), besu);
     members.add(besu);
 
     return besu;
@@ -155,6 +172,7 @@ public class Network implements Closeable {
 
   private String bootnodeEnodeAddresses() {
     return nodes
+        .values()
         .parallelStream()
         .map(node -> node.identity().enodeAddress(node.ipAddress(), node.p2pPort()))
         .collect(Collectors.joining(","));
@@ -177,10 +195,16 @@ public class Network implements Closeable {
 
     final Orion manager = new Orion(configuration);
 
-    privacyManagers.add(manager);
+    Stream.of(keys).parallel().forEach(key -> privacyManagers.put(key, manager));
+
     members.add(manager);
 
     return manager;
+  }
+
+  public EthSigner addSigner(final SignerWallet wallet, final NodeKey downstream) {
+    checkNodeExistsFor(downstream);
+    return addSigner(wallet, nodes.get(downstream));
   }
 
   public EthSigner addSigner(final SignerWallet wallet, final Besu downstream) {
@@ -195,7 +219,7 @@ public class Network implements Closeable {
                 .witWallet(wallet)
                 .build());
 
-    signers.add(signer);
+    signers.put(wallet, signer);
     members.add(signer);
 
     return signer;
@@ -212,6 +236,7 @@ public class Network implements Closeable {
         () -> {
           final List<TransactionReceipt> receipts =
               nodes
+                  .values()
                   .parallelStream()
                   .map(node -> node.rpc().getTransactionReceipt(transaction))
                   .collect(Collectors.toList());
@@ -232,14 +257,47 @@ public class Network implements Closeable {
     checkState(
         nodes.size() > 1, "There must be two or more nodes to be able to verify on consensus");
 
-    final Besu firstNode = nodes.get(0);
+    final Besu firstNode = nodes.values().iterator().next();
     final Set<AccountValue> values =
         Stream.of(accounts)
             .parallel()
             .map(account -> new AccountValue(account, firstNode.rpc().getBalance(account)))
             .collect(Collectors.toSet());
 
-    nodes.parallelStream().forEach(node -> node.verifyValue(values));
+    nodes.values().parallelStream().forEach(node -> node.verifyValue(values));
+  }
+
+  // TODO these Mediator method could be refactored elsewhere?
+  public NodeVerify verify(final NodeKey id) {
+    checkNodeExistsFor(id);
+
+    return new NodeVerify(nodes.get(id));
+  }
+
+  public SignerRpcExpectingData rpc(final SignerWallet id) {
+    checkNotNull(id, "Signer Identifier is mandatory");
+    checkState(
+        signers.containsKey(id),
+        "Signer Identifier: {}, does not match any available: {}",
+        id,
+        signers.keySet());
+
+    return signers.get(id).rpc();
+  }
+
+  public NodeRpcExpectingData rpc(final NodeKey id) {
+    checkNodeExistsFor(id);
+
+    return nodes.get(id).rpc();
+  }
+
+  private void checkNodeExistsFor(final NodeKey id) {
+    checkNotNull(id, "Node Identifier is mandatory");
+    checkState(
+        nodes.containsKey(id),
+        "Node Identifier: {}, does not match any available: {}",
+        id,
+        nodes.keySet());
   }
 
   private Genesis createGenesis(final ConsensusMechanism consensus, final Besu... validators) {
@@ -309,16 +367,21 @@ public class Network implements Closeable {
 
   private void awaitConnectivity() {
 
-    nodes.parallelStream().forEach(node -> node.awaitConnectivity(nodes));
+    nodes.values().parallelStream().forEach(node -> node.awaitConnectivity(nodes.values()));
+
     privacyManagers
+        .values()
         .parallelStream()
-        .forEach(privacyManger -> privacyManger.awaitConnectivity(privacyManagers));
-    signers.parallelStream().forEach(signer -> signer.awaitConnectivityToDownstream());
+        .distinct()
+        .forEach(privacyManger -> privacyManger.awaitConnectivity(privacyManagers.values()));
+    signers.values().parallelStream().forEach(signer -> signer.awaitConnectivityToDownstream());
   }
 
   private List<String> privacyManagerBootnodeUrls() {
     return privacyManagers
+        .values()
         .parallelStream()
+        .distinct()
         .map(manager -> manager.getPeerNetworkAddress())
         .collect(Collectors.toList());
   }

@@ -26,6 +26,7 @@ import tech.pegasys.peeps.node.verification.AccountValue;
 import tech.pegasys.peeps.node.verification.NodeValueTransition;
 import tech.pegasys.peeps.util.DockerLogs;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -155,7 +156,7 @@ public class Besu implements NetworkMember {
     return CONTAINER_P2P_PORT;
   }
 
-  public void awaitConnectivity(final List<Besu> peers) {
+  public void awaitConnectivity(final Collection<Besu> peers) {
     awaitPeerIdConnections(excludeSelf(expectedPeerIds(peers)));
   }
 
@@ -186,7 +187,7 @@ public class Besu implements NetworkMember {
         String.format("Failed to connect in time to peers: %s", peerIds));
   }
 
-  private Set<String> expectedPeerIds(final List<Besu> peers) {
+  private Set<String> expectedPeerIds(final Collection<Besu> peers) {
     return peers
         .parallelStream()
         .map(node -> ensureHexPrefix(node.getNodeId()))

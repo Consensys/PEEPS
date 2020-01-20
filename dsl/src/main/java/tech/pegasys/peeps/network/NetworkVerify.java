@@ -14,10 +14,10 @@ package tech.pegasys.peeps.network;
 
 import org.apache.tuweni.eth.Address;
 
-public class VerifyNetwork {
+public class NetworkVerify {
   private final Network network;
 
-  public VerifyNetwork(final Network network) {
+  public NetworkVerify(final Network network) {
     this.network = network;
   }
 
