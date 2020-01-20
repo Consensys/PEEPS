@@ -26,9 +26,9 @@ import org.apache.tuweni.crypto.SECP256K1.Signature;
 import org.apache.tuweni.eth.Address;
 import org.apache.tuweni.rlp.RLP;
 
-public class Ibft2ExtraData extends GenesisExtraData {
+public class GenesisExtraDataIbft2 extends GenesisExtraData {
 
-  public Ibft2ExtraData(final Besu... validators) {
+  public GenesisExtraDataIbft2(final Besu... validators) {
     super(encode(validators));
   }
 

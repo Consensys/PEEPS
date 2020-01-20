@@ -27,13 +27,13 @@ import tech.pegasys.peeps.node.genesis.GenesisAccount;
 import tech.pegasys.peeps.node.genesis.GenesisConfig;
 import tech.pegasys.peeps.node.genesis.GenesisExtraData;
 import tech.pegasys.peeps.node.genesis.clique.CliqueConfig;
-import tech.pegasys.peeps.node.genesis.clique.CliqueExtraData;
 import tech.pegasys.peeps.node.genesis.clique.GenesisConfigClique;
+import tech.pegasys.peeps.node.genesis.clique.GenesisExtraDataClique;
 import tech.pegasys.peeps.node.genesis.ethhash.EthHashConfig;
 import tech.pegasys.peeps.node.genesis.ethhash.GenesisConfigEthHash;
 import tech.pegasys.peeps.node.genesis.ibft2.GenesisConfigIbft2;
+import tech.pegasys.peeps.node.genesis.ibft2.GenesisExtraDataIbft2;
 import tech.pegasys.peeps.node.genesis.ibft2.Ibft2Config;
-import tech.pegasys.peeps.node.genesis.ibft2.Ibft2ExtraData;
 import tech.pegasys.peeps.node.model.GenesisAddress;
 import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.model.TransactionReceipt;
@@ -268,10 +268,10 @@ public class Network implements Closeable {
 
     switch (consensus) {
       case CLIQUE:
-        extraData = new CliqueExtraData(validators);
+        extraData = new GenesisExtraDataClique(validators);
         break;
       case IBFT2:
-        extraData = new Ibft2ExtraData(validators);
+        extraData = new GenesisExtraDataIbft2(validators);
         break;
       case ETH_HASH:
       default:

@@ -23,9 +23,9 @@ import org.apache.tuweni.bytes.Bytes;
 import org.apache.tuweni.crypto.Hash;
 import org.apache.tuweni.eth.Address;
 
-public class CliqueExtraData extends GenesisExtraData {
+public class GenesisExtraDataClique extends GenesisExtraData {
 
-  public CliqueExtraData(final Besu... validators) {
+  public GenesisExtraDataClique(final Besu... validators) {
     super(encode(validators));
   }
 
