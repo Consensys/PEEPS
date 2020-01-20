@@ -17,12 +17,19 @@ import tech.pegasys.peeps.network.Network;
 import tech.pegasys.peeps.network.VerifyNetwork;
 
 import java.nio.file.Path;
+import java.security.Security;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.io.TempDir;
 
 public abstract class NetworkTest {
+
+  // TODO this may not be the best place to be adding Security providers
+  static {
+    Security.addProvider(new BouncyCastleProvider());
+  }
 
   @TempDir Path configurationDirectory;
 
