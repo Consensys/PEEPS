@@ -25,6 +25,7 @@ import tech.pegasys.peeps.node.NodeKey;
 import tech.pegasys.peeps.node.genesis.Genesis;
 import tech.pegasys.peeps.node.genesis.GenesisAccount;
 import tech.pegasys.peeps.node.genesis.GenesisConfig;
+import tech.pegasys.peeps.node.genesis.GenesisExtraData;
 import tech.pegasys.peeps.node.genesis.clique.CliqueConfig;
 import tech.pegasys.peeps.node.genesis.clique.CliqueExtraData;
 import tech.pegasys.peeps.node.genesis.clique.GenesisConfigClique;
@@ -263,14 +264,14 @@ public class Network implements Closeable {
     final Map<GenesisAddress, GenesisAccount> genesisAccounts =
         GenesisAccounts.of(GenesisAccounts.ALPHA, GenesisAccounts.BETA, GenesisAccounts.GAMMA);
 
-    final String extraData;
+    final GenesisExtraData extraData;
 
     switch (consensus) {
       case CLIQUE:
-        extraData = CliqueExtraData.encode(validators).toString();
+        extraData = new CliqueExtraData(validators);
         break;
       case IBFT2:
-        extraData = Ibft2ExtraData.encode(validators).toString();
+        extraData = new Ibft2ExtraData(validators);
         break;
       case ETH_HASH:
       default:

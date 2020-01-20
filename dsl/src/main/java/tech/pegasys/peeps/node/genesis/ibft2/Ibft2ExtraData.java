@@ -13,6 +13,7 @@
 package tech.pegasys.peeps.node.genesis.ibft2;
 
 import tech.pegasys.peeps.node.Besu;
+import tech.pegasys.peeps.node.genesis.GenesisExtraData;
 
 import java.util.Collections;
 import java.util.List;
@@ -25,7 +26,11 @@ import org.apache.tuweni.crypto.SECP256K1.Signature;
 import org.apache.tuweni.eth.Address;
 import org.apache.tuweni.rlp.RLP;
 
-public class Ibft2ExtraData {
+public class Ibft2ExtraData extends GenesisExtraData {
+
+  public Ibft2ExtraData(final Besu... validators) {
+    super(encode(validators));
+  }
 
   public static Bytes encode(final Besu... validators) {
 

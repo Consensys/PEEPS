@@ -13,6 +13,7 @@
 package tech.pegasys.peeps.node.genesis.clique;
 
 import tech.pegasys.peeps.node.Besu;
+import tech.pegasys.peeps.node.genesis.GenesisExtraData;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,9 +23,13 @@ import org.apache.tuweni.bytes.Bytes;
 import org.apache.tuweni.crypto.Hash;
 import org.apache.tuweni.eth.Address;
 
-public class CliqueExtraData {
+public class CliqueExtraData extends GenesisExtraData {
 
-  public static Bytes encode(final Besu... validators) {
+  public CliqueExtraData(final Besu... validators) {
+    super(encode(validators));
+  }
+
+  private static Bytes encode(final Besu... validators) {
 
     return encode(
         Stream.of(validators)
