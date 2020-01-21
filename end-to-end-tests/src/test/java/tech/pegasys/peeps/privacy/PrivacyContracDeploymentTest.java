@@ -87,15 +87,17 @@ public class PrivacyContracDeploymentTest extends NetworkTest {
     // Valid privacy marker transaction
     final TransactionReceipt pmtReceiptNodeA = execute(nodeAlpha).getTransactionReceipt(pmt);
 
+    // Verify that the successful was transaction
     assertThat(pmtReceiptNodeA.getTransactionHash()).isEqualTo(pmt);
     assertThat(pmtReceiptNodeA.isSuccess()).isTrue();
 
+    // Verify that both nodes have the same transaction
     final Transaction pmtNodeA = execute(nodeAlpha).getTransactionByHash(pmt);
     final Transaction pmtNodeB = execute(nodeBeta).getTransactionByHash(pmt);
 
+    assertThat(pmtNodeA).isNotNull();
     assertThat(pmtNodeA.isProcessed()).isTrue();
     assertThat(pmtNodeA).usingRecursiveComparison().isEqualTo(pmtNodeB);
-    assertThat(pmtNodeA).isNotNull();
 
     // Convert from Hex String to Base64 UTF_8 String for Orion
     final byte[] decodedHex = Hex.decodeHex(removeAnyHexPrefix(pmtNodeA.getInput()).toCharArray());
