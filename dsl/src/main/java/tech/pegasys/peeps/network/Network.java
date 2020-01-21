@@ -106,6 +106,8 @@ public class Network implements Closeable {
   }
 
   public void start() {
+    writeGenesisFile();
+
     members.parallelStream().forEach(member -> member.start());
 
     awaitConnectivity();
@@ -146,8 +148,6 @@ public class Network implements Closeable {
     checkState(signers.isEmpty(), "Cannot change consensus mechanism after creating signers");
 
     this.genesis = createGenesis(consensus, validators);
-
-    writeGenesisFile();
   }
 
   public Besu addNode(final NodeKey identity) {
