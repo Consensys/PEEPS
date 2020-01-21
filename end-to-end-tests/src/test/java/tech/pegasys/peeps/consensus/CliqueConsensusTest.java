@@ -15,7 +15,7 @@ package tech.pegasys.peeps.consensus;
 import tech.pegasys.peeps.NetworkTest;
 import tech.pegasys.peeps.network.ConsensusMechanism;
 import tech.pegasys.peeps.network.Network;
-import tech.pegasys.peeps.node.GenesisAccounts;
+import tech.pegasys.peeps.node.Account;
 import tech.pegasys.peeps.node.NodeKey;
 import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.verification.ValueReceived;
@@ -42,10 +42,8 @@ public class CliqueConsensusTest extends NetworkTest {
   @Test
   public void consensusAfterMiningMustHappen() {
 
-    // TODO The sender account should be retrieved from the Signer (as it know which accounts it has
-    // unlocked)
-    final Address sender = GenesisAccounts.ALPHA.address();
-    final Address receiver = GenesisAccounts.BETA.address();
+    final Address sender = signer.address();
+    final Address receiver = Account.BETA.address();
     final Wei transderAmount = Wei.valueOf(5000L);
 
     verify().consensusOnValue(sender, receiver);

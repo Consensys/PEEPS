@@ -18,8 +18,8 @@ import static tech.pegasys.peeps.util.HexFormatter.removeAnyHexPrefix;
 import tech.pegasys.peeps.NetworkTest;
 import tech.pegasys.peeps.contract.SimpleStorage;
 import tech.pegasys.peeps.network.Network;
+import tech.pegasys.peeps.node.Account;
 import tech.pegasys.peeps.node.BesuConfigurationBuilder;
-import tech.pegasys.peeps.node.GenesisAccounts;
 import tech.pegasys.peeps.node.NodeKey;
 import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.model.PrivacyTransactionReceipt;
@@ -76,7 +76,7 @@ public class PrivacyContracDeploymentTest extends NetworkTest {
   public void deploymentMustSucceed() throws DecoderException {
 
     // TODO why gamma unlocked in signerAlpha?
-    final Address sender = GenesisAccounts.GAMMA.address();
+    final Address sender = Account.GAMMA.address();
     final Hash pmt =
         execute(signerAlpha)
             .deployContractToPrivacyGroup(

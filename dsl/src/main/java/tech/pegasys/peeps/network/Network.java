@@ -18,9 +18,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static tech.pegasys.peeps.util.Await.await;
 
 import tech.pegasys.peeps.json.Json;
+import tech.pegasys.peeps.node.Account;
 import tech.pegasys.peeps.node.Besu;
 import tech.pegasys.peeps.node.BesuConfigurationBuilder;
-import tech.pegasys.peeps.node.GenesisAccounts;
 import tech.pegasys.peeps.node.NodeKey;
 import tech.pegasys.peeps.node.genesis.Genesis;
 import tech.pegasys.peeps.node.genesis.GenesisAccount;
@@ -320,7 +320,7 @@ public class Network implements Closeable {
 
     // TODO configurable somehow?
     final Map<GenesisAddress, GenesisAccount> genesisAccounts =
-        GenesisAccounts.of(GenesisAccounts.ALPHA, GenesisAccounts.BETA, GenesisAccounts.GAMMA);
+        Account.of(Account.ALPHA, Account.BETA, Account.GAMMA);
 
     final GenesisExtraData extraData;
 

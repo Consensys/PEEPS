@@ -22,7 +22,8 @@ import java.util.Map;
 
 import org.apache.tuweni.eth.Address;
 
-public enum GenesisAccounts {
+// TODO split into separate responsibilities - account & the of()
+public enum Account {
   /*
    * publicKey: "f17f52151ebef6c7334fad080c5704d77216b732"
    * privateKey: "ae6ae8e5ccbfb04590405997ee2d52d2b330726137b875053c36d94e974d162f"
@@ -44,19 +45,19 @@ public enum GenesisAccounts {
   private final GenesisAddress genesisAddres;
   private final Address address;
 
-  private GenesisAccounts(final String genesisAddres) {
-    this.genesisAddres = new GenesisAddress(genesisAddres);
-    this.address = Address.fromHexString(HexFormatter.ensureHexPrefix(genesisAddres));
+  private Account(final String address) {
+    this.genesisAddres = new GenesisAddress(address);
+    this.address = Address.fromHexString(HexFormatter.ensureHexPrefix(address));
   }
 
   public Address address() {
     return address;
   }
 
-  public static Map<GenesisAddress, GenesisAccount> of(final GenesisAccounts... accounts) {
+  public static Map<GenesisAddress, GenesisAccount> of(final Account... accounts) {
     final Map<GenesisAddress, GenesisAccount> mapped = new HashMap<>();
 
-    for (final GenesisAccounts account : accounts) {
+    for (final Account account : accounts) {
       mapped.put(account.genesisAddres, new GenesisAccount(DEFAULT_BALANCE));
     }
 
