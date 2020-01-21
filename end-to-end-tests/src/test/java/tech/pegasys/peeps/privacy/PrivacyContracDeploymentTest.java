@@ -13,7 +13,6 @@
 package tech.pegasys.peeps.privacy;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static tech.pegasys.peeps.util.HexFormatter.removeAnyHexPrefix;
 
 import tech.pegasys.peeps.NetworkTest;
 import tech.pegasys.peeps.contract.SimpleStorage;
@@ -24,13 +23,10 @@ import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.model.PrivacyTransactionReceipt;
 import tech.pegasys.peeps.node.model.Transaction;
 import tech.pegasys.peeps.node.model.TransactionReceipt;
+import tech.pegasys.peeps.privacy.model.OrionKey;
 import tech.pegasys.peeps.signer.SignerWallet;
 
-import java.nio.charset.StandardCharsets;
-
 import org.apache.commons.codec.DecoderException;
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.codec.binary.Hex;
 import org.apache.tuweni.eth.Address;
 import org.junit.jupiter.api.Test;
 
@@ -40,7 +36,6 @@ public class PrivacyContracDeploymentTest extends NetworkTest {
   private final NodeKey nodeBeta = NodeKey.BETA;
 
   private final SignerWallet signerAlpha = SignerWallet.ALPHA;
-  private final SignerWallet signerBeta = SignerWallet.BETA;
 
   private Orion privacyManagerAlpha;
   private Orion privacyManagerBeta;
@@ -67,8 +62,6 @@ public class PrivacyContracDeploymentTest extends NetworkTest {
             .withPrivacyUrl(privacyManagerBeta)
             .withIdentity(NodeKey.BETA)
             .withPrivacyManagerPublicKey(OrionKeyPair.BETA.getPublicKey()));
-
-    network.addSigner(SignerWallet.BETA, nodeBeta);
   }
 
   @Test
@@ -99,10 +92,7 @@ public class PrivacyContracDeploymentTest extends NetworkTest {
     assertThat(pmtNodeA.isProcessed()).isTrue();
     assertThat(pmtNodeA).usingRecursiveComparison().isEqualTo(pmtNodeB);
 
-    // Convert from Hex String to Base64 UTF_8 String for Orion
-    final byte[] decodedHex = Hex.decodeHex(removeAnyHexPrefix(pmtNodeA.getInput()).toCharArray());
-    final byte[] encodedHexB64 = Base64.encodeBase64(decodedHex);
-    final String key = new String(encodedHexB64, StandardCharsets.UTF_8);
+    final OrionKey key = OrionKey.from(pmtNodeA);
 
     // Valid privacy transaction receipt
     final PrivacyTransactionReceipt receiptNodeA =
@@ -111,10 +101,6 @@ public class PrivacyContracDeploymentTest extends NetworkTest {
 
     assertThat(receiptNodeA.isSuccess()).isTrue();
     assertThat(receiptNodeA).usingRecursiveComparison().isEqualTo(receiptNodeB);
-
-    final PrivacyTransactionReceipt receiptNodeC =
-        execute(signerBeta).getPrivacyContractReceipt(pmt);
-    assertThat(receiptNodeA).usingRecursiveComparison().isEqualTo(receiptNodeC);
 
     // Valid entries in both Orions
     final String payloadOrionA = privacyManagerAlpha.getPayload(key);

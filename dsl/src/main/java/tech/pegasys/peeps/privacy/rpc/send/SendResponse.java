@@ -12,19 +12,21 @@
  */
 package tech.pegasys.peeps.privacy.rpc.send;
 
+import tech.pegasys.peeps.privacy.model.OrionKey;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SendResponse {
 
-  private final String key;
+  private final OrionKey key;
 
-  public SendResponse(@JsonProperty("key") final String key) {
+  public SendResponse(@JsonProperty("key") final OrionKey key) {
     this.key = key;
   }
 
-  public String getKey() {
+  public OrionKey getKey() {
     return key;
   }
 }
