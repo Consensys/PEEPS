@@ -106,7 +106,7 @@ public class Network implements Closeable {
   }
 
   public void start() {
-    writeGenesisFile();
+    ensureBesuGenesisFileExists();
 
     members.parallelStream().forEach(member -> member.start());
 
@@ -402,11 +402,13 @@ public class Network implements Closeable {
     return new Genesis(genesisConfig, genesisAccounts, extraData);
   }
 
+  private void ensureBesuGenesisFileExists() {
+    if (Files.notExists(genesisFile)) {
+      writeGenesisFile();
+    }
+  }
+
   private void writeGenesisFile() {
-
-    // TODO delay creation of alloc & extra data until after all nodes addded & validators /
-    // accounts known
-
     final String encodedBesuGenesis = Json.encode(genesis);
     LOG.info(
         "Creating Besu genesis file\n\tLocation: {} \n\tContents: {}",
