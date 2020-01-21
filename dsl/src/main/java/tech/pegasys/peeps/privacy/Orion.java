@@ -127,11 +127,6 @@ public class Orion implements NetworkMember {
     return networkRpcAddress;
   }
 
-  // TODO would be nice to not expose this
-  public String getId() {
-    return id;
-  }
-
   // TODO stronger typing than String
   public String getPayload(final OrionKey key) {
     return rpc.receive(key);

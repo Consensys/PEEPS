@@ -13,6 +13,8 @@
 package tech.pegasys.peeps.network;
 
 import tech.pegasys.peeps.node.model.Hash;
+import tech.pegasys.peeps.privacy.OrionKeyPair;
+import tech.pegasys.peeps.privacy.PrivacyGroupVerify;
 
 import org.apache.tuweni.eth.Address;
 
@@ -34,5 +36,9 @@ public class NetworkVerify {
   // TODO perhaps a separate specialisation - privacy?
   public void consensusOnPrivacyTransactionReceipt(final Hash transaction) {
     network.verifyConsensusOnPrivacyTransactionReceipt(transaction);
+  }
+
+  public PrivacyGroupVerify privacyGroup(final OrionKeyPair... members) {
+    return network.privacyGroup(members);
   }
 }

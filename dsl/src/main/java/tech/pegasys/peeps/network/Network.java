@@ -46,6 +46,7 @@ import tech.pegasys.peeps.privacy.OrionConfiguration;
 import tech.pegasys.peeps.privacy.OrionConfigurationBuilder;
 import tech.pegasys.peeps.privacy.OrionConfigurationFile;
 import tech.pegasys.peeps.privacy.OrionKeyPair;
+import tech.pegasys.peeps.privacy.PrivacyGroupVerify;
 import tech.pegasys.peeps.signer.EthSigner;
 import tech.pegasys.peeps.signer.EthSignerConfigurationBuilder;
 import tech.pegasys.peeps.signer.SignerWallet;
@@ -151,6 +152,16 @@ public class Network implements Closeable {
 
   public Besu addNode(final NodeKey identity) {
     return addNode(new BesuConfigurationBuilder().withIdentity(identity));
+  }
+
+  public Besu addNode(final NodeKey identity, final OrionKeyPair privacyManager) {
+    // TODO check privacy manager exists
+
+    return addNode(
+        new BesuConfigurationBuilder()
+            .withIdentity(identity)
+            .withPrivacyUrl(privacyManagers.get(privacyManager))
+            .withPrivacyManagerPublicKey(privacyManager.getPublicKeyResource()));
   }
 
   public Besu addNode(final BesuConfigurationBuilder config) {
@@ -332,6 +343,14 @@ public class Network implements Closeable {
     checkNodeExistsFor(id);
 
     return nodes.get(id).rpc();
+  }
+
+  public PrivacyGroupVerify privacyGroup(final OrionKeyPair... members) {
+    return new PrivacyGroupVerify(
+        Stream.of(members)
+            .parallel()
+            .map(manager -> privacyManagers.get(manager))
+            .collect(Collectors.toSet()));
   }
 
   private void checkNodeExistsFor(final NodeKey id) {

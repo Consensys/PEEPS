@@ -12,12 +12,9 @@
  */
 package tech.pegasys.peeps.privacy;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import tech.pegasys.peeps.NetworkTest;
 import tech.pegasys.peeps.contract.SimpleStorage;
 import tech.pegasys.peeps.network.Network;
-import tech.pegasys.peeps.node.BesuConfigurationBuilder;
 import tech.pegasys.peeps.node.NodeKey;
 import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.model.Transaction;
@@ -31,32 +28,16 @@ public class PrivacyContracDeploymentTest extends NetworkTest {
 
   private final NodeKey nodeAlpha = NodeKey.ALPHA;
   private final SignerWallet signerAlpha = SignerWallet.ALPHA;
-
-  private Orion privacyManagerAlpha;
-  private Orion privacyManagerBeta;
+  private final OrionKeyPair privacyManagerAlpha = OrionKeyPair.ALPHA;
+  private final OrionKeyPair privacyManagerBeta = OrionKeyPair.BETA;
 
   @Override
   protected void setUpNetwork(final Network network) {
-
-    this.privacyManagerAlpha = network.addPrivacyManager(OrionKeyPair.ALPHA);
-
-    // TODO Besu -> Orion
-    // TODO Orion can expose it's public keys, choose the first
-    network.addNode(
-        new BesuConfigurationBuilder()
-            .withPrivacyUrl(privacyManagerAlpha)
-            .withIdentity(NodeKey.ALPHA)
-            .withPrivacyManagerPublicKey(OrionKeyPair.ALPHA.getPublicKey()));
-
+    network.addPrivacyManager(privacyManagerAlpha);
+    network.addPrivacyManager(privacyManagerBeta);
+    network.addNode(nodeAlpha, privacyManagerAlpha);
+    network.addNode(NodeKey.BETA, privacyManagerBeta);
     network.addSigner(SignerWallet.ALPHA, nodeAlpha);
-
-    this.privacyManagerBeta = network.addPrivacyManager(OrionKeyPair.BETA);
-
-    network.addNode(
-        new BesuConfigurationBuilder()
-            .withPrivacyUrl(privacyManagerBeta)
-            .withIdentity(NodeKey.BETA)
-            .withPrivacyManagerPublicKey(OrionKeyPair.BETA.getPublicKey()));
   }
 
   @Test
@@ -76,16 +57,9 @@ public class PrivacyContracDeploymentTest extends NetworkTest {
     verify().consensusOnTransaction(pmt);
     verify().consensusOnPrivacyTransactionReceipt(pmt);
 
-    // TODO no in-line comments - implement clean code!
-
-    // Valid entries in both Orions
+    // TODO three lines to one, consensus on transaction hash?
     final Transaction pmtNodeA = execute(nodeAlpha).getTransactionByHash(pmt);
     final OrionKey key = OrionKey.from(pmtNodeA);
-
-    final String payloadOrionA = privacyManagerAlpha.getPayload(key);
-    final String payloadOrionB = privacyManagerBeta.getPayload(key);
-
-    assertThat(payloadOrionA).isNotNull();
-    assertThat(payloadOrionA).isEqualTo(payloadOrionB);
+    verify().privacyGroup(privacyManagerAlpha, privacyManagerBeta).consensusOnPayload(key);
   }
 }
