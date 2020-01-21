@@ -44,7 +44,7 @@ public class CliqueConsensusTest extends NetworkTest {
 
     // TODO The sender account should be retrieved from the Signer (as it know which accounts it has
     // unlocked)
-    final Address sender = GenesisAccounts.GAMMA.address();
+    final Address sender = GenesisAccounts.ALPHA.address();
     final Address receiver = GenesisAccounts.BETA.address();
     final Wei transderAmount = Wei.valueOf(5000L);
 
