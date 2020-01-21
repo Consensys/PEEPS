@@ -27,7 +27,12 @@ public class NetworkVerify {
     network.verifyConsensusOnValue(accounts);
   }
 
-  public void consensusOnTransaction(final Hash transactionHash) {
-    network.verifyConsensusOnTransaction(transactionHash);
+  public void consensusOnTransaction(final Hash transaction) {
+    network.verifyConsensusOnTransaction(transaction);
+  }
+
+  // TODO perhaps a separate specialisation - privacy?
+  public void consensusOnPrivacyTransactionReceipt(final Hash transaction) {
+    network.verifyConsensusOnPrivacyTransactionReceipt(transaction);
   }
 }

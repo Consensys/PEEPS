@@ -36,6 +36,7 @@ import tech.pegasys.peeps.node.genesis.ibft2.GenesisExtraDataIbft2;
 import tech.pegasys.peeps.node.genesis.ibft2.Ibft2Config;
 import tech.pegasys.peeps.node.model.GenesisAddress;
 import tech.pegasys.peeps.node.model.Hash;
+import tech.pegasys.peeps.node.model.PrivacyTransactionReceipt;
 import tech.pegasys.peeps.node.model.Transaction;
 import tech.pegasys.peeps.node.model.TransactionReceipt;
 import tech.pegasys.peeps.node.rpc.NodeRpcExpectingData;
@@ -268,7 +269,7 @@ public class Network implements Closeable {
     nodes.values().parallelStream().forEach(node -> node.verifyValue(values));
   }
 
-  public void verifyConsensusOnTransaction(final Hash transactionHash) {
+  public void verifyConsensusOnTransaction(final Hash transaction) {
     checkState(
         nodes.size() > 1, "There must be two or more nodes to be able to verify on consensus");
 
@@ -276,17 +277,36 @@ public class Network implements Closeable {
         nodes
             .values()
             .parallelStream()
-            .map(node -> node.rpc().getTransactionByHash(transactionHash))
+            .map(node -> node.rpc().getTransactionByHash(transaction))
             .collect(Collectors.toSet());
 
     assertThat(transactions).isNotEmpty();
-    final Transaction firstTransaction = transactions.iterator().next();
+    final Transaction firstTx = transactions.iterator().next();
 
-    for (final Transaction transaction : transactions) {
-      assertThat(transaction).isNotNull();
-      assertThat(transaction.isProcessed()).isTrue();
+    for (final Transaction tx : transactions) {
+      assertThat(tx).isNotNull();
+      assertThat(tx.isProcessed()).isTrue();
+      assertThat(tx).usingRecursiveComparison().isEqualTo(firstTx);
+    }
+  }
 
-      assertThat(transaction).usingRecursiveComparison().isEqualTo(firstTransaction);
+  public void verifyConsensusOnPrivacyTransactionReceipt(final Hash transaction) {
+    checkState(
+        nodes.size() > 1, "There must be two or more nodes to be able to verify on consensus");
+
+    final Set<PrivacyTransactionReceipt> transactions =
+        nodes
+            .values()
+            .parallelStream()
+            .map(node -> node.rpc().getPrivacyTransactionReceipt(transaction))
+            .collect(Collectors.toSet());
+
+    assertThat(transactions).isNotEmpty();
+    final PrivacyTransactionReceipt firstTx = transactions.iterator().next();
+
+    for (final PrivacyTransactionReceipt tx : transactions) {
+      assertThat(tx).isNotNull();
+      assertThat(tx).usingRecursiveComparison().isEqualTo(firstTx);
     }
   }
 

@@ -20,7 +20,6 @@ import tech.pegasys.peeps.network.Network;
 import tech.pegasys.peeps.node.BesuConfigurationBuilder;
 import tech.pegasys.peeps.node.NodeKey;
 import tech.pegasys.peeps.node.model.Hash;
-import tech.pegasys.peeps.node.model.PrivacyTransactionReceipt;
 import tech.pegasys.peeps.node.model.Transaction;
 import tech.pegasys.peeps.privacy.model.OrionKey;
 import tech.pegasys.peeps.signer.SignerWallet;
@@ -31,8 +30,6 @@ import org.junit.jupiter.api.Test;
 public class PrivacyContracDeploymentTest extends NetworkTest {
 
   private final NodeKey nodeAlpha = NodeKey.ALPHA;
-  private final NodeKey nodeBeta = NodeKey.BETA;
-
   private final SignerWallet signerAlpha = SignerWallet.ALPHA;
 
   private Orion privacyManagerAlpha;
@@ -77,21 +74,14 @@ public class PrivacyContracDeploymentTest extends NetworkTest {
 
     verify(nodeAlpha).successfulTransactionReceipt(pmt);
     verify().consensusOnTransaction(pmt);
+    verify().consensusOnPrivacyTransactionReceipt(pmt);
 
     // TODO no in-line comments - implement clean code!
 
+    // Valid entries in both Orions
     final Transaction pmtNodeA = execute(nodeAlpha).getTransactionByHash(pmt);
     final OrionKey key = OrionKey.from(pmtNodeA);
 
-    // Valid privacy transaction receipt
-    final PrivacyTransactionReceipt receiptNodeA =
-        execute(nodeAlpha).getPrivacyContractReceipt(pmt);
-    final PrivacyTransactionReceipt receiptNodeB = execute(nodeBeta).getPrivacyContractReceipt(pmt);
-
-    assertThat(receiptNodeA.isSuccess()).isTrue();
-    assertThat(receiptNodeA).usingRecursiveComparison().isEqualTo(receiptNodeB);
-
-    // Valid entries in both Orions
     final String payloadOrionA = privacyManagerAlpha.getPayload(key);
     final String payloadOrionB = privacyManagerBeta.getPayload(key);
 
