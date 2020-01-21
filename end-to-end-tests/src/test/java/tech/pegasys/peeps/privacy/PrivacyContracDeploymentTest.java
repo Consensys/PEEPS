@@ -22,12 +22,10 @@ import tech.pegasys.peeps.node.NodeKey;
 import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.model.PrivacyTransactionReceipt;
 import tech.pegasys.peeps.node.model.Transaction;
-import tech.pegasys.peeps.node.model.TransactionReceipt;
 import tech.pegasys.peeps.privacy.model.OrionKey;
 import tech.pegasys.peeps.signer.SignerWallet;
 
 import org.apache.commons.codec.DecoderException;
-import org.apache.tuweni.eth.Address;
 import org.junit.jupiter.api.Test;
 
 public class PrivacyContracDeploymentTest extends NetworkTest {
@@ -67,31 +65,22 @@ public class PrivacyContracDeploymentTest extends NetworkTest {
   @Test
   public void deploymentMustSucceed() throws DecoderException {
 
-    final Address sender = signerAlpha.address();
     final Hash pmt =
         execute(signerAlpha)
             .deployContractToPrivacyGroup(
-                sender, SimpleStorage.BINARY, privacyManagerAlpha, privacyManagerBeta);
-
-    // TODO no in-line comments - implement clean code!
+                signerAlpha.address(),
+                SimpleStorage.BINARY,
+                privacyManagerAlpha,
+                privacyManagerBeta);
 
     await().consensusOnTransactionReciept(pmt);
 
-    // Valid privacy marker transaction
-    final TransactionReceipt pmtReceiptNodeA = execute(nodeAlpha).getTransactionReceipt(pmt);
+    verify(nodeAlpha).successfulTransactionReceipt(pmt);
+    verify().consensusOnTransaction(pmt);
 
-    // Verify that the successful was transaction
-    assertThat(pmtReceiptNodeA.getTransactionHash()).isEqualTo(pmt);
-    assertThat(pmtReceiptNodeA.isSuccess()).isTrue();
+    // TODO no in-line comments - implement clean code!
 
-    // Verify that both nodes have the same transaction
     final Transaction pmtNodeA = execute(nodeAlpha).getTransactionByHash(pmt);
-    final Transaction pmtNodeB = execute(nodeBeta).getTransactionByHash(pmt);
-
-    assertThat(pmtNodeA).isNotNull();
-    assertThat(pmtNodeA.isProcessed()).isTrue();
-    assertThat(pmtNodeA).usingRecursiveComparison().isEqualTo(pmtNodeB);
-
     final OrionKey key = OrionKey.from(pmtNodeA);
 
     // Valid privacy transaction receipt

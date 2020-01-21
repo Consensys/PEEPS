@@ -36,6 +36,7 @@ import tech.pegasys.peeps.node.genesis.ibft2.GenesisExtraDataIbft2;
 import tech.pegasys.peeps.node.genesis.ibft2.Ibft2Config;
 import tech.pegasys.peeps.node.model.GenesisAddress;
 import tech.pegasys.peeps.node.model.Hash;
+import tech.pegasys.peeps.node.model.Transaction;
 import tech.pegasys.peeps.node.model.TransactionReceipt;
 import tech.pegasys.peeps.node.rpc.NodeRpcExpectingData;
 import tech.pegasys.peeps.node.verification.AccountValue;
@@ -265,6 +266,28 @@ public class Network implements Closeable {
             .collect(Collectors.toSet());
 
     nodes.values().parallelStream().forEach(node -> node.verifyValue(values));
+  }
+
+  public void verifyConsensusOnTransaction(final Hash transactionHash) {
+    checkState(
+        nodes.size() > 1, "There must be two or more nodes to be able to verify on consensus");
+
+    final Set<Transaction> transactions =
+        nodes
+            .values()
+            .parallelStream()
+            .map(node -> node.rpc().getTransactionByHash(transactionHash))
+            .collect(Collectors.toSet());
+
+    assertThat(transactions).isNotEmpty();
+    final Transaction firstTransaction = transactions.iterator().next();
+
+    for (final Transaction transaction : transactions) {
+      assertThat(transaction).isNotNull();
+      assertThat(transaction.isProcessed()).isTrue();
+
+      assertThat(transaction).usingRecursiveComparison().isEqualTo(firstTransaction);
+    }
   }
 
   // TODO these Mediator method could be refactored elsewhere?

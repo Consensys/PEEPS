@@ -13,6 +13,7 @@
 package tech.pegasys.peeps.network;
 
 import tech.pegasys.peeps.node.Besu;
+import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.verification.NodeValueTransition;
 
 public class NodeVerify {
@@ -24,5 +25,9 @@ public class NodeVerify {
 
   public void transistion(final NodeValueTransition... changes) {
     node.verifyTransition(changes);
+  }
+
+  public void successfulTransactionReceipt(final Hash transaction) {
+    node.verifySuccessfulTransactionReceipt(transaction);
   }
 }

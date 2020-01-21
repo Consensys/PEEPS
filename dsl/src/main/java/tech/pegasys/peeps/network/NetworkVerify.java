@@ -12,6 +12,8 @@
  */
 package tech.pegasys.peeps.network;
 
+import tech.pegasys.peeps.node.model.Hash;
+
 import org.apache.tuweni.eth.Address;
 
 public class NetworkVerify {
@@ -23,5 +25,9 @@ public class NetworkVerify {
 
   public void consensusOnValue(final Address... accounts) {
     network.verifyConsensusOnValue(accounts);
+  }
+
+  public void consensusOnTransaction(final Hash transactionHash) {
+    network.verifyConsensusOnTransaction(transactionHash);
   }
 }

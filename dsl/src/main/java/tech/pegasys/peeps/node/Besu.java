@@ -19,6 +19,8 @@ import static tech.pegasys.peeps.util.Await.await;
 import static tech.pegasys.peeps.util.HexFormatter.ensureHexPrefix;
 
 import tech.pegasys.peeps.network.NetworkMember;
+import tech.pegasys.peeps.node.model.Hash;
+import tech.pegasys.peeps.node.model.TransactionReceipt;
 import tech.pegasys.peeps.node.rpc.NodeRpc;
 import tech.pegasys.peeps.node.rpc.NodeRpcExpectingData;
 import tech.pegasys.peeps.node.rpc.admin.NodeInfo;
@@ -174,6 +176,13 @@ public class Besu implements NetworkMember {
 
   public void verifyValue(final Set<AccountValue> values) {
     values.parallelStream().forEach(value -> value.verify(rpc));
+  }
+
+  public void verifySuccessfulTransactionReceipt(final Hash transaction) {
+    final TransactionReceipt receipt = rpc.getTransactionReceipt(transaction);
+
+    assertThat(receipt.getTransactionHash()).isEqualTo(transaction);
+    assertThat(receipt.isSuccess()).isTrue();
   }
 
   private String getNodeId() {
