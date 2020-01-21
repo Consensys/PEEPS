@@ -17,8 +17,6 @@ import tech.pegasys.peeps.contract.SimpleStorage;
 import tech.pegasys.peeps.network.Network;
 import tech.pegasys.peeps.node.NodeKey;
 import tech.pegasys.peeps.node.model.Hash;
-import tech.pegasys.peeps.node.model.Transaction;
-import tech.pegasys.peeps.privacy.model.OrionKey;
 import tech.pegasys.peeps.signer.SignerWallet;
 
 import org.apache.commons.codec.DecoderException;
@@ -56,10 +54,8 @@ public class PrivacyContracDeploymentTest extends NetworkTest {
     verify(nodeAlpha).successfulTransactionReceipt(pmt);
     verify().consensusOnTransaction(pmt);
     verify().consensusOnPrivacyTransactionReceipt(pmt);
-
-    // TODO three lines to one, consensus on transaction hash?
-    final Transaction pmtNodeA = execute(nodeAlpha).getTransactionByHash(pmt);
-    final OrionKey key = OrionKey.from(pmtNodeA);
-    verify().privacyGroup(privacyManagerAlpha, privacyManagerBeta).consensusOnPayload(key);
+    verify()
+        .privacyGroup(privacyManagerAlpha, privacyManagerBeta)
+        .consensusOnPrivacyPayload(execute(nodeAlpha).getTransactionByHash(pmt));
   }
 }
