@@ -12,6 +12,7 @@
  */
 package tech.pegasys.peeps.network;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -60,6 +61,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -81,6 +83,9 @@ public class Network implements Closeable {
 
   private Genesis genesis;
 
+  // TODO more complete network lifecycle (i.e. with Enum)?
+  private boolean alive;
+
   public Network(final Path configurationDirectory) {
     checkNotNull(configurationDirectory, "Path to configuration directory is mandatory");
 
@@ -98,20 +103,20 @@ public class Network implements Closeable {
   }
 
   public void start() {
+    checkState(!alive, "Cannot start an already start Network");
     genesisFile.ensureExists(genesis);
-
-    members.parallelStream().forEach(member -> member.start());
-
+    everyMember(NetworkMember::start);
     awaitConnectivity();
   }
 
   public void stop() {
-    members.parallelStream().forEach(member -> member.stop());
+    checkState(alive, "Cannot stop an already stopped Network");
+    everyMember(NetworkMember::stop);
   }
 
   @Override
   public void close() {
-    stop();
+    everyMember(NetworkMember::stop);
     vertx.close();
     network.close();
   }
@@ -132,9 +137,7 @@ public class Network implements Closeable {
 
   // TODO validators hacky, dynamically figure out after the nodes are all added
   public void set(final ConsensusMechanism consensus, final Besu... validators) {
-
-    // TODO network cannot be live
-
+    checkState(!alive, "Cannot set consensus mechanism while the Network is alive");
     checkState(signers.isEmpty(), "Cannot change consensus mechanism after creating signers");
 
     this.genesis = createGenesis(consensus, validators);
@@ -145,7 +148,10 @@ public class Network implements Closeable {
   }
 
   public Besu addNode(final NodeKey identity, final OrionKeyPair privacyManager) {
-    // TODO check privacy manager exists
+    checkArgument(
+        privacyManagers.containsKey(privacyManager),
+        "Privacy Manager: {}, is not a member of the Network",
+        privacyManager);
 
     return addNode(
         new BesuConfigurationBuilder()
@@ -154,7 +160,7 @@ public class Network implements Closeable {
             .withPrivacyManagerPublicKey(privacyManager.getPublicKeyResource()));
   }
 
-  public Besu addNode(final BesuConfigurationBuilder config) {
+  private Besu addNode(final BesuConfigurationBuilder config) {
     final Besu besu =
         new Besu(
             config
@@ -169,14 +175,6 @@ public class Network implements Closeable {
     members.add(besu);
 
     return besu;
-  }
-
-  private String bootnodeEnodeAddresses() {
-    return nodes
-        .values()
-        .parallelStream()
-        .map(node -> node.identity().enodeAddress(node.ipAddress(), node.p2pPort()))
-        .collect(Collectors.joining(","));
   }
 
   public Orion addPrivacyManager(final OrionKeyPair... keys) {
@@ -207,7 +205,7 @@ public class Network implements Closeable {
     return addSigner(wallet, nodes.get(downstream));
   }
 
-  public EthSigner addSigner(final SignerWallet wallet, final Besu downstream) {
+  private EthSigner addSigner(final SignerWallet wallet, final Besu downstream) {
     final EthSigner signer =
         new EthSigner(
             new EthSignerConfigurationBuilder()
@@ -347,6 +345,18 @@ public class Network implements Closeable {
         "Node Identifier: {}, does not match any available: {}",
         id,
         nodes.keySet());
+  }
+
+  private String bootnodeEnodeAddresses() {
+    return nodes
+        .values()
+        .parallelStream()
+        .map(node -> node.identity().enodeAddress(node.ipAddress(), node.p2pPort()))
+        .collect(Collectors.joining(","));
+  }
+
+  private void everyMember(Consumer<NetworkMember> action) {
+    members.parallelStream().forEach(action);
   }
 
   private Genesis createGenesis(final ConsensusMechanism consensus, final Besu... validators) {
