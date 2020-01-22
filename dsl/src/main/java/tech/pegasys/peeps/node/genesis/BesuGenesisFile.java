@@ -40,27 +40,36 @@ public class BesuGenesisFile {
   public void ensureExists(final Genesis genesis) {
 
     if (Files.exists(genesisFile)) {
-      final Genesis existing;
-      try {
+      assertExistingGenesisMatches(genesis);
+    } else {
+      write(genesis);
+    }
+  }
 
-        existing = Json.decode(Buffer.buffer(Files.readAllBytes(genesisFile)), Genesis.class);
-      } catch (DecodeException e) {
-        throw new IllegalStateException(
-            String.format(
-                "Problem decoding an existing Besu config file from the file system: %s, %s",
-                genesisFile, e.getLocalizedMessage()));
-      } catch (IOException e) {
-        throw new IllegalStateException(
-            String.format(
-                "Problem reading an existing Besu config file in the file system: %s, %s",
-                genesisFile, e.getLocalizedMessage()));
-      }
+  public Path getGenesisFile() {
+    return genesisFile;
+  }
 
-      assertThat(genesis).usingRecursiveComparison().isEqualTo(existing);
-
-      return;
+  private void assertExistingGenesisMatches(final Genesis genesis) {
+    final Genesis existing;
+    try {
+      existing = Json.decode(Buffer.buffer(Files.readAllBytes(genesisFile)), Genesis.class);
+    } catch (DecodeException e) {
+      throw new IllegalStateException(
+          String.format(
+              "Problem decoding an existing Besu config file from the file system: %s, %s",
+              genesisFile, e.getLocalizedMessage()));
+    } catch (IOException e) {
+      throw new IllegalStateException(
+          String.format(
+              "Problem reading an existing Besu config file in the file system: %s, %s",
+              genesisFile, e.getLocalizedMessage()));
     }
 
+    assertThat(genesis).usingRecursiveComparison().isEqualTo(existing);
+  }
+
+  private void write(final Genesis genesis) {
     final String encodedBesuGenesis = Json.encode(genesis);
     LOG.info(
         "Creating Besu genesis file\n\tLocation: {} \n\tContents: {}",
@@ -78,9 +87,5 @@ public class BesuGenesisFile {
               "Problem creating the Besu config file in the file system: %s, %s",
               genesisFile, e.getLocalizedMessage()));
     }
-  }
-
-  public Path getGenesisFile() {
-    return genesisFile;
   }
 }
