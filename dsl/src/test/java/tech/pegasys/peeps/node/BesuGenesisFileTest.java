@@ -17,16 +17,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import tech.pegasys.peeps.json.Json;
 import tech.pegasys.peeps.node.genesis.BesuGenesisFile;
 import tech.pegasys.peeps.node.genesis.Genesis;
-import tech.pegasys.peeps.node.genesis.GenesisAccount;
 import tech.pegasys.peeps.node.genesis.ethhash.EthHashConfig;
 import tech.pegasys.peeps.node.genesis.ethhash.GenesisConfigEthHash;
-import tech.pegasys.peeps.node.model.GenesisAddress;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Map;
+import java.nio.file.attribute.FileTime;
 
 import io.vertx.core.json.DecodeException;
 import org.junit.jupiter.api.Test;
@@ -35,13 +33,23 @@ import org.junit.jupiter.api.io.TempDir;
 public class BesuGenesisFileTest {
 
   @Test
-  public void matchingGenesisFileMsutReturn() {
+  public void matchingGenesisFileMustNotBeRecreated(@TempDir Path directory) throws IOException {
+    final Path location = directory.resolve("matchingGenesisFileMustNotBeRecreated.json");
+    final BesuGenesisFile genesisFile = new BesuGenesisFile(location);
+    final Genesis genesisAlpha = createGenesis(genesisFile, Account.ALPHA, Account.BETA);
+    final Genesis genesisBeta = createGenesis(genesisFile, Account.ALPHA, Account.BETA);
 
-    // TODO code
+    genesisFile.ensureExists(genesisAlpha);
+
+    final FileTime genesisAlpaModified = Files.getLastModifiedTime(location);
+
+    genesisFile.ensureExists(genesisBeta);
+
+    assertThat(genesisAlpaModified).isEqualTo(Files.getLastModifiedTime(location));
   }
 
   @Test
-  public void nonMatchingGenesisFileMsutException() {
+  public void nonMatchingGenesisFileMsutException(@TempDir Path directory) {
 
     // TODO code
   }
@@ -49,21 +57,20 @@ public class BesuGenesisFileTest {
   @Test
   public void createdGenesisMustDeserialize(@TempDir Path directory)
       throws DecodeException, IOException {
-
-    final String filename = "genesis-file.json";
-    final Path location = directory.resolve(filename);
+    final Path location = directory.resolve("createdGenesisMustDeserialize.json");
     final BesuGenesisFile genesisFile = new BesuGenesisFile(location);
-
-    final GenesisConfigEthHash config = new GenesisConfigEthHash(123, new EthHashConfig());
-    final Map<GenesisAddress, GenesisAccount> accounts = Account.of(Account.ALPHA, Account.BETA);
-
-    final Genesis genesis = new Genesis(config, accounts);
+    final Genesis genesis = createGenesis(genesisFile, Account.ALPHA, Account.BETA);
 
     genesisFile.ensureExists(genesis);
 
     final byte[] expected = Json.encode(genesis).getBytes(StandardCharsets.UTF_8);
     final byte[] created = Files.readAllBytes(location);
-
     assertThat(expected).isEqualTo(created);
+  }
+
+  private Genesis createGenesis(final BesuGenesisFile genesisFile, final Account... accounts) {
+    return new Genesis(
+        new GenesisConfigEthHash(123, new EthHashConfig()),
+        Account.of(Account.ALPHA, Account.BETA));
   }
 }

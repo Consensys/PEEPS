@@ -22,7 +22,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.DecodeException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -51,9 +50,9 @@ public class BesuGenesisFile {
   }
 
   private void assertExistingGenesisMatches(final Genesis genesis) {
-    final Genesis existing;
+    final byte[] existing;
     try {
-      existing = Json.decode(Buffer.buffer(Files.readAllBytes(genesisFile)), Genesis.class);
+      existing = Files.readAllBytes(genesisFile);
     } catch (DecodeException e) {
       throw new IllegalStateException(
           String.format(
@@ -66,7 +65,7 @@ public class BesuGenesisFile {
               genesisFile, e.getLocalizedMessage()));
     }
 
-    assertThat(genesis).usingRecursiveComparison().isEqualTo(existing);
+    assertThat(Json.encode(genesis).getBytes(StandardCharsets.UTF_8)).isEqualTo(existing);
   }
 
   private void write(final Genesis genesis) {
