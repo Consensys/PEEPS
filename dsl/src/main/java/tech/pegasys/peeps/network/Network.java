@@ -133,10 +133,8 @@ public class Network implements Closeable {
   // TODO validators hacky, dynamically figure out after the nodes are all added
   public void set(final ConsensusMechanism consensus, final Besu... validators) {
 
-    // TODO deny is network is live
+    // TODO network cannot be live
 
-    // TODO delay node loading of genesis until after start
-    //    checkState(nodes.isEmpty(), "Cannot change consensus mechanism after creating nodes");
     checkState(signers.isEmpty(), "Cannot change consensus mechanism after creating signers");
 
     this.genesis = createGenesis(consensus, validators);
@@ -157,8 +155,6 @@ public class Network implements Closeable {
   }
 
   public Besu addNode(final BesuConfigurationBuilder config) {
-
-    // TODO supplier for the genesis file?
     final Besu besu =
         new Besu(
             config
@@ -184,7 +180,6 @@ public class Network implements Closeable {
   }
 
   public Orion addPrivacyManager(final OrionKeyPair... keys) {
-
     final OrionConfiguration configuration =
         new OrionConfigurationBuilder()
             .withVertx(vertx)
@@ -395,7 +390,6 @@ public class Network implements Closeable {
   }
 
   private void awaitConnectivity() {
-
     nodes.values().parallelStream().forEach(node -> node.awaitConnectivity(nodes.values()));
 
     privacyManagers
