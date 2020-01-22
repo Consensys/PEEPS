@@ -13,6 +13,7 @@
 package tech.pegasys.peeps.node;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import tech.pegasys.peeps.json.Json;
 import tech.pegasys.peeps.node.genesis.BesuGenesisFile;
@@ -29,6 +30,7 @@ import java.nio.file.attribute.FileTime;
 import io.vertx.core.json.DecodeException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.testcontainers.shaded.org.bouncycastle.util.Arrays;
 
 public class BesuGenesisFileTest {
 
@@ -36,22 +38,27 @@ public class BesuGenesisFileTest {
   public void matchingGenesisFileMustNotBeRecreated(@TempDir Path directory) throws IOException {
     final Path location = directory.resolve("matchingGenesisFileMustNotBeRecreated.json");
     final BesuGenesisFile genesisFile = new BesuGenesisFile(location);
-    final Genesis genesisAlpha = createGenesis(genesisFile, Account.ALPHA, Account.BETA);
-    final Genesis genesisBeta = createGenesis(genesisFile, Account.ALPHA, Account.BETA);
+    final Genesis genesis = createGenesis(genesisFile, Account.ALPHA, Account.BETA);
 
-    genesisFile.ensureExists(genesisAlpha);
-
+    genesisFile.ensureExists(genesis);
     final FileTime genesisAlpaModified = Files.getLastModifiedTime(location);
-
-    genesisFile.ensureExists(genesisBeta);
+    genesisFile.ensureExists(genesis);
 
     assertThat(genesisAlpaModified).isEqualTo(Files.getLastModifiedTime(location));
   }
 
   @Test
   public void nonMatchingGenesisFileMsutException(@TempDir Path directory) {
+    final Path location = directory.resolve("nonMatchingGenesisFileMsutException.json");
+    final BesuGenesisFile genesisFile = new BesuGenesisFile(location);
+    final Genesis genesisAlpha = createGenesis(genesisFile, Account.ALPHA);
+    final Genesis genesisBeta = createGenesis(genesisFile, Account.ALPHA, Account.BETA);
 
-    // TODO code
+    genesisFile.ensureExists(genesisAlpha);
+
+    assertThatThrownBy(() -> genesisFile.ensureExists(genesisBeta))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("The latest genesis does not match the genesis file created");
   }
 
   @Test
@@ -63,14 +70,18 @@ public class BesuGenesisFileTest {
 
     genesisFile.ensureExists(genesis);
 
-    final byte[] expected = Json.encode(genesis).getBytes(StandardCharsets.UTF_8);
-    final byte[] created = Files.readAllBytes(location);
-    assertThat(expected).isEqualTo(created);
+    assertThat(Arrays.areEqual(bytes(genesis), bytes(location))).isTrue();
   }
 
   private Genesis createGenesis(final BesuGenesisFile genesisFile, final Account... accounts) {
-    return new Genesis(
-        new GenesisConfigEthHash(123, new EthHashConfig()),
-        Account.of(Account.ALPHA, Account.BETA));
+    return new Genesis(new GenesisConfigEthHash(123, new EthHashConfig()), Account.of(accounts));
+  }
+
+  private byte[] bytes(final Genesis genesis) {
+    return Json.encode(genesis).getBytes(StandardCharsets.UTF_8);
+  }
+
+  private byte[] bytes(final Path location) throws IOException {
+    return Files.readAllBytes(location);
   }
 }

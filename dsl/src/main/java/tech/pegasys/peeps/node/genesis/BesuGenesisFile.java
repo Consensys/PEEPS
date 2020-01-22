@@ -12,7 +12,7 @@
  */
 package tech.pegasys.peeps.node.genesis;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.base.Preconditions.checkArgument;
 
 import tech.pegasys.peeps.json.Json;
 
@@ -25,6 +25,7 @@ import java.nio.file.StandardOpenOption;
 import io.vertx.core.json.DecodeException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.testcontainers.shaded.org.bouncycastle.util.Arrays;
 
 public class BesuGenesisFile {
 
@@ -49,10 +50,10 @@ public class BesuGenesisFile {
     return genesisFile;
   }
 
-  private void assertExistingGenesisMatches(final Genesis genesis) {
-    final byte[] existing;
+  private void assertExistingGenesisMatches(final Genesis latest) {
+    final byte[] existingGenesis;
     try {
-      existing = Files.readAllBytes(genesisFile);
+      existingGenesis = Files.readAllBytes(genesisFile);
     } catch (DecodeException e) {
       throw new IllegalStateException(
           String.format(
@@ -65,7 +66,10 @@ public class BesuGenesisFile {
               genesisFile, e.getLocalizedMessage()));
     }
 
-    assertThat(Json.encode(genesis).getBytes(StandardCharsets.UTF_8)).isEqualTo(existing);
+    final byte[] latestGenesis = Json.encode(latest).getBytes(StandardCharsets.UTF_8);
+    checkArgument(
+        Arrays.areEqual(latestGenesis, existingGenesis),
+        "The latest genesis does not match the genesis file created");
   }
 
   private void write(final Genesis genesis) {
