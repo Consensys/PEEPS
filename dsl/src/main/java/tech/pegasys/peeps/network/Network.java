@@ -140,7 +140,9 @@ public class Network implements Closeable {
     checkState(!alive, "Cannot set consensus mechanism while the Network is alive");
     checkState(signers.isEmpty(), "Cannot change consensus mechanism after creating signers");
 
-    this.genesis = createGenesis(consensus, validators);
+    this.genesis =
+        createGenesis(
+            consensus, Account.of(Account.ALPHA, Account.BETA, Account.GAMMA), validators);
   }
 
   public Besu addNode(final NodeKey identity) {
@@ -359,7 +361,10 @@ public class Network implements Closeable {
     members.parallelStream().forEach(action);
   }
 
-  private Genesis createGenesis(final ConsensusMechanism consensus, final Besu... validators) {
+  private Genesis createGenesis(
+      final ConsensusMechanism consensus,
+      final Map<GenesisAddress, GenesisAccount> genesisAccounts,
+      final Besu... validators) {
     final long chainId = Math.round(Math.random() * Long.MAX_VALUE);
 
     final GenesisConfig genesisConfig;
@@ -376,10 +381,6 @@ public class Network implements Closeable {
         genesisConfig = new GenesisConfigEthHash(chainId, new EthHashConfig());
         break;
     }
-
-    // TODO configurable somehow?
-    final Map<GenesisAddress, GenesisAccount> genesisAccounts =
-        Account.of(Account.ALPHA, Account.BETA, Account.GAMMA);
 
     final GenesisExtraData extraData;
 
