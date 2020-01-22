@@ -38,7 +38,7 @@ public class BesuGenesisFileTest {
   public void matchingGenesisFileMustNotBeRecreated(@TempDir Path directory) throws IOException {
     final Path location = directory.resolve("matchingGenesisFileMustNotBeRecreated.json");
     final BesuGenesisFile genesisFile = new BesuGenesisFile(location);
-    final Genesis genesis = createGenesis(genesisFile, Account.ALPHA, Account.BETA);
+    final Genesis genesis = createGenesis(Account.ALPHA, Account.BETA);
 
     genesisFile.ensureExists(genesis);
     final FileTime genesisAlpaModified = Files.getLastModifiedTime(location);
@@ -51,8 +51,8 @@ public class BesuGenesisFileTest {
   public void nonMatchingGenesisFileMsutException(@TempDir Path directory) {
     final Path location = directory.resolve("nonMatchingGenesisFileMsutException.json");
     final BesuGenesisFile genesisFile = new BesuGenesisFile(location);
-    final Genesis genesisAlpha = createGenesis(genesisFile, Account.ALPHA);
-    final Genesis genesisBeta = createGenesis(genesisFile, Account.ALPHA, Account.BETA);
+    final Genesis genesisAlpha = createGenesis(Account.ALPHA);
+    final Genesis genesisBeta = createGenesis(Account.ALPHA, Account.BETA);
 
     genesisFile.ensureExists(genesisAlpha);
 
@@ -66,14 +66,14 @@ public class BesuGenesisFileTest {
       throws DecodeException, IOException {
     final Path location = directory.resolve("createdGenesisMustDeserialize.json");
     final BesuGenesisFile genesisFile = new BesuGenesisFile(location);
-    final Genesis genesis = createGenesis(genesisFile, Account.ALPHA, Account.BETA);
+    final Genesis genesis = createGenesis(Account.ALPHA, Account.BETA);
 
     genesisFile.ensureExists(genesis);
 
     assertThat(Arrays.areEqual(bytes(genesis), bytes(location))).isTrue();
   }
 
-  private Genesis createGenesis(final BesuGenesisFile genesisFile, final Account... accounts) {
+  private Genesis createGenesis(final Account... accounts) {
     return new Genesis(new GenesisConfigEthHash(123, new EthHashConfig()), Account.of(accounts));
   }
 
