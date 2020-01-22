@@ -45,17 +45,15 @@ public class BesuGenesisFile {
 
         existing = Json.decode(Buffer.buffer(Files.readAllBytes(genesisFile)), Genesis.class);
       } catch (DecodeException e) {
-        final String message =
+        throw new IllegalStateException(
             String.format(
                 "Problem decoding an existing Besu config file from the file system: %s, %s",
-                genesisFile, e.getLocalizedMessage());
-        throw new IllegalStateException(message);
+                genesisFile, e.getLocalizedMessage()));
       } catch (IOException e) {
-        final String message =
+        throw new IllegalStateException(
             String.format(
                 "Problem reading an existing Besu config file in the file system: %s, %s",
-                genesisFile, e.getLocalizedMessage());
-        throw new IllegalStateException(message);
+                genesisFile, e.getLocalizedMessage()));
       }
 
       assertThat(genesis).usingRecursiveComparison().isEqualTo(existing);
@@ -75,11 +73,10 @@ public class BesuGenesisFile {
           encodedBesuGenesis.getBytes(StandardCharsets.UTF_8),
           StandardOpenOption.CREATE_NEW);
     } catch (final IOException e) {
-      final String message =
+      throw new IllegalStateException(
           String.format(
               "Problem creating the Besu config file in the file system: %s, %s",
-              genesisFile, e.getLocalizedMessage());
-      throw new IllegalStateException(message);
+              genesisFile, e.getLocalizedMessage()));
     }
   }
 
