@@ -23,6 +23,7 @@ import tech.pegasys.peeps.node.genesis.ethhash.GenesisConfigEthHash;
 import tech.pegasys.peeps.node.model.GenesisAddress;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
@@ -60,7 +61,7 @@ public class BesuGenesisFileTest {
 
     genesisFile.ensureExists(genesis);
 
-    final byte[] expected = Json.encode(genesis).getBytes();
+    final byte[] expected = Json.encode(genesis).getBytes(StandardCharsets.UTF_8);
     final byte[] created = Files.readAllBytes(location);
 
     assertThat(expected).isEqualTo(created);
