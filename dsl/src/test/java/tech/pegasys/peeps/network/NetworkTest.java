@@ -12,13 +12,17 @@
  */
 package tech.pegasys.peeps.network;
 
+import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 import tech.pegasys.peeps.node.Besu;
+import tech.pegasys.peeps.node.NodeIdentifier;
 
 import java.nio.file.Path;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,24 +33,35 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 public class NetworkTest {
 
+  @Mock private NodeIdentifier nodeId;
   @Mock private Besu node;
+  @TempDir Path configurationDirectory;
+
+  private Network network;
 
   @BeforeEach
   public void setUp() {
+    Runtime.getRuntime().addShutdownHook(new Thread(this::tearDown));
+    network = new Network(configurationDirectory);
 
-    // lenient()
-    // lenient().when(node.identity()).thenReturn(NodeKey.ALPHA);
+    when(node.identity()).thenReturn(nodeId);
   }
 
-  @SuppressWarnings("resource")
+  @AfterEach
+  public void tearDown() {
+    network.close();
+  }
+
   @Test
-  public void startMustStartNodes(@TempDir Path configurationDirectory) {
-
-    final Network network = new Network(configurationDirectory);
-
+  public void lifecycleMustAffectNode() {
     network.addNode(node);
+    network.start();
+    network.close();
 
+    verify(node).identity();
+    verify(node).awaitConnectivity(anyCollection());
     verify(node).start();
+    verify(node).stop();
     verifyNoMoreInteractions(node);
   }
 }
