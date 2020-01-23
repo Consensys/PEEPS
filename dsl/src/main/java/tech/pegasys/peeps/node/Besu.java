@@ -17,6 +17,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static org.assertj.core.api.Assertions.assertThat;
 import static tech.pegasys.peeps.util.Await.await;
 import static tech.pegasys.peeps.util.HexFormatter.ensureHexPrefix;
+import static tech.pegasys.peeps.util.HexFormatter.removeAnyHexPrefix;
 
 import tech.pegasys.peeps.network.NetworkMember;
 import tech.pegasys.peeps.node.model.Hash;
@@ -26,6 +27,7 @@ import tech.pegasys.peeps.node.rpc.NodeRpcExpectingData;
 import tech.pegasys.peeps.node.rpc.admin.NodeInfo;
 import tech.pegasys.peeps.node.verification.AccountValue;
 import tech.pegasys.peeps.node.verification.NodeValueTransition;
+import tech.pegasys.peeps.util.ClasspathResources;
 import tech.pegasys.peeps.util.DockerLogs;
 
 import java.util.Collection;
@@ -67,9 +69,11 @@ public class Besu implements NetworkMember {
   private final NodeRpc nodeRpc;
   private final NodeRpcExpectingData rpc;
   private final String ipAddress;
-  private final NodeKey identity;
+  private final NodeIdentifier identity;
+  private final String enodeAddress;
   private String nodeId;
   private String enodeId;
+  private String pubKey;
 
   public Besu(final BesuConfiguration config) {
 
@@ -98,6 +102,8 @@ public class Besu implements NetworkMember {
     this.nodeRpc = new NodeRpc(config.getVertx());
     this.rpc = new NodeRpcExpectingData(nodeRpc);
     this.identity = config.getIdentity();
+    this.pubKey = nodePublicKey(config);
+    this.enodeAddress = enodeAddress(config);
   }
 
   @Override
@@ -112,6 +118,9 @@ public class Besu implements NetworkMember {
 
       final NodeInfo info = nodeRpc.nodeInfo();
       nodeId = info.getId();
+
+      // TODO enode must match enodeAddress - otherwise error
+      // TODO remove enodeId - then rename enodeAddress to enodeId
       enodeId = info.getEnode();
 
       // TODO validate the node has the expected state, e.g. consensus, genesis,
@@ -146,7 +155,16 @@ public class Besu implements NetworkMember {
     return enodeId;
   }
 
-  public NodeKey identity() {
+  // TODO stricter typing then String
+  public String enodeAddress() {
+    return enodeAddress;
+  }
+
+  public String nodePublicKey() {
+    return pubKey;
+  }
+
+  public NodeIdentifier identity() {
     return identity;
   }
 
@@ -288,9 +306,7 @@ public class Besu implements NetworkMember {
       final GenericContainer<?> container) {
 
     container.withClasspathResourceMapping(
-        config.getIdentity().getPrivateKeyFile(),
-        CONTAINER_NODE_PRIVATE_KEY_FILE,
-        BindMode.READ_ONLY);
+        config.getNodeKeyPrivateKeyResource(), CONTAINER_NODE_PRIVATE_KEY_FILE, BindMode.READ_ONLY);
     commandLineOptions.addAll(
         Lists.newArrayList("--node-private-key-file", CONTAINER_NODE_PRIVATE_KEY_FILE));
   }
@@ -336,5 +352,13 @@ public class Besu implements NetworkMember {
 
   private void addContainerIpAddress(final String ipAddress, final GenericContainer<?> container) {
     container.withCreateContainerCmdModifier(modifier -> modifier.withIpv4Address(ipAddress));
+  }
+
+  private String nodePublicKey(final BesuConfiguration config) {
+    return removeAnyHexPrefix(ClasspathResources.read(config.getNodeKeyPublicKeyResource()));
+  }
+
+  private String enodeAddress(final BesuConfiguration config) {
+    return String.format("enode://%s@%s:%d", pubKey, config.getIpAddress(), CONTAINER_P2P_PORT);
   }
 }

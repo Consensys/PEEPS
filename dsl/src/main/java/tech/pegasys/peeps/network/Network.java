@@ -21,7 +21,7 @@ import static tech.pegasys.peeps.util.Await.await;
 import tech.pegasys.peeps.node.Account;
 import tech.pegasys.peeps.node.Besu;
 import tech.pegasys.peeps.node.BesuConfigurationBuilder;
-import tech.pegasys.peeps.node.NodeKey;
+import tech.pegasys.peeps.node.NodeIdentifier;
 import tech.pegasys.peeps.node.genesis.BesuGenesisFile;
 import tech.pegasys.peeps.node.genesis.Genesis;
 import tech.pegasys.peeps.node.genesis.GenesisAccount;
@@ -37,6 +37,7 @@ import tech.pegasys.peeps.node.genesis.ibft2.GenesisExtraDataIbft2;
 import tech.pegasys.peeps.node.genesis.ibft2.Ibft2Config;
 import tech.pegasys.peeps.node.model.GenesisAddress;
 import tech.pegasys.peeps.node.model.Hash;
+import tech.pegasys.peeps.node.model.NodeKey;
 import tech.pegasys.peeps.node.model.PrivacyTransactionReceipt;
 import tech.pegasys.peeps.node.model.Transaction;
 import tech.pegasys.peeps.node.model.TransactionReceipt;
@@ -65,6 +66,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.vertx.core.Vertx;
 import org.apache.tuweni.eth.Address;
 
@@ -73,7 +75,7 @@ public class Network implements Closeable {
   private final List<NetworkMember> members;
   private final Map<OrionKeyPair, Orion> privacyManagers;
   private final Map<SignerWallet, EthSigner> signers;
-  private final Map<NodeKey, Besu> nodes;
+  private final Map<NodeIdentifier, Besu> nodes;
 
   private final Subnet subnet;
   private final org.testcontainers.containers.Network network;
@@ -126,7 +128,8 @@ public class Network implements Closeable {
     set(consensus, (Besu) null);
   }
 
-  public void set(final ConsensusMechanism consensus, final NodeKey... validators) {
+  public void set(final ConsensusMechanism consensus, final NodeIdentifier... validators) {
+    // TODO check arg - validators must be in nodes (perform during steam mapping
     set(
         consensus,
         Stream.of(validators)
@@ -145,11 +148,17 @@ public class Network implements Closeable {
             consensus, Account.of(Account.ALPHA, Account.BETA, Account.GAMMA), validators);
   }
 
-  public Besu addNode(final NodeKey identity) {
-    return addNode(new BesuConfigurationBuilder().withIdentity(identity));
+  public Besu addNode(final NodeIdentifier frameworkIdentity, final NodeKey ethereumIdentiity) {
+    return addNode(
+        new BesuConfigurationBuilder()
+            .withIdentity(frameworkIdentity)
+            .withNodeKey(ethereumIdentiity));
   }
 
-  public Besu addNode(final NodeKey identity, final OrionKeyPair privacyManager) {
+  public Besu addNode(
+      final NodeIdentifier identity,
+      final NodeKey ethereumIdentiity,
+      final OrionKeyPair privacyManager) {
     checkArgument(
         privacyManagers.containsKey(privacyManager),
         "Privacy Manager: {}, is not a member of the Network",
@@ -158,6 +167,7 @@ public class Network implements Closeable {
     return addNode(
         new BesuConfigurationBuilder()
             .withIdentity(identity)
+            .withNodeKey(ethereumIdentiity)
             .withPrivacyUrl(privacyManagers.get(privacyManager))
             .withPrivacyManagerPublicKey(privacyManager.getPublicKeyResource()));
   }
@@ -173,10 +183,7 @@ public class Network implements Closeable {
                 .withBootnodeEnodeAddress(bootnodeEnodeAddresses())
                 .build());
 
-    nodes.put(besu.identity(), besu);
-    members.add(besu);
-
-    return besu;
+    return addNode(besu);
   }
 
   public Orion addPrivacyManager(final OrionKeyPair... keys) {
@@ -202,7 +209,7 @@ public class Network implements Closeable {
     return manager;
   }
 
-  public EthSigner addSigner(final SignerWallet wallet, final NodeKey downstream) {
+  public EthSigner addSigner(final SignerWallet wallet, final NodeIdentifier downstream) {
     checkNodeExistsFor(downstream);
     return addSigner(wallet, nodes.get(downstream));
   }
@@ -309,7 +316,7 @@ public class Network implements Closeable {
   }
 
   // TODO these Mediator method could be refactored elsewhere?
-  public NodeVerify verify(final NodeKey id) {
+  public NodeVerify verify(final NodeIdentifier id) {
     checkNodeExistsFor(id);
 
     return new NodeVerify(nodes.get(id));
@@ -326,7 +333,7 @@ public class Network implements Closeable {
     return signers.get(id).rpc();
   }
 
-  public NodeRpcExpectingData rpc(final NodeKey id) {
+  public NodeRpcExpectingData rpc(final NodeIdentifier id) {
     checkNodeExistsFor(id);
 
     return nodes.get(id).rpc();
@@ -340,7 +347,15 @@ public class Network implements Closeable {
             .collect(Collectors.toSet()));
   }
 
-  private void checkNodeExistsFor(final NodeKey id) {
+  @VisibleForTesting
+  Besu addNode(final Besu besu) {
+    nodes.put(besu.identity(), besu);
+    members.add(besu);
+
+    return besu;
+  }
+
+  private void checkNodeExistsFor(final NodeIdentifier id) {
     checkNotNull(id, "Node Identifier is mandatory");
     checkState(
         nodes.containsKey(id),
@@ -353,7 +368,7 @@ public class Network implements Closeable {
     return nodes
         .values()
         .parallelStream()
-        .map(node -> node.identity().enodeAddress(node.ipAddress(), node.p2pPort()))
+        .map(node -> node.enodeAddress())
         .collect(Collectors.joining(","));
   }
 

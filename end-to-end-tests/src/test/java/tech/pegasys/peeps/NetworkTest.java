@@ -16,7 +16,7 @@ import tech.pegasys.peeps.network.Network;
 import tech.pegasys.peeps.network.NetworkAwait;
 import tech.pegasys.peeps.network.NetworkVerify;
 import tech.pegasys.peeps.network.NodeVerify;
-import tech.pegasys.peeps.node.NodeKey;
+import tech.pegasys.peeps.node.NodeIdentifier;
 import tech.pegasys.peeps.node.rpc.NodeRpcExpectingData;
 import tech.pegasys.peeps.signer.SignerWallet;
 import tech.pegasys.peeps.signer.rpc.SignerRpcExpectingData;
@@ -69,7 +69,7 @@ public abstract class NetworkTest {
     return verify;
   }
 
-  protected NodeVerify verify(final NodeKey id) {
+  protected NodeVerify verify(final NodeIdentifier id) {
     return network.verify(id);
   }
 
@@ -77,7 +77,7 @@ public abstract class NetworkTest {
     return network.rpc(id);
   }
 
-  protected NodeRpcExpectingData execute(final NodeKey id) {
+  protected NodeRpcExpectingData execute(final NodeIdentifier id) {
     return network.rpc(id);
   }
 }

@@ -13,10 +13,11 @@
 package tech.pegasys.peeps.consensus;
 
 import tech.pegasys.peeps.NetworkTest;
+import tech.pegasys.peeps.NodeKeys;
 import tech.pegasys.peeps.network.ConsensusMechanism;
 import tech.pegasys.peeps.network.Network;
 import tech.pegasys.peeps.node.Account;
-import tech.pegasys.peeps.node.NodeKey;
+import tech.pegasys.peeps.node.NodeIdentifier;
 import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.verification.ValueReceived;
 import tech.pegasys.peeps.node.verification.ValueSent;
@@ -28,14 +29,14 @@ import org.junit.jupiter.api.Test;
 
 public class EthHashConsensusTest extends NetworkTest {
 
-  private final NodeKey node = NodeKey.ALPHA;
+  private final NodeIdentifier node = new NodeIdentifier(NodeKeys.ALPHA.name());
   private final SignerWallet signer = SignerWallet.ALPHA;
 
   @Override
   protected void setUpNetwork(final Network network) {
-    network.addNode(node);
-    network.addNode(NodeKey.BETA);
-    network.set(ConsensusMechanism.ETH_HASH, node);
+    network.addNode(node, NodeKeys.ALPHA.keys());
+    network.addNode(new NodeIdentifier(NodeKeys.BETA.name()), NodeKeys.BETA.keys());
+    network.set(ConsensusMechanism.CLIQUE, node);
     network.addSigner(signer, node);
   }
 

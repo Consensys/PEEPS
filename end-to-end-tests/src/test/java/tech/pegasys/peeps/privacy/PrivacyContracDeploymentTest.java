@@ -13,9 +13,10 @@
 package tech.pegasys.peeps.privacy;
 
 import tech.pegasys.peeps.NetworkTest;
+import tech.pegasys.peeps.NodeKeys;
 import tech.pegasys.peeps.contract.SimpleStorage;
 import tech.pegasys.peeps.network.Network;
-import tech.pegasys.peeps.node.NodeKey;
+import tech.pegasys.peeps.node.NodeIdentifier;
 import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.signer.SignerWallet;
 
@@ -24,7 +25,7 @@ import org.junit.jupiter.api.Test;
 
 public class PrivacyContracDeploymentTest extends NetworkTest {
 
-  private final NodeKey nodeAlpha = NodeKey.ALPHA;
+  private final NodeIdentifier nodeAlpha = new NodeIdentifier(NodeKeys.ALPHA.name());
   private final SignerWallet signerAlpha = SignerWallet.ALPHA;
   private final OrionKeyPair privacyManagerAlpha = OrionKeyPair.ALPHA;
   private final OrionKeyPair privacyManagerBeta = OrionKeyPair.BETA;
@@ -33,8 +34,9 @@ public class PrivacyContracDeploymentTest extends NetworkTest {
   protected void setUpNetwork(final Network network) {
     network.addPrivacyManager(privacyManagerAlpha);
     network.addPrivacyManager(privacyManagerBeta);
-    network.addNode(nodeAlpha, privacyManagerAlpha);
-    network.addNode(NodeKey.BETA, privacyManagerBeta);
+    network.addNode(nodeAlpha, NodeKeys.ALPHA.keys(), privacyManagerAlpha);
+    network.addNode(
+        new NodeIdentifier(NodeKeys.BETA.name()), NodeKeys.BETA.keys(), privacyManagerBeta);
     network.addSigner(SignerWallet.ALPHA, nodeAlpha);
   }
 

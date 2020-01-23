@@ -12,6 +12,8 @@
  */
 package tech.pegasys.peeps.node;
 
+import tech.pegasys.peeps.node.model.NodeKey;
+
 import java.nio.file.Path;
 import java.util.Optional;
 
@@ -23,10 +25,11 @@ public class BesuConfiguration {
   private final Path genesisFile;
   private final String enclavePublicKeyFile;
   private final String cors;
-  private final NodeKey identity;
+  private final NodeIdentifier identity;
   private final String bootnodeEnodeAddress;
   private final String privacyUrl;
   private final String privacyMarkerSigningPrivateKeyFile;
+  private final NodeKey ethereumIdentity;
 
   // TODO move these out, they are not related to the node, but test container setups
   private final Network containerNetwork;
@@ -42,7 +45,8 @@ public class BesuConfiguration {
       final Network containerNetwork,
       final Vertx vertx,
       final String ipAddress,
-      final NodeKey identity,
+      final NodeIdentifier identity,
+      final NodeKey ethereumIdentity,
       final String bootnodeEnodeAddress) {
     this.genesisFile = genesisFile;
     this.enclavePublicKeyFile = privacyManagerPublicKeyFile;
@@ -53,6 +57,7 @@ public class BesuConfiguration {
     this.vertx = vertx;
     this.ipAddress = ipAddress;
     this.identity = identity;
+    this.ethereumIdentity = ethereumIdentity;
     this.bootnodeEnodeAddress = bootnodeEnodeAddress;
   }
 
@@ -76,7 +81,7 @@ public class BesuConfiguration {
     return ipAddress;
   }
 
-  public NodeKey getIdentity() {
+  public NodeIdentifier getIdentity() {
     return identity;
   }
 
@@ -86,6 +91,14 @@ public class BesuConfiguration {
 
   public Vertx getVertx() {
     return vertx;
+  }
+
+  public String getNodeKeyPrivateKeyResource() {
+    return ethereumIdentity.nodePrivateKeyResource();
+  }
+
+  public String getNodeKeyPublicKeyResource() {
+    return ethereumIdentity.nodePublicKeyResource();
   }
 
   // TODO maybe split out privacy
