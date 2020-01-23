@@ -72,6 +72,12 @@ import org.apache.tuweni.eth.Address;
 
 public class Network implements Closeable {
 
+  private enum NetworkState {
+    STARTED,
+    STOPPED,
+    CLOSED
+  }
+
   private final List<NetworkMember> members;
   private final Map<OrionKeyPair, Orion> privacyManagers;
   private final Map<SignerWallet, EthSigner> signers;
@@ -84,12 +90,10 @@ public class Network implements Closeable {
   private final BesuGenesisFile genesisFile;
 
   private Genesis genesis;
-
-  // TODO more complete network lifecycle (i.e. with Enum)?
-  private boolean alive;
+  private NetworkState state;
 
   public Network(final Path configurationDirectory) {
-    checkNotNull(configurationDirectory, "Path to configuration directory is mandatory");
+    checkArgument(configurationDirectory != null, "Path to configuration directory is mandatory");
 
     this.privacyManagers = new HashMap<>();
     this.members = new ArrayList<>();
@@ -100,27 +104,35 @@ public class Network implements Closeable {
     this.subnet = new Subnet();
     this.network = subnet.createContainerNetwork();
     this.genesisFile = new BesuGenesisFile(pathGenerator.uniqueFile());
+    this.state = NetworkState.STOPPED;
 
     set(ConsensusMechanism.ETH_HASH);
   }
 
+  // TODO validate state transition better
+
   public void start() {
-    checkState(!alive, "Cannot start an already start Network");
+    checkState(state != NetworkState.STARTED, "Cannot start an already started Network");
     genesisFile.ensureExists(genesis);
     everyMember(NetworkMember::start);
     awaitConnectivity();
+    state = NetworkState.STARTED;
   }
 
   public void stop() {
-    checkState(alive, "Cannot stop an already stopped Network");
+    checkState(state != NetworkState.STOPPED, "Cannot stop an already stopped Network");
     everyMember(NetworkMember::stop);
+    state = NetworkState.STOPPED;
   }
 
   @Override
   public void close() {
-    everyMember(NetworkMember::stop);
+    if (state == NetworkState.STARTED) {
+      everyMember(NetworkMember::stop);
+    }
     vertx.close();
     network.close();
+    state = NetworkState.CLOSED;
   }
 
   // TODO temporary hack to support overloading of set with varargs
@@ -140,7 +152,9 @@ public class Network implements Closeable {
 
   // TODO validators hacky, dynamically figure out after the nodes are all added
   public void set(final ConsensusMechanism consensus, final Besu... validators) {
-    checkState(!alive, "Cannot set consensus mechanism while the Network is alive");
+    checkState(
+        state != NetworkState.STARTED,
+        "Cannot set consensus mechanism while the Network is already started");
     checkState(signers.isEmpty(), "Cannot change consensus mechanism after creating signers");
 
     this.genesis =
@@ -423,6 +437,7 @@ public class Network implements Closeable {
         .parallelStream()
         .distinct()
         .forEach(privacyManger -> privacyManger.awaitConnectivity(privacyManagers.values()));
+
     signers.values().parallelStream().forEach(signer -> signer.awaitConnectivityToDownstream());
   }
 

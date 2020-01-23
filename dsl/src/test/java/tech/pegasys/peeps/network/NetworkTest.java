@@ -12,10 +12,12 @@
  */
 package tech.pegasys.peeps.network;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyCollection;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
 
 import tech.pegasys.peeps.node.Besu;
 import tech.pegasys.peeps.node.NodeIdentifier;
@@ -44,7 +46,7 @@ public class NetworkTest {
     Runtime.getRuntime().addShutdownHook(new Thread(this::tearDown));
     network = new Network(configurationDirectory);
 
-    when(node.identity()).thenReturn(nodeId);
+    lenient().when(node.identity()).thenReturn(nodeId);
   }
 
   @AfterEach
@@ -53,9 +55,62 @@ public class NetworkTest {
   }
 
   @Test
+  public void missingConfigurationDirectoryMustException() {
+    final Exception exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> {
+              new Network(null);
+            });
+
+    assertThat(exception.getMessage()).isEqualTo("Path to configuration directory is mandatory");
+  }
+
+  @Test
+  public void startWhenAlreadyStartedMustException() {
+    final Exception exception =
+        assertThrows(
+            IllegalStateException.class,
+            () -> {
+              network.start();
+              network.start();
+            });
+
+    assertThat(exception.getMessage()).isEqualTo("Cannot start an already started Network");
+  }
+
+  @Test
+  public void stopWhenAlreadyStoppedMustException() {
+    final Exception exception =
+        assertThrows(
+            IllegalStateException.class,
+            () -> {
+              network.start();
+              network.stop();
+              network.stop();
+            });
+
+    assertThat(exception.getMessage()).isEqualTo("Cannot stop an already stopped Network");
+  }
+
+  @Test
   public void lifecycleMustAffectNode() {
     network.addNode(node);
     network.start();
+    network.close();
+
+    verify(node).identity();
+    verify(node).awaitConnectivity(anyCollection());
+    verify(node).start();
+    verify(node).stop();
+    verifyNoMoreInteractions(node);
+  }
+
+  @Test
+  public void stopThenClosenMustStopNodeOnlyOnce() {
+    network.addNode(node);
+    network.start();
+    network.stop();
     network.close();
 
     verify(node).identity();
