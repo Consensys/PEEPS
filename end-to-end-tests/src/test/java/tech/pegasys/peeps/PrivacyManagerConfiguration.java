@@ -14,11 +14,12 @@ package tech.pegasys.peeps;
 
 import tech.pegasys.peeps.privacy.model.PrivacyAddreess;
 import tech.pegasys.peeps.privacy.model.PrivacyKeyPair;
+import tech.pegasys.peeps.privacy.model.PrivacyManagerIdentifier;
 import tech.pegasys.peeps.privacy.model.PrivacyPrivateKeyResource;
 import tech.pegasys.peeps.privacy.model.PrivacyPublicKeyResource;
 import tech.pegasys.peeps.util.ClasspathResources;
 
-public enum OrionKeyPair {
+public enum PrivacyManagerConfiguration {
   ALPHA("privacy/keys/key_0"),
   BETA("privacy/keys/key_1"),
   GAMMA("privacy/keys/key_2");
@@ -28,8 +29,9 @@ public enum OrionKeyPair {
 
   private final PrivacyKeyPair keyPair;
   private final PrivacyAddreess address;
+  private final PrivacyManagerIdentifier id;
 
-  OrionKeyPair(final String name) {
+  PrivacyManagerConfiguration(final String name) {
     final String privKeyResource = String.format(PRIVATE_KEY_FILENAME, name);
     final String pubKeyResource = String.format(PUBLIC_KEY_FILENAME, name);
     final String pubKey = ClasspathResources.read(pubKeyResource);
@@ -50,6 +52,11 @@ public enum OrionKeyPair {
         };
 
     this.address = new PrivacyAddreess(pubKey);
+    this.id = new PrivacyManagerIdentifier(name());
+  }
+
+  public PrivacyManagerIdentifier id() {
+    return id;
   }
 
   public PrivacyKeyPair getKeyPair() {
