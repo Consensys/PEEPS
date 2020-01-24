@@ -13,6 +13,7 @@
 package tech.pegasys.peeps;
 
 import tech.pegasys.peeps.node.Account;
+import tech.pegasys.peeps.signer.model.SignerIdentifier;
 import tech.pegasys.peeps.signer.model.SignerKeyFileResource;
 import tech.pegasys.peeps.signer.model.SignerPasswordFileResource;
 import tech.pegasys.peeps.signer.model.WalletFileResources;
@@ -30,7 +31,7 @@ public enum SignerWallet {
       Account.BETA.address());
 
   private final Address address;
-
+  private final SignerIdentifier id;
   private final WalletFileResources resources;
 
   SignerWallet(final String keyResource, final String passwordResource, final Address address) {
@@ -49,6 +50,12 @@ public enum SignerWallet {
             return new SignerKeyFileResource(keyResource);
           }
         };
+
+    this.id = new SignerIdentifier(name());
+  }
+
+  public SignerIdentifier id() {
+    return id;
   }
 
   public Address address() {

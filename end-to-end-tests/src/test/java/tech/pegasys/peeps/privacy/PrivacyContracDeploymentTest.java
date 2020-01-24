@@ -29,7 +29,8 @@ import org.junit.jupiter.api.Test;
 public class PrivacyContracDeploymentTest extends NetworkTest {
 
   private final NodeIdentifier nodeAlpha = NodeKeys.ALPHA.id();
-  private final SignerIdentifier signerAlpha = new SignerIdentifier(SignerWallet.ALPHA.name());
+  private final SignerWallet wallet = SignerWallet.ALPHA;
+  private final SignerIdentifier signer = wallet.id();
   private final PrivacyManagerIdentifier privacyManagerAlpha =
       new PrivacyManagerIdentifier(OrionKeyPair.ALPHA.name());
   private final PrivacyManagerIdentifier privacyManagerBeta =
@@ -49,16 +50,16 @@ public class PrivacyContracDeploymentTest extends NetworkTest {
         NodeKeys.BETA.keys(),
         privacyManagerBeta,
         OrionKeyPair.BETA.getKeyPair().getPublicKey());
-    network.addSigner(signerAlpha, SignerWallet.ALPHA.resources(), nodeAlpha);
+    network.addSigner(signer, wallet.resources(), nodeAlpha);
   }
 
   @Test
   public void deploymentMustSucceed() throws DecoderException {
 
     final Hash pmt =
-        execute(signerAlpha)
+        execute(signer)
             .deployContractToPrivacyGroup(
-                SignerWallet.ALPHA.address(),
+                wallet.address(),
                 SimpleStorage.BINARY,
                 OrionKeyPair.ALPHA.getAddress(),
                 OrionKeyPair.BETA.getAddress());

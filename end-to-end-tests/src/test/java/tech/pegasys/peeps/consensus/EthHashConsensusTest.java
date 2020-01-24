@@ -31,20 +31,20 @@ import org.junit.jupiter.api.Test;
 public class EthHashConsensusTest extends NetworkTest {
 
   private final NodeIdentifier node = NodeKeys.ALPHA.id();
-  private final SignerIdentifier signer = new SignerIdentifier(SignerWallet.ALPHA.name());
+  private final SignerWallet wallet = SignerWallet.ALPHA;
+  private final SignerIdentifier signer = wallet.id();
 
   @Override
   protected void setUpNetwork(final Network network) {
     network.addNode(node, NodeKeys.ALPHA.keys());
     network.addNode(NodeKeys.BETA.id(), NodeKeys.BETA.keys());
     network.set(ConsensusMechanism.CLIQUE, node);
-    network.addSigner(signer, SignerWallet.ALPHA.resources(), node);
+    network.addSigner(signer, wallet.resources(), node);
   }
 
   @Test
   public void consensusAfterMiningMustHappen() {
-
-    final Address sender = SignerWallet.ALPHA.address();
+    final Address sender = wallet.address();
     final Address receiver = Account.BETA.address();
     final Wei transderAmount = Wei.valueOf(5000L);
 
