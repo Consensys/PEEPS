@@ -14,6 +14,8 @@ package tech.pegasys.peeps.node;
 
 import tech.pegasys.peeps.node.model.NodeIdentifier;
 import tech.pegasys.peeps.node.model.NodeKey;
+import tech.pegasys.peeps.node.model.NodePrivateKeyResource;
+import tech.pegasys.peeps.node.model.NodePublicKeyResource;
 
 import java.nio.file.Path;
 import java.util.Optional;
@@ -94,11 +96,11 @@ public class BesuConfiguration {
     return vertx;
   }
 
-  public String getNodeKeyPrivateKeyResource() {
+  public NodePrivateKeyResource getNodeKeyPrivateKeyResource() {
     return ethereumIdentity.nodePrivateKeyResource();
   }
 
-  public String getNodeKeyPublicKeyResource() {
+  public NodePublicKeyResource getNodeKeyPublicKeyResource() {
     return ethereumIdentity.nodePublicKeyResource();
   }
 

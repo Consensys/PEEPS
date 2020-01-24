@@ -28,7 +28,7 @@ import org.junit.jupiter.api.Test;
 
 public class PrivacyContracDeploymentTest extends NetworkTest {
 
-  private final NodeIdentifier nodeAlpha = new NodeIdentifier(NodeKeys.ALPHA.name());
+  private final NodeIdentifier nodeAlpha = NodeKeys.ALPHA.id();
   private final SignerIdentifier signerAlpha = new SignerIdentifier(SignerWallet.ALPHA.name());
   private final PrivacyManagerIdentifier privacyManagerAlpha =
       new PrivacyManagerIdentifier(OrionKeyPair.ALPHA.name());
@@ -45,7 +45,7 @@ public class PrivacyContracDeploymentTest extends NetworkTest {
         privacyManagerAlpha,
         OrionKeyPair.ALPHA.getKeyPair().getPublicKey());
     network.addNode(
-        new NodeIdentifier(NodeKeys.BETA.name()),
+        NodeKeys.BETA.id(),
         NodeKeys.BETA.keys(),
         privacyManagerBeta,
         OrionKeyPair.BETA.getKeyPair().getPublicKey());

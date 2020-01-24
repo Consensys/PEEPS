@@ -12,21 +12,9 @@
  */
 package tech.pegasys.peeps.privacy.model;
 
-public class PrivacyKeyPair {
+public interface PrivacyKeyPair {
 
-  private final PrivacyPrivateKeyResource priv;
-  private final PrivacyPublicKeyResource pub;
+  PrivacyPrivateKeyResource getPrivateKey();
 
-  public PrivacyKeyPair(final PrivacyPrivateKeyResource priv, final PrivacyPublicKeyResource pub) {
-    this.priv = priv;
-    this.pub = pub;
-  }
-
-  public PrivacyPrivateKeyResource getPrivateKey() {
-    return priv;
-  }
-
-  public PrivacyPublicKeyResource getPublicKey() {
-    return pub;
-  }
+  PrivacyPublicKeyResource getPublicKey();
 }

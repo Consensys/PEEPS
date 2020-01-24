@@ -35,10 +35,20 @@ public enum SignerWallet {
 
   SignerWallet(final String keyResource, final String passwordResource, final Address address) {
     this.address = address;
+
     this.resources =
-        new WalletFileResources(
-            new SignerKeyFileResource(keyResource),
-            new SignerPasswordFileResource(passwordResource));
+        new WalletFileResources() {
+
+          @Override
+          public SignerPasswordFileResource getPassword() {
+            return new SignerPasswordFileResource(passwordResource);
+          }
+
+          @Override
+          public SignerKeyFileResource getKey() {
+            return new SignerKeyFileResource(keyResource);
+          }
+        };
   }
 
   public Address address() {

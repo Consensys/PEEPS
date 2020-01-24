@@ -30,13 +30,13 @@ import org.junit.jupiter.api.Test;
 
 public class CliqueConsensusTest extends NetworkTest {
 
-  private final NodeIdentifier node = new NodeIdentifier(NodeKeys.ALPHA.name());
+  private final NodeIdentifier node = NodeKeys.ALPHA.id();
   private final SignerIdentifier signer = new SignerIdentifier(SignerWallet.ALPHA.name());
 
   @Override
   protected void setUpNetwork(final Network network) {
     network.addNode(node, NodeKeys.ALPHA.keys());
-    network.addNode(new NodeIdentifier(NodeKeys.BETA.name()), NodeKeys.BETA.keys());
+    network.addNode(NodeKeys.BETA.id(), NodeKeys.BETA.keys());
     network.set(ConsensusMechanism.CLIQUE, node);
     network.addSigner(signer, SignerWallet.ALPHA.resources(), node);
   }

@@ -18,7 +18,6 @@ import tech.pegasys.peeps.privacy.model.PrivacyPrivateKeyResource;
 import tech.pegasys.peeps.privacy.model.PrivacyPublicKeyResource;
 import tech.pegasys.peeps.util.ClasspathResources;
 
-// TODO maybe not use an enum?
 public enum OrionKeyPair {
   ALPHA("privacy/keys/key_0"),
   BETA("privacy/keys/key_1"),
@@ -36,9 +35,20 @@ public enum OrionKeyPair {
     final String pubKey = ClasspathResources.read(pubKeyResource);
 
     this.keyPair =
-        new PrivacyKeyPair(
-            new PrivacyPrivateKeyResource(privKeyResource),
-            new PrivacyPublicKeyResource(pubKeyResource));
+        new PrivacyKeyPair() {
+
+          @Override
+          public PrivacyPublicKeyResource getPublicKey() {
+            return new PrivacyPublicKeyResource(pubKeyResource);
+          }
+
+          @Override
+          public PrivacyPrivateKeyResource getPrivateKey() {
+
+            return new PrivacyPrivateKeyResource(privKeyResource);
+          }
+        };
+
     this.address = new PrivacyAddreess(pubKey);
   }
 

@@ -14,7 +14,7 @@ package tech.pegasys.peeps.node.model;
 
 public interface NodeKey {
 
-  String nodePrivateKeyResource();
+  NodePrivateKeyResource nodePrivateKeyResource();
 
-  String nodePublicKeyResource();
+  NodePublicKeyResource nodePublicKeyResource();
 }

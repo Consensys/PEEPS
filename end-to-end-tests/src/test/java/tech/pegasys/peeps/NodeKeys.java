@@ -12,7 +12,10 @@
  */
 package tech.pegasys.peeps;
 
+import tech.pegasys.peeps.node.model.NodeIdentifier;
 import tech.pegasys.peeps.node.model.NodeKey;
+import tech.pegasys.peeps.node.model.NodePrivateKeyResource;
+import tech.pegasys.peeps.node.model.NodePublicKeyResource;
 
 public enum NodeKeys {
   ALPHA("node/keys/alpha"),
@@ -21,25 +24,31 @@ public enum NodeKeys {
   private static final String PRIVATE_KEY_FILENAME = "/key.priv";
   private static final String PUBLIC_KEY_FILENAME = "/key.pub";
 
-  private final String pubKeyResource;
-  private final String privKeyResource;
+  private final NodePublicKeyResource pubKeyResource;
+  private final NodePrivateKeyResource privKeyResource;
+  private final NodeIdentifier id;
 
   NodeKeys(final String keysDirectoryResource) {
 
-    this.pubKeyResource = keysDirectoryResource + PUBLIC_KEY_FILENAME;
-    this.privKeyResource = keysDirectoryResource + PRIVATE_KEY_FILENAME;
+    this.pubKeyResource = new NodePublicKeyResource(keysDirectoryResource + PUBLIC_KEY_FILENAME);
+    this.privKeyResource = new NodePrivateKeyResource(keysDirectoryResource + PRIVATE_KEY_FILENAME);
+    this.id = new NodeIdentifier(name());
+  }
+
+  public NodeIdentifier id() {
+    return id;
   }
 
   public NodeKey keys() {
     return new NodeKey() {
 
       @Override
-      public String nodePublicKeyResource() {
+      public NodePublicKeyResource nodePublicKeyResource() {
         return pubKeyResource;
       }
 
       @Override
-      public String nodePrivateKeyResource() {
+      public NodePrivateKeyResource nodePrivateKeyResource() {
         return privKeyResource;
       }
     };

@@ -307,7 +307,9 @@ public class Besu implements NetworkMember {
       final GenericContainer<?> container) {
 
     container.withClasspathResourceMapping(
-        config.getNodeKeyPrivateKeyResource(), CONTAINER_NODE_PRIVATE_KEY_FILE, BindMode.READ_ONLY);
+        config.getNodeKeyPrivateKeyResource().get(),
+        CONTAINER_NODE_PRIVATE_KEY_FILE,
+        BindMode.READ_ONLY);
     commandLineOptions.addAll(
         Lists.newArrayList("--node-private-key-file", CONTAINER_NODE_PRIVATE_KEY_FILE));
   }
@@ -358,7 +360,7 @@ public class Besu implements NetworkMember {
   }
 
   private String nodePublicKey(final BesuConfiguration config) {
-    return removeAnyHexPrefix(ClasspathResources.read(config.getNodeKeyPublicKeyResource()));
+    return removeAnyHexPrefix(ClasspathResources.read(config.getNodeKeyPublicKeyResource().get()));
   }
 
   private String enodeAddress(final BesuConfiguration config) {

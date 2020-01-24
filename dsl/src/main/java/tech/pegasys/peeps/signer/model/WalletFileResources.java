@@ -12,21 +12,9 @@
  */
 package tech.pegasys.peeps.signer.model;
 
-public class WalletFileResources {
-  private final SignerKeyFileResource keyFile;
-  private final SignerPasswordFileResource passwordFile;
+public interface WalletFileResources {
 
-  public WalletFileResources(
-      final SignerKeyFileResource keyFile, final SignerPasswordFileResource passwordFile) {
-    this.keyFile = keyFile;
-    this.passwordFile = passwordFile;
-  }
+  public SignerKeyFileResource getKey();
 
-  public SignerKeyFileResource getKey() {
-    return keyFile;
-  }
-
-  public SignerPasswordFileResource getPassword() {
-    return passwordFile;
-  }
+  public SignerPasswordFileResource getPassword();
 }
