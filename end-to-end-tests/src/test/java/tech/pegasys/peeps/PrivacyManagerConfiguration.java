@@ -59,11 +59,11 @@ public enum PrivacyManagerConfiguration {
     return id;
   }
 
-  public PrivacyKeyPair getKeyPair() {
+  public PrivacyKeyPair keyPair() {
     return keyPair;
   }
 
-  public PrivacyAddreess getAddress() {
+  public PrivacyAddreess address() {
     return address;
   }
 }

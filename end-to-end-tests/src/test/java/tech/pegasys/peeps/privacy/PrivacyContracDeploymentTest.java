@@ -32,18 +32,18 @@ public class PrivacyContracDeploymentTest extends NetworkTest {
 
   @Override
   protected void setUpNetwork(final Network network) {
-    network.addPrivacyManager(privacyManagerAlpha.id(), privacyManagerAlpha.getKeyPair());
-    network.addPrivacyManager(privacyManagerBeta.id(), privacyManagerBeta.getKeyPair());
+    network.addPrivacyManager(privacyManagerAlpha.id(), privacyManagerAlpha.keyPair());
+    network.addPrivacyManager(privacyManagerBeta.id(), privacyManagerBeta.keyPair());
     network.addNode(
         nodeAlpha.id(),
         nodeAlpha.keys(),
         privacyManagerAlpha.id(),
-        privacyManagerAlpha.getKeyPair().getPublicKey());
+        privacyManagerAlpha.keyPair().getPublicKey());
     network.addNode(
         NodeConfiguration.BETA.id(),
         NodeConfiguration.BETA.keys(),
         privacyManagerBeta.id(),
-        privacyManagerBeta.getKeyPair().getPublicKey());
+        privacyManagerBeta.keyPair().getPublicKey());
     network.addSigner(signer.id(), signer.resources(), nodeAlpha.id());
   }
 
@@ -55,8 +55,8 @@ public class PrivacyContracDeploymentTest extends NetworkTest {
             .deployContractToPrivacyGroup(
                 signer.address(),
                 SimpleStorage.BINARY,
-                PrivacyManagerConfiguration.ALPHA.getAddress(),
-                PrivacyManagerConfiguration.BETA.getAddress());
+                privacyManagerAlpha.address(),
+                privacyManagerBeta.address());
 
     await().consensusOnTransactionReciept(pmt);
 
