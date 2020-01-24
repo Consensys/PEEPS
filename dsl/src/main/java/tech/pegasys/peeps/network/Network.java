@@ -47,8 +47,10 @@ import tech.pegasys.peeps.privacy.Orion;
 import tech.pegasys.peeps.privacy.OrionConfiguration;
 import tech.pegasys.peeps.privacy.OrionConfigurationBuilder;
 import tech.pegasys.peeps.privacy.OrionConfigurationFile;
-import tech.pegasys.peeps.privacy.OrionKeyPair;
 import tech.pegasys.peeps.privacy.PrivacyGroupVerify;
+import tech.pegasys.peeps.privacy.PrivacyManagerIdentifier;
+import tech.pegasys.peeps.privacy.model.PrivacyKeyPair;
+import tech.pegasys.peeps.privacy.model.PrivacyPublicKeyResource;
 import tech.pegasys.peeps.signer.EthSigner;
 import tech.pegasys.peeps.signer.EthSignerConfigurationBuilder;
 import tech.pegasys.peeps.signer.SignerWallet;
@@ -79,7 +81,7 @@ public class Network implements Closeable {
   }
 
   private final List<NetworkMember> members;
-  private final Map<OrionKeyPair, Orion> privacyManagers;
+  private final Map<PrivacyManagerIdentifier, Orion> privacyManagers;
   private final Map<SignerWallet, EthSigner> signers;
   private final Map<NodeIdentifier, Besu> nodes;
 
@@ -109,7 +111,7 @@ public class Network implements Closeable {
     set(ConsensusMechanism.ETH_HASH);
   }
 
-  // TODO validate state transition better
+  // TODO validate state transition better - encapsulate
 
   public void start() {
     checkState(state != NetworkState.STARTED, "Cannot start an already started Network");
@@ -172,7 +174,8 @@ public class Network implements Closeable {
   public Besu addNode(
       final NodeIdentifier identity,
       final NodeKey ethereumIdentiity,
-      final OrionKeyPair privacyManager) {
+      final PrivacyManagerIdentifier privacyManager,
+      final PrivacyPublicKeyResource privacyAddressResource) {
     checkArgument(
         privacyManagers.containsKey(privacyManager),
         "Privacy Manager: {}, is not a member of the Network",
@@ -183,7 +186,7 @@ public class Network implements Closeable {
             .withIdentity(identity)
             .withNodeKey(ethereumIdentiity)
             .withPrivacyUrl(privacyManagers.get(privacyManager))
-            .withPrivacyManagerPublicKey(privacyManager.getPublicKeyResource()));
+            .withPrivacyManagerPublicKey(privacyAddressResource.get()));
   }
 
   private Besu addNode(final BesuConfigurationBuilder config) {
@@ -200,7 +203,8 @@ public class Network implements Closeable {
     return addNode(besu);
   }
 
-  public Orion addPrivacyManager(final OrionKeyPair... keys) {
+  public Orion addPrivacyManager(
+      final PrivacyManagerIdentifier identity, final PrivacyKeyPair... keys) {
     final OrionConfiguration configuration =
         new OrionConfigurationBuilder()
             .withVertx(vertx)
@@ -216,8 +220,7 @@ public class Network implements Closeable {
 
     final Orion manager = new Orion(configuration);
 
-    Stream.of(keys).parallel().forEach(key -> privacyManagers.put(key, manager));
-
+    privacyManagers.put(identity, manager);
     members.add(manager);
 
     return manager;
@@ -353,7 +356,7 @@ public class Network implements Closeable {
     return nodes.get(id).rpc();
   }
 
-  public PrivacyGroupVerify privacyGroup(final OrionKeyPair... members) {
+  public PrivacyGroupVerify privacyGroup(final PrivacyManagerIdentifier... members) {
     return new PrivacyGroupVerify(
         Stream.of(members)
             .parallel()

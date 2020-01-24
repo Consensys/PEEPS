@@ -14,6 +14,7 @@ package tech.pegasys.peeps.privacy;
 
 import tech.pegasys.peeps.NetworkTest;
 import tech.pegasys.peeps.NodeKeys;
+import tech.pegasys.peeps.OrionKeyPair;
 import tech.pegasys.peeps.contract.SimpleStorage;
 import tech.pegasys.peeps.network.Network;
 import tech.pegasys.peeps.node.NodeIdentifier;
@@ -27,16 +28,26 @@ public class PrivacyContracDeploymentTest extends NetworkTest {
 
   private final NodeIdentifier nodeAlpha = new NodeIdentifier(NodeKeys.ALPHA.name());
   private final SignerWallet signerAlpha = SignerWallet.ALPHA;
-  private final OrionKeyPair privacyManagerAlpha = OrionKeyPair.ALPHA;
-  private final OrionKeyPair privacyManagerBeta = OrionKeyPair.BETA;
+
+  private final PrivacyManagerIdentifier privacyManagerAlpha =
+      new PrivacyManagerIdentifier(OrionKeyPair.ALPHA.name());
+  private final PrivacyManagerIdentifier privacyManagerBeta =
+      new PrivacyManagerIdentifier(OrionKeyPair.BETA.name());
 
   @Override
   protected void setUpNetwork(final Network network) {
-    network.addPrivacyManager(privacyManagerAlpha);
-    network.addPrivacyManager(privacyManagerBeta);
-    network.addNode(nodeAlpha, NodeKeys.ALPHA.keys(), privacyManagerAlpha);
+    network.addPrivacyManager(privacyManagerAlpha, OrionKeyPair.ALPHA.getKeyPair());
+    network.addPrivacyManager(privacyManagerBeta, OrionKeyPair.BETA.getKeyPair());
     network.addNode(
-        new NodeIdentifier(NodeKeys.BETA.name()), NodeKeys.BETA.keys(), privacyManagerBeta);
+        nodeAlpha,
+        NodeKeys.ALPHA.keys(),
+        privacyManagerAlpha,
+        OrionKeyPair.ALPHA.getKeyPair().getPublicKey());
+    network.addNode(
+        new NodeIdentifier(NodeKeys.BETA.name()),
+        NodeKeys.BETA.keys(),
+        privacyManagerBeta,
+        OrionKeyPair.BETA.getKeyPair().getPublicKey());
     network.addSigner(SignerWallet.ALPHA, nodeAlpha);
   }
 
@@ -48,8 +59,8 @@ public class PrivacyContracDeploymentTest extends NetworkTest {
             .deployContractToPrivacyGroup(
                 signerAlpha.address(),
                 SimpleStorage.BINARY,
-                privacyManagerAlpha,
-                privacyManagerBeta);
+                OrionKeyPair.ALPHA.getAddress(),
+                OrionKeyPair.BETA.getAddress());
 
     await().consensusOnTransactionReciept(pmt);
 

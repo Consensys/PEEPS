@@ -23,7 +23,7 @@ import org.testcontainers.containers.Network;
 public class BesuConfiguration {
 
   private final Path genesisFile;
-  private final String enclavePublicKeyFile;
+  private final String enclavePublicKeyResource;
   private final String cors;
   private final NodeIdentifier identity;
   private final String bootnodeEnodeAddress;
@@ -38,7 +38,7 @@ public class BesuConfiguration {
 
   public BesuConfiguration(
       final Path genesisFile,
-      final String privacyManagerPublicKeyFile,
+      final String privacyManagerPublicKeyResource,
       final String privacyUrl,
       final String privacyMarkerSigningPrivateKeyFile,
       final String cors,
@@ -49,7 +49,7 @@ public class BesuConfiguration {
       final NodeKey ethereumIdentity,
       final String bootnodeEnodeAddress) {
     this.genesisFile = genesisFile;
-    this.enclavePublicKeyFile = privacyManagerPublicKeyFile;
+    this.enclavePublicKeyResource = privacyManagerPublicKeyResource;
     this.privacyMarkerSigningPrivateKeyFile = privacyMarkerSigningPrivateKeyFile;
     this.privacyUrl = privacyUrl;
     this.cors = cors;
@@ -65,8 +65,8 @@ public class BesuConfiguration {
     return genesisFile;
   }
 
-  public String getPrivacyPublicKeyFile() {
-    return enclavePublicKeyFile;
+  public String getPrivacyPublicKeyResource() {
+    return enclavePublicKeyResource;
   }
 
   public Optional<String> getCors() {

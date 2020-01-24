@@ -10,26 +10,31 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package tech.pegasys.peeps.node;
+package tech.pegasys.peeps.privacy.model;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-public class NodeIdentifier {
+public class PrivacyPrivateKeyResource {
 
-  private final String id;
+  private final String resource;
 
-  public NodeIdentifier(final String id) {
-    checkArgument(id != null, "Identifier is mandatory");
-    this.id = id;
+  public PrivacyPrivateKeyResource(final String resource) {
+    checkArgument(resource != null, "Resource is mandatory");
+    this.resource = resource;
+  }
+
+  public String get() {
+    return resource;
   }
 
   @Override
   public int hashCode() {
-    return id.hashCode();
+    return resource.hashCode();
   }
 
   @Override
   public boolean equals(final Object other) {
-    return other instanceof NodeIdentifier && id.equals(((NodeIdentifier) other).id);
+    return other instanceof PrivacyPrivateKeyResource
+        && resource.equals(((PrivacyPrivateKeyResource) other).resource);
   }
 }

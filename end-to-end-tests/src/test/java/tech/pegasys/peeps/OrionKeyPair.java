@@ -10,8 +10,12 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package tech.pegasys.peeps.privacy;
+package tech.pegasys.peeps;
 
+import tech.pegasys.peeps.privacy.model.PrivacyAddreess;
+import tech.pegasys.peeps.privacy.model.PrivacyKeyPair;
+import tech.pegasys.peeps.privacy.model.PrivacyPrivateKeyResource;
+import tech.pegasys.peeps.privacy.model.PrivacyPublicKeyResource;
 import tech.pegasys.peeps.util.ClasspathResources;
 
 // TODO maybe not use an enum?
@@ -23,25 +27,26 @@ public enum OrionKeyPair {
   private static final String PRIVATE_KEY_FILENAME = "%s.priv";
   private static final String PUBLIC_KEY_FILENAME = "%s.pub";
 
-  private final String pubKeyResource;
-  private final String privKeyResource;
-  private final String pubKey;
+  private final PrivacyKeyPair keyPair;
+  private final PrivacyAddreess address;
 
   OrionKeyPair(final String name) {
-    this.privKeyResource = String.format(PRIVATE_KEY_FILENAME, name);
-    this.pubKeyResource = String.format(PUBLIC_KEY_FILENAME, name);
-    this.pubKey = ClasspathResources.read(pubKeyResource);
+    final String privKeyResource = String.format(PRIVATE_KEY_FILENAME, name);
+    final String pubKeyResource = String.format(PUBLIC_KEY_FILENAME, name);
+    final String pubKey = ClasspathResources.read(pubKeyResource);
+
+    this.keyPair =
+        new PrivacyKeyPair(
+            new PrivacyPrivateKeyResource(privKeyResource),
+            new PrivacyPublicKeyResource(pubKeyResource));
+    this.address = new PrivacyAddreess(pubKey);
   }
 
-  public String getPublicKeyResource() {
-    return pubKeyResource;
+  public PrivacyKeyPair getKeyPair() {
+    return keyPair;
   }
 
-  public String getPrivateKeyResource() {
-    return privKeyResource;
-  }
-
-  public String getPublicKey() {
-    return pubKey;
+  public PrivacyAddreess getAddress() {
+    return address;
   }
 }

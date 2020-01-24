@@ -340,7 +340,9 @@ public class Besu implements NetworkMember {
     commandLineOptions.add("--privacy-public-key-file");
     commandLineOptions.add(CONTAINER_PRIVACY_PUBLIC_KEY_FILE);
     container.withClasspathResourceMapping(
-        config.getPrivacyPublicKeyFile(), CONTAINER_PRIVACY_PUBLIC_KEY_FILE, BindMode.READ_ONLY);
+        config.getPrivacyPublicKeyResource(),
+        CONTAINER_PRIVACY_PUBLIC_KEY_FILE,
+        BindMode.READ_ONLY);
     commandLineOptions.add("--privacy-marker-transaction-signing-key-file");
     commandLineOptions.add(CONTAINER_PRIVACY_SIGNING_PRIVATE_KEY_FILE);
 
