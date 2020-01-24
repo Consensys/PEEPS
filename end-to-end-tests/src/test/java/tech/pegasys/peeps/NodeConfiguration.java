@@ -17,7 +17,7 @@ import tech.pegasys.peeps.node.model.NodeKey;
 import tech.pegasys.peeps.node.model.NodePrivateKeyResource;
 import tech.pegasys.peeps.node.model.NodePublicKeyResource;
 
-public enum NodeKeys {
+public enum NodeConfiguration {
   ALPHA("node/keys/alpha"),
   BETA("node/keys/beta");
 
@@ -28,7 +28,7 @@ public enum NodeKeys {
   private final NodePrivateKeyResource privKeyResource;
   private final NodeIdentifier id;
 
-  NodeKeys(final String keysDirectoryResource) {
+  NodeConfiguration(final String keysDirectoryResource) {
 
     this.pubKeyResource = new NodePublicKeyResource(keysDirectoryResource + PUBLIC_KEY_FILENAME);
     this.privKeyResource = new NodePrivateKeyResource(keysDirectoryResource + PRIVATE_KEY_FILENAME);

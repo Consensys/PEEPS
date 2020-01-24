@@ -16,9 +16,7 @@ import tech.pegasys.peeps.network.Network;
 import tech.pegasys.peeps.network.NetworkAwait;
 import tech.pegasys.peeps.network.NetworkVerify;
 import tech.pegasys.peeps.network.NodeVerify;
-import tech.pegasys.peeps.node.model.NodeIdentifier;
 import tech.pegasys.peeps.node.rpc.NodeRpcExpectingData;
-import tech.pegasys.peeps.signer.model.SignerIdentifier;
 import tech.pegasys.peeps.signer.rpc.SignerRpcExpectingData;
 
 import java.nio.file.Path;
@@ -69,15 +67,15 @@ public abstract class NetworkTest {
     return verify;
   }
 
-  protected NodeVerify verify(final NodeIdentifier id) {
-    return network.verify(id);
+  protected NodeVerify verify(final NodeConfiguration id) {
+    return network.verify(id.id());
   }
 
-  protected SignerRpcExpectingData execute(final SignerIdentifier id) {
-    return network.rpc(id);
+  protected SignerRpcExpectingData execute(final SignerConfiguration id) {
+    return network.rpc(id.id());
   }
 
-  protected NodeRpcExpectingData execute(final NodeIdentifier id) {
-    return network.rpc(id);
+  protected NodeRpcExpectingData execute(final NodeConfiguration id) {
+    return network.rpc(id.id());
   }
 }

@@ -20,7 +20,7 @@ import tech.pegasys.peeps.signer.model.WalletFileResources;
 
 import org.apache.tuweni.eth.Address;
 
-public enum SignerWallet {
+public enum SignerConfiguration {
   ALPHA(
       "signer/account/funded/wallet_a.v3",
       "signer/account/funded/wallet_a.pass",
@@ -34,7 +34,8 @@ public enum SignerWallet {
   private final SignerIdentifier id;
   private final WalletFileResources resources;
 
-  SignerWallet(final String keyResource, final String passwordResource, final Address address) {
+  SignerConfiguration(
+      final String keyResource, final String passwordResource, final Address address) {
     this.address = address;
 
     this.resources =

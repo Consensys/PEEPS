@@ -13,16 +13,14 @@
 package tech.pegasys.peeps.consensus;
 
 import tech.pegasys.peeps.NetworkTest;
-import tech.pegasys.peeps.NodeKeys;
-import tech.pegasys.peeps.SignerWallet;
+import tech.pegasys.peeps.NodeConfiguration;
+import tech.pegasys.peeps.SignerConfiguration;
 import tech.pegasys.peeps.network.ConsensusMechanism;
 import tech.pegasys.peeps.network.Network;
 import tech.pegasys.peeps.node.Account;
 import tech.pegasys.peeps.node.model.Hash;
-import tech.pegasys.peeps.node.model.NodeIdentifier;
 import tech.pegasys.peeps.node.verification.ValueReceived;
 import tech.pegasys.peeps.node.verification.ValueSent;
-import tech.pegasys.peeps.signer.model.SignerIdentifier;
 
 import org.apache.tuweni.eth.Address;
 import org.apache.tuweni.units.ethereum.Wei;
@@ -30,21 +28,20 @@ import org.junit.jupiter.api.Test;
 
 public class EthHashConsensusTest extends NetworkTest {
 
-  private final NodeIdentifier node = NodeKeys.ALPHA.id();
-  private final SignerWallet wallet = SignerWallet.ALPHA;
-  private final SignerIdentifier signer = wallet.id();
+  private final NodeConfiguration node = NodeConfiguration.ALPHA;
+  private final SignerConfiguration signer = SignerConfiguration.ALPHA;
 
   @Override
   protected void setUpNetwork(final Network network) {
-    network.addNode(node, NodeKeys.ALPHA.keys());
-    network.addNode(NodeKeys.BETA.id(), NodeKeys.BETA.keys());
-    network.set(ConsensusMechanism.CLIQUE, node);
-    network.addSigner(signer, wallet.resources(), node);
+    network.addNode(node.id(), node.keys());
+    network.addNode(NodeConfiguration.BETA.id(), NodeConfiguration.BETA.keys());
+    network.set(ConsensusMechanism.CLIQUE, node.id());
+    network.addSigner(signer.id(), signer.resources(), node.id());
   }
 
   @Test
   public void consensusAfterMiningMustHappen() {
-    final Address sender = wallet.address();
+    final Address sender = signer.address();
     final Address receiver = Account.BETA.address();
     final Wei transderAmount = Wei.valueOf(5000L);
 
