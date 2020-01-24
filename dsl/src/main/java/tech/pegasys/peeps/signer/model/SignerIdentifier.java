@@ -10,15 +10,15 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package tech.pegasys.peeps.privacy;
+package tech.pegasys.peeps.signer.model;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-public class PrivacyManagerIdentifier {
+public class SignerIdentifier {
 
   private final String id;
 
-  public PrivacyManagerIdentifier(final String id) {
+  public SignerIdentifier(final String id) {
     checkArgument(id != null, "Identifier is mandatory");
     this.id = id;
   }
@@ -30,7 +30,6 @@ public class PrivacyManagerIdentifier {
 
   @Override
   public boolean equals(final Object other) {
-    return other instanceof PrivacyManagerIdentifier
-        && id.equals(((PrivacyManagerIdentifier) other).id);
+    return other instanceof SignerIdentifier && id.equals(((SignerIdentifier) other).id);
   }
 }

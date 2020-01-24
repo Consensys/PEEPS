@@ -21,7 +21,6 @@ import static tech.pegasys.peeps.util.Await.await;
 import tech.pegasys.peeps.node.Account;
 import tech.pegasys.peeps.node.Besu;
 import tech.pegasys.peeps.node.BesuConfigurationBuilder;
-import tech.pegasys.peeps.node.NodeIdentifier;
 import tech.pegasys.peeps.node.genesis.BesuGenesisFile;
 import tech.pegasys.peeps.node.genesis.Genesis;
 import tech.pegasys.peeps.node.genesis.GenesisAccount;
@@ -37,6 +36,7 @@ import tech.pegasys.peeps.node.genesis.ibft2.GenesisExtraDataIbft2;
 import tech.pegasys.peeps.node.genesis.ibft2.Ibft2Config;
 import tech.pegasys.peeps.node.model.GenesisAddress;
 import tech.pegasys.peeps.node.model.Hash;
+import tech.pegasys.peeps.node.model.NodeIdentifier;
 import tech.pegasys.peeps.node.model.NodeKey;
 import tech.pegasys.peeps.node.model.PrivacyTransactionReceipt;
 import tech.pegasys.peeps.node.model.Transaction;
@@ -48,12 +48,13 @@ import tech.pegasys.peeps.privacy.OrionConfiguration;
 import tech.pegasys.peeps.privacy.OrionConfigurationBuilder;
 import tech.pegasys.peeps.privacy.OrionConfigurationFile;
 import tech.pegasys.peeps.privacy.PrivacyGroupVerify;
-import tech.pegasys.peeps.privacy.PrivacyManagerIdentifier;
 import tech.pegasys.peeps.privacy.model.PrivacyKeyPair;
+import tech.pegasys.peeps.privacy.model.PrivacyManagerIdentifier;
 import tech.pegasys.peeps.privacy.model.PrivacyPublicKeyResource;
 import tech.pegasys.peeps.signer.EthSigner;
 import tech.pegasys.peeps.signer.EthSignerConfigurationBuilder;
-import tech.pegasys.peeps.signer.SignerWallet;
+import tech.pegasys.peeps.signer.model.SignerIdentifier;
+import tech.pegasys.peeps.signer.model.WalletFileResources;
 import tech.pegasys.peeps.signer.rpc.SignerRpcExpectingData;
 import tech.pegasys.peeps.util.PathGenerator;
 
@@ -82,7 +83,7 @@ public class Network implements Closeable {
 
   private final List<NetworkMember> members;
   private final Map<PrivacyManagerIdentifier, Orion> privacyManagers;
-  private final Map<SignerWallet, EthSigner> signers;
+  private final Map<SignerIdentifier, EthSigner> signers;
   private final Map<NodeIdentifier, Besu> nodes;
 
   private final Subnet subnet;
@@ -226,12 +227,16 @@ public class Network implements Closeable {
     return manager;
   }
 
-  public EthSigner addSigner(final SignerWallet wallet, final NodeIdentifier downstream) {
+  public EthSigner addSigner(
+      final SignerIdentifier wallet,
+      final WalletFileResources resources,
+      final NodeIdentifier downstream) {
     checkNodeExistsFor(downstream);
-    return addSigner(wallet, nodes.get(downstream));
+    return addSigner(wallet, resources, nodes.get(downstream));
   }
 
-  private EthSigner addSigner(final SignerWallet wallet, final Besu downstream) {
+  private EthSigner addSigner(
+      final SignerIdentifier wallet, final WalletFileResources resources, final Besu downstream) {
     final EthSigner signer =
         new EthSigner(
             new EthSignerConfigurationBuilder()
@@ -240,7 +245,7 @@ public class Network implements Closeable {
                 .withIpAddress(subnet.getAddressAndIncrement())
                 .withDownstream(downstream)
                 .withChainId(genesis.getConfig().getChainId())
-                .witWallet(wallet)
+                .witWallet(resources)
                 .build());
 
     signers.put(wallet, signer);
@@ -339,7 +344,7 @@ public class Network implements Closeable {
     return new NodeVerify(nodes.get(id));
   }
 
-  public SignerRpcExpectingData rpc(final SignerWallet id) {
+  public SignerRpcExpectingData rpc(final SignerIdentifier id) {
     checkNotNull(id, "Signer Identifier is mandatory");
     checkState(
         signers.containsKey(id),

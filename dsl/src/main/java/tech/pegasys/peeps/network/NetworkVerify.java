@@ -14,7 +14,7 @@ package tech.pegasys.peeps.network;
 
 import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.privacy.PrivacyGroupVerify;
-import tech.pegasys.peeps.privacy.PrivacyManagerIdentifier;
+import tech.pegasys.peeps.privacy.model.PrivacyManagerIdentifier;
 
 import org.apache.tuweni.eth.Address;
 

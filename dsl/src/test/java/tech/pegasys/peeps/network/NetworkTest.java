@@ -20,7 +20,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import tech.pegasys.peeps.node.Besu;
-import tech.pegasys.peeps.node.NodeIdentifier;
+import tech.pegasys.peeps.node.model.NodeIdentifier;
 
 import java.nio.file.Path;
 

@@ -12,6 +12,7 @@
  */
 package tech.pegasys.peeps.node;
 
+import tech.pegasys.peeps.node.model.NodeIdentifier;
 import tech.pegasys.peeps.node.model.NodeKey;
 
 import java.nio.file.Path;

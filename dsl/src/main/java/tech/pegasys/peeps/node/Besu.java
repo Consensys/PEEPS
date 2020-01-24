@@ -21,6 +21,7 @@ import static tech.pegasys.peeps.util.HexFormatter.removeAnyHexPrefix;
 
 import tech.pegasys.peeps.network.NetworkMember;
 import tech.pegasys.peeps.node.model.Hash;
+import tech.pegasys.peeps.node.model.NodeIdentifier;
 import tech.pegasys.peeps.node.model.TransactionReceipt;
 import tech.pegasys.peeps.node.rpc.NodeRpc;
 import tech.pegasys.peeps.node.rpc.NodeRpcExpectingData;

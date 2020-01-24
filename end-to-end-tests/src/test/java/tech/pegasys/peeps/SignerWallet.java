@@ -10,9 +10,12 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package tech.pegasys.peeps.signer;
+package tech.pegasys.peeps;
 
 import tech.pegasys.peeps.node.Account;
+import tech.pegasys.peeps.signer.model.SignerKeyFileResource;
+import tech.pegasys.peeps.signer.model.SignerPasswordFileResource;
+import tech.pegasys.peeps.signer.model.WalletFileResources;
 
 import org.apache.tuweni.eth.Address;
 
@@ -26,25 +29,23 @@ public enum SignerWallet {
       "signer/account/funded/wallet_b.pass",
       Account.BETA.address());
 
-  private final String keyResource;
-  private final String passwordResource;
   private final Address address;
 
+  private final WalletFileResources resources;
+
   SignerWallet(final String keyResource, final String passwordResource, final Address address) {
-    this.keyResource = keyResource;
-    this.passwordResource = passwordResource;
     this.address = address;
-  }
-
-  public String keyResource() {
-    return keyResource;
-  }
-
-  public String passwordResource() {
-    return passwordResource;
+    this.resources =
+        new WalletFileResources(
+            new SignerKeyFileResource(keyResource),
+            new SignerPasswordFileResource(passwordResource));
   }
 
   public Address address() {
     return address;
+  }
+
+  public WalletFileResources resources() {
+    return resources;
   }
 }

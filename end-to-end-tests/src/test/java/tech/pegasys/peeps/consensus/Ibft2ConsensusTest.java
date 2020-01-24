@@ -14,14 +14,15 @@ package tech.pegasys.peeps.consensus;
 
 import tech.pegasys.peeps.NetworkTest;
 import tech.pegasys.peeps.NodeKeys;
+import tech.pegasys.peeps.SignerWallet;
 import tech.pegasys.peeps.network.ConsensusMechanism;
 import tech.pegasys.peeps.network.Network;
 import tech.pegasys.peeps.node.Account;
-import tech.pegasys.peeps.node.NodeIdentifier;
 import tech.pegasys.peeps.node.model.Hash;
+import tech.pegasys.peeps.node.model.NodeIdentifier;
 import tech.pegasys.peeps.node.verification.ValueReceived;
 import tech.pegasys.peeps.node.verification.ValueSent;
-import tech.pegasys.peeps.signer.SignerWallet;
+import tech.pegasys.peeps.signer.model.SignerIdentifier;
 
 import org.apache.tuweni.eth.Address;
 import org.apache.tuweni.units.ethereum.Wei;
@@ -30,20 +31,20 @@ import org.junit.jupiter.api.Test;
 public class Ibft2ConsensusTest extends NetworkTest {
 
   private final NodeIdentifier node = new NodeIdentifier(NodeKeys.ALPHA.name());
-  private final SignerWallet signer = SignerWallet.ALPHA;
+  private final SignerIdentifier signer = new SignerIdentifier(SignerWallet.ALPHA.name());
 
   @Override
   protected void setUpNetwork(final Network network) {
     network.addNode(node, NodeKeys.ALPHA.keys());
     network.addNode(new NodeIdentifier(NodeKeys.BETA.name()), NodeKeys.BETA.keys());
     network.set(ConsensusMechanism.CLIQUE, node);
-    network.addSigner(signer, node);
+    network.addSigner(signer, SignerWallet.ALPHA.resources(), node);
   }
 
   @Test
   public void consensusAfterMiningMustHappen() {
 
-    final Address sender = signer.address();
+    final Address sender = SignerWallet.ALPHA.address();
     final Address receiver = Account.BETA.address();
     final Wei transderAmount = Wei.valueOf(5000L);
 
