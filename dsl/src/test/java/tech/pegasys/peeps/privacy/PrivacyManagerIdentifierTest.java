@@ -45,9 +45,7 @@ public class PrivacyManagerIdentifierTest {
     final PrivacyManagerIdentifier nodeId =
         new PrivacyManagerIdentifier("I am a real identity value!");
 
-    final boolean isEquals = nodeId.equals(nodeId);
-
-    assertThat(isEquals).isTrue();
+    assertThat(nodeId).isEqualTo(nodeId);
   }
 
   @Test

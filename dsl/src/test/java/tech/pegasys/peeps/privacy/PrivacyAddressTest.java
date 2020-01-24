@@ -37,36 +37,34 @@ public class PrivacyAddressTest {
   public void hashCodeMustMatchIdHashCode() {
     final String id = "A very unique address";
 
-    final PrivacyAddreess nodeId = new PrivacyAddreess(id);
+    final PrivacyAddreess address = new PrivacyAddreess(id);
 
-    assertThat(nodeId.hashCode()).isEqualTo(id.hashCode());
+    assertThat(address.hashCode()).isEqualTo(id.hashCode());
   }
 
   @Test
   public void selfReferenceEqualityMustSucced() {
-    final PrivacyAddreess nodeId = new PrivacyAddreess("I am a real address!");
+    final PrivacyAddreess id = new PrivacyAddreess("I am a real address!");
 
-    final boolean isEquals = nodeId.equals(nodeId);
-
-    assertThat(isEquals).isTrue();
+    assertThat(id).isEqualTo(id);
   }
 
   @Test
   public void identicalIdEqualityMustSucced() {
     final String id = "A not so unique address";
-    final PrivacyAddreess nodeIdAlpha = new PrivacyAddreess(id);
-    final PrivacyAddreess nodeIdBeta = new PrivacyAddreess(id);
+    final PrivacyAddreess addressAlpha = new PrivacyAddreess(id);
+    final PrivacyAddreess addressdBeta = new PrivacyAddreess(id);
 
-    final boolean isEquals = nodeIdAlpha.equals(nodeIdBeta);
+    final boolean isEquals = addressAlpha.equals(addressdBeta);
 
     assertThat(isEquals).isTrue();
   }
 
   @Test
   public void noReferenceEqualityMustFail() {
-    final PrivacyAddreess nodeId = new PrivacyAddreess("I am a real address value!");
+    final PrivacyAddreess address = new PrivacyAddreess("I am a real address value!");
 
-    final boolean isEquals = nodeId.equals(null);
+    final boolean isEquals = address.equals(null);
 
     assertThat(isEquals).isFalse();
   }
@@ -74,19 +72,19 @@ public class PrivacyAddressTest {
   @SuppressWarnings("unlikely-arg-type")
   @Test
   public void differentTypeEqualityMustFail() {
-    final PrivacyAddreess nodeId = new PrivacyAddreess("I am a real address value!");
+    final PrivacyAddreess address = new PrivacyAddreess("I am a real address value!");
 
-    final boolean isEquals = nodeId.equals("Type of String");
+    final boolean isEquals = address.equals("Type of String");
 
     assertThat(isEquals).isFalse();
   }
 
   @Test
   public void differentIdEqualityMustFail() {
-    final PrivacyAddreess nodeIdAlpha = new PrivacyAddreess("First address");
-    final PrivacyAddreess nodeIdBeta = new PrivacyAddreess("Second address");
+    final PrivacyAddreess addressAlpha = new PrivacyAddreess("First address");
+    final PrivacyAddreess addressBeta = new PrivacyAddreess("Second address");
 
-    final boolean isEquals = nodeIdAlpha.equals(nodeIdBeta);
+    final boolean isEquals = addressAlpha.equals(addressBeta);
 
     assertThat(isEquals).isFalse();
   }
@@ -94,10 +92,10 @@ public class PrivacyAddressTest {
   @Test
   public void hashCodeMustEqualIdHashCode() {
     final String id = "The one and only address!";
-    final PrivacyAddreess nodeId = new PrivacyAddreess(id);
+    final PrivacyAddreess address = new PrivacyAddreess(id);
 
     final int expected = id.hashCode();
-    final int actual = nodeId.hashCode();
+    final int actual = address.hashCode();
 
     assertThat(actual).isEqualTo(expected);
   }
@@ -105,9 +103,9 @@ public class PrivacyAddressTest {
   @Test
   public void getMustReturnAddress() {
     final String id = "The address!";
-    final PrivacyAddreess nodeId = new PrivacyAddreess(id);
+    final PrivacyAddreess address = new PrivacyAddreess(id);
 
-    final String actual = nodeId.get();
+    final String actual = address.get();
 
     assertThat(actual).isEqualTo(id);
   }

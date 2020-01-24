@@ -44,9 +44,7 @@ public class NodeIdentifierTest {
   public void selfReferenceEqualityMustSucced() {
     final NodeIdentifier nodeId = new NodeIdentifier("I am a real identity value!");
 
-    final boolean isEquals = nodeId.equals(nodeId);
-
-    assertThat(isEquals).isTrue();
+    assertThat(nodeId).isEqualTo(nodeId);
   }
 
   @Test
