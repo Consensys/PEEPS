@@ -26,15 +26,4 @@ public class PrivacyPrivateKeyResource {
   public String get() {
     return resource;
   }
-
-  @Override
-  public int hashCode() {
-    return resource.hashCode();
-  }
-
-  @Override
-  public boolean equals(final Object other) {
-    return other instanceof PrivacyPrivateKeyResource
-        && resource.equals(((PrivacyPrivateKeyResource) other).resource);
-  }
 }
