@@ -69,13 +69,13 @@ public class PrivacyManagerIdentifierTest {
     assertThat(isEquals).isFalse();
   }
 
-  @SuppressWarnings("unlikely-arg-type")
   @Test
   public void differentTypeEqualityMustFail() {
     final PrivacyManagerIdentifier nodeId =
         new PrivacyManagerIdentifier("I am a real identity value!");
+    final Object other = "Type of String";
 
-    final boolean isEquals = nodeId.equals("Type of String");
+    final boolean isEquals = nodeId.equals(other);
 
     assertThat(isEquals).isFalse();
   }

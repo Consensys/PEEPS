@@ -67,12 +67,12 @@ public class NodeIdentifierTest {
     assertThat(isEquals).isFalse();
   }
 
-  @SuppressWarnings("unlikely-arg-type")
   @Test
   public void differentTypeEqualityMustFail() {
     final NodeIdentifier nodeId = new NodeIdentifier("I am a real identity value!");
+    final Object other = "Type of String";
 
-    final boolean isEquals = nodeId.equals("Type of String");
+    final boolean isEquals = nodeId.equals(other);
 
     assertThat(isEquals).isFalse();
   }

@@ -69,12 +69,12 @@ public class PrivacyAddressTest {
     assertThat(isEquals).isFalse();
   }
 
-  @SuppressWarnings("unlikely-arg-type")
   @Test
   public void differentTypeEqualityMustFail() {
     final PrivacyAddreess address = new PrivacyAddreess("I am a real address value!");
+    final Object other = "Type of String";
 
-    final boolean isEquals = address.equals("Type of String");
+    final boolean isEquals = address.equals(other);
 
     assertThat(isEquals).isFalse();
   }
