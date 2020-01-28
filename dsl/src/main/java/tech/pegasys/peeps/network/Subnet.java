@@ -39,7 +39,7 @@ public class Subnet implements Closeable {
 
   public Subnet() {
 
-    int attempt = 0;
+    int attempt = 25;
     String subnet = null;
     SubnetAddresses possibleAddresses = null;
     Network possibleNetwork = null;
