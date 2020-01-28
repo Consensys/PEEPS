@@ -39,7 +39,7 @@ public class Subnet implements Closeable {
 
   public Subnet() {
 
-    int attempt = 25;
+    int attempt = 0;
     String subnet = null;
     SubnetAddresses possibleAddresses = null;
     Network possibleNetwork = null;
@@ -53,14 +53,13 @@ public class Subnet implements Closeable {
         possibleAddresses = new SubnetAddresses(subnetAddressFormat(subnet));
       } catch (final UndeclaredThrowableException e) {
         logSubnetUnavailable(subnet);
-
-        if (attempt >= MAXIMUM_ATTEMPTS) {
-          throw new IllegalStateException(
-              String.format(
-                  "Failed to create a Docker network within %s attempts", MAXIMUM_ATTEMPTS));
-        }
       }
     }
+
+    checkState(
+        possibleNetwork != null,
+        "Failed to create a Docker network within %s attempts",
+        MAXIMUM_ATTEMPTS);
 
     logNetworkAndSubnet(possibleNetwork, subnet);
     this.addresses = possibleAddresses;
