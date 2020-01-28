@@ -24,7 +24,7 @@ import org.testcontainers.containers.Network;
 
 public class SubnetTest {
 
-  private final List<Network> cleanUp = new ArrayList<>();
+  private List<Subnet> cleanUp = new ArrayList<>();
 
   @BeforeEach
   public void setUp() {
@@ -34,7 +34,7 @@ public class SubnetTest {
 
   @AfterEach
   public void tearDown() {
-    cleanUp.stream().forEach(network -> network.close());
+    cleanUp.parallelStream().forEach(Subnet::close);
   }
 
   @Test
@@ -68,8 +68,8 @@ public class SubnetTest {
   }
 
   private Network create() {
-    final Network network = new Subnet().createContainerNetwork();
-    cleanUp.add(network);
-    return network;
+    final Subnet subnet = new Subnet();
+    cleanUp.add(subnet);
+    return subnet.network();
   }
 }
