@@ -18,44 +18,58 @@ import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.model.PrivacyTransactionReceipt;
 import tech.pegasys.peeps.node.model.Transaction;
 import tech.pegasys.peeps.node.model.TransactionReceipt;
+import tech.pegasys.peeps.node.rpc.admin.NodeInfo;
+
+import java.util.Set;
 
 import org.apache.tuweni.eth.Address;
 import org.apache.tuweni.units.ethereum.Wei;
 
-public class NodeRpcExpectingData {
+public class NodeRpcMandatoryResponseDecorator implements NodeRpc {
 
   private final NodeRpc rpc;
 
-  public NodeRpcExpectingData(final NodeRpc rpc) {
+  public NodeRpcMandatoryResponseDecorator(final NodeRpc rpc) {
     this.rpc = rpc;
   }
 
+  @Override
   public PrivacyTransactionReceipt getPrivacyTransactionReceipt(final Hash receipt) {
     return awaitData(
-            () -> rpc.getPrivacyTransactionReceipt(receipt),
-            "Failed to retrieve the private transaction receipt with hash: %s",
-            receipt)
-        .get();
+        () -> rpc.getPrivacyTransactionReceipt(receipt),
+        "Failed to retrieve the private transaction receipt with hash: %s",
+        receipt);
   }
 
+  @Override
   public TransactionReceipt getTransactionReceipt(final Hash receipt) {
     return awaitData(
-            () -> rpc.getTransactionReceipt(receipt),
-            "Failed to retrieve the transaction receipt with hash: %s",
-            receipt)
-        .get();
+        () -> rpc.getTransactionReceipt(receipt),
+        "Failed to retrieve the transaction receipt with hash: %s",
+        receipt);
   }
 
+  @Override
   public Transaction getTransactionByHash(final Hash transaction) {
     return awaitData(
-            () -> rpc.getTransactionByHash(transaction),
-            "Failed to retrieve the transaction with hash: %s",
-            transaction)
-        .get();
+        () -> rpc.getTransactionByHash(transaction),
+        "Failed to retrieve the transaction with hash: %s",
+        transaction);
   }
 
+  @Override
   public Wei getBalance(final Address account) {
     return awaitData(
         () -> rpc.getBalance(account), "Failed to retrieve the balance for address: %s", account);
+  }
+
+  @Override
+  public Set<String> getConnectedPeerIds() {
+    return rpc.getConnectedPeerIds();
+  }
+
+  @Override
+  public NodeInfo nodeInfo() {
+    return rpc.nodeInfo();
   }
 }

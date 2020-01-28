@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.model.Transaction;
 import tech.pegasys.peeps.node.model.TransactionReceipt;
-import tech.pegasys.peeps.node.rpc.NodeRpcExpectingData;
+import tech.pegasys.peeps.node.rpc.NodeRpcMandatoryResponseDecorator;
 
 import org.apache.tuweni.eth.Address;
 import org.apache.tuweni.units.ethereum.Gas;
@@ -36,7 +36,7 @@ public class ValueSent implements NodeValueTransition {
   }
 
   @Override
-  public void verify(final NodeRpcExpectingData rpc) {
+  public void verify(final NodeRpcMandatoryResponseDecorator rpc) {
 
     final Wei after = rpc.getBalance(sender);
     final TransactionReceipt receipt = transactionReceipt(rpc);
@@ -45,7 +45,7 @@ public class ValueSent implements NodeValueTransition {
     assertThat(after).isEqualTo(before.subtract(cost));
   }
 
-  private TransactionReceipt transactionReceipt(final NodeRpcExpectingData rpc) {
+  private TransactionReceipt transactionReceipt(final NodeRpcMandatoryResponseDecorator rpc) {
     final TransactionReceipt transferReceipt = rpc.getTransactionReceipt(transactionReceipt);
     assertThat(transferReceipt).isNotNull();
     assertThat(transferReceipt.isSuccess()).isTrue();
@@ -53,7 +53,7 @@ public class ValueSent implements NodeValueTransition {
   }
 
   private Wei transactionCost(
-      final NodeRpcExpectingData rpc, final TransactionReceipt transferReceipt) {
+      final NodeRpcMandatoryResponseDecorator rpc, final TransactionReceipt transferReceipt) {
     assertThat(transferReceipt.getTransactionHash()).isNotNull();
     final Hash transaction = transferReceipt.getTransactionHash();
 

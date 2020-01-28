@@ -23,8 +23,8 @@ import tech.pegasys.peeps.network.NetworkMember;
 import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.model.NodeIdentifier;
 import tech.pegasys.peeps.node.model.TransactionReceipt;
-import tech.pegasys.peeps.node.rpc.NodeRpc;
-import tech.pegasys.peeps.node.rpc.NodeRpcExpectingData;
+import tech.pegasys.peeps.node.rpc.NodeRpcClient;
+import tech.pegasys.peeps.node.rpc.NodeRpcMandatoryResponseDecorator;
 import tech.pegasys.peeps.node.rpc.admin.NodeInfo;
 import tech.pegasys.peeps.node.verification.AccountValue;
 import tech.pegasys.peeps.node.verification.NodeValueTransition;
@@ -34,6 +34,7 @@ import tech.pegasys.peeps.util.DockerLogs;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -67,8 +68,11 @@ public class Besu implements NetworkMember {
       "/etc/besu/keys/pmt_signing.priv";
 
   private final GenericContainer<?> besu;
-  private final NodeRpc nodeRpc;
-  private final NodeRpcExpectingData rpc;
+
+  // TODO use the interface here instead?
+  private final NodeRpcClient nodeRpc;
+  private final NodeRpcMandatoryResponseDecorator rpc;
+
   private final String ipAddress;
   private final NodeIdentifier identity;
   private final String enodeAddress;
@@ -100,8 +104,8 @@ public class Besu implements NetworkMember {
     this.besu =
         container.withCommand(commandLineOptions.toArray(new String[0])).waitingFor(liveliness());
 
-    this.nodeRpc = new NodeRpc(config.getVertx());
-    this.rpc = new NodeRpcExpectingData(nodeRpc);
+    this.nodeRpc = new NodeRpcClient(config.getVertx(), dockerLogs());
+    this.rpc = new NodeRpcMandatoryResponseDecorator(nodeRpc);
     this.identity = config.getIdentity();
     this.pubKey = nodePublicKey(config);
     this.enodeAddress = enodeAddress(config);
@@ -185,7 +189,7 @@ public class Besu implements NetworkMember {
     return DockerLogs.format("Besu", besu);
   }
 
-  public NodeRpcExpectingData rpc() {
+  public NodeRpcMandatoryResponseDecorator rpc() {
     return rpc;
   }
 
@@ -233,6 +237,10 @@ public class Besu implements NetworkMember {
     return Wait.forHttp(AM_I_ALIVE_ENDPOINT)
         .forStatusCode(ALIVE_STATUS_CODE)
         .forPort(CONTAINER_HTTP_RPC_PORT);
+  }
+
+  private Set<Supplier<String>> dockerLogs() {
+    return Set.of(() -> getLogs());
   }
 
   private void logPortMappings() {
