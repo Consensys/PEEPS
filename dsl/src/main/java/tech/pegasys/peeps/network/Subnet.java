@@ -41,10 +41,9 @@ public class Subnet implements Closeable {
 
     int attempt = 0;
     String subnet = null;
-    SubnetAddresses possibleAddresses = null;
     Network possibleNetwork = null;
 
-    while (attempt < MAXIMUM_ATTEMPTS && possibleAddresses == null) {
+    while (attempt < MAXIMUM_ATTEMPTS && possibleNetwork == null) {
       subnet = getNextSubnetAndIncrement();
 
       try {
