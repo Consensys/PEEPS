@@ -14,6 +14,9 @@ package tech.pegasys.peeps.network;
 
 import static com.google.common.base.Preconditions.checkState;
 
+import tech.pegasys.peeps.network.model.SubnetAddress;
+import tech.pegasys.peeps.network.model.SubnetAddresses;
+
 import java.io.Closeable;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -67,7 +70,7 @@ public class Subnet implements Closeable {
   }
 
   // TODO stricter typing then String
-  public String getAddressAndIncrement() {
+  public SubnetAddress getAddressAndIncrement() {
     return addresses.getAddressAndIncrement();
   }
 

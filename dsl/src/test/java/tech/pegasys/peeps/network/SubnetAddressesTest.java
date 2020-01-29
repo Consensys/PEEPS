@@ -15,6 +15,8 @@ package tech.pegasys.peeps.network;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import tech.pegasys.peeps.network.model.SubnetAddresses;
+
 import org.junit.jupiter.api.Test;
 
 public class SubnetAddressesTest {

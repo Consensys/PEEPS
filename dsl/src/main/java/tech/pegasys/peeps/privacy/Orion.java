@@ -210,7 +210,7 @@ public class Orion implements NetworkMember {
   private void addContainerIpAddress(
       final OrionConfiguration config, final GenericContainer<?> container) {
     container.withCreateContainerCmdModifier(
-        modifier -> modifier.withIpv4Address(config.getIpAddress()));
+        modifier -> modifier.withIpv4Address(config.getIpAddress().get()));
   }
 
   private void addConfigurationFile(
