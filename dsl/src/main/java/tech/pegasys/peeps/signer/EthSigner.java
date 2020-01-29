@@ -17,8 +17,9 @@ import static tech.pegasys.peeps.util.Await.await;
 
 import tech.pegasys.peeps.network.NetworkMember;
 import tech.pegasys.peeps.node.Besu;
+import tech.pegasys.peeps.signer.rpc.SignerRpc;
 import tech.pegasys.peeps.signer.rpc.SignerRpcClient;
-import tech.pegasys.peeps.signer.rpc.SignerRpcMandatoryResponseDecorator;
+import tech.pegasys.peeps.signer.rpc.SignerRpcMandatoryResponse;
 import tech.pegasys.peeps.util.DockerLogs;
 
 import java.time.Duration;
@@ -47,16 +48,12 @@ public class EthSigner implements NetworkMember {
   private static final String CONTAINER_DATA_PATH = "/etc/ethsigner/tmp/";
   private static final int CONTAINER_HTTP_RPC_PORT = 8545;
   private static final Duration DOWNSTREAM_TIMEOUT = Duration.ofSeconds(10);
-
   private static final String CONTAINER_KEY_FILE = "/etc/ethsigner/key_file.v3";
   private static final String CONTAINER_PASSWORD_FILE = "/etc/ethsigner/password_file.txt";
 
   private final GenericContainer<?> ethSigner;
-
-  // TODO use the interface heres?
   private final SignerRpcClient signerRpc;
-  private final SignerRpcMandatoryResponseDecorator rpc;
-
+  private final SignerRpc rpc;
   private final Besu downstream;
 
   public EthSigner(final EthSignerConfiguration config) {
@@ -78,7 +75,7 @@ public class EthSigner implements NetworkMember {
         container.withCommand(commandLineOptions.toArray(new String[0])).waitingFor(liveliness());
 
     this.signerRpc = new SignerRpcClient(config.getVertx(), DOWNSTREAM_TIMEOUT, dockerLogs());
-    this.rpc = new SignerRpcMandatoryResponseDecorator(signerRpc);
+    this.rpc = new SignerRpcMandatoryResponse(signerRpc);
   }
 
   @Override
@@ -112,7 +109,7 @@ public class EthSigner implements NetworkMember {
     }
   }
 
-  public SignerRpcMandatoryResponseDecorator rpc() {
+  public SignerRpc rpc() {
     return rpc;
   }
 

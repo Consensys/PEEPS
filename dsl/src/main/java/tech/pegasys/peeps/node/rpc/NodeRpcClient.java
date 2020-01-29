@@ -28,6 +28,7 @@ import tech.pegasys.peeps.node.rpc.priv.GetPrivateTransactionResponse;
 
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -38,7 +39,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.tuweni.eth.Address;
 import org.apache.tuweni.units.ethereum.Wei;
 
-public class NodeRpcClient extends JsonRpcClient implements NodeRpc {
+public class NodeRpcClient extends JsonRpcClient {
 
   private static final Logger LOG = LogManager.getLogger();
   private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(5);
@@ -55,12 +56,10 @@ public class NodeRpcClient extends JsonRpcClient implements NodeRpc {
     this(vertx, DEFAULT_TIMEOUT, LOG, dockerLogs);
   }
 
-  @Override
   public Set<String> getConnectedPeerIds() {
     return Arrays.stream(connectedPeers()).map(ConnectedPeer::getId).collect(Collectors.toSet());
   }
 
-  @Override
   public NodeInfo nodeInfo() {
     return post("admin_nodeInfo", NodeInfoResponse.class).getResult();
   }
@@ -69,28 +68,21 @@ public class NodeRpcClient extends JsonRpcClient implements NodeRpc {
     return post("admin_peers", ConnectedPeersResponse.class).getResult();
   }
 
-  @Override
-  public PrivacyTransactionReceipt getPrivacyTransactionReceipt(final Hash receipt) {
+  public Optional<PrivacyTransactionReceipt> getPrivacyTransactionReceipt(final Hash receipt) {
     return post("priv_getTransactionReceipt", GetPrivateTransactionResponse.class, receipt)
-        .getResult()
-        .orElse(null);
+        .getResult();
   }
 
-  @Override
-  public TransactionReceipt getTransactionReceipt(final Hash receipt) {
+  public Optional<TransactionReceipt> getTransactionReceipt(final Hash receipt) {
     return post("eth_getTransactionReceipt", GetTransactionReceiptResponse.class, receipt)
-        .getResult()
-        .orElse(null);
+        .getResult();
   }
 
-  @Override
-  public Transaction getTransactionByHash(final Hash transaction) {
+  public Optional<Transaction> getTransactionByHash(final Hash transaction) {
     return post("eth_getTransactionByHash", GetTransactionByHashResponse.class, transaction)
-        .getResult()
-        .orElse(null);
+        .getResult();
   }
 
-  @Override
   public Wei getBalance(final Address account) {
     return post("eth_getBalance", GetBalanceResponse.class, account.toHexString(), "latest")
         .getResult();

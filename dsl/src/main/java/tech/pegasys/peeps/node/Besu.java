@@ -24,8 +24,9 @@ import tech.pegasys.peeps.network.subnet.SubnetAddress;
 import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.model.NodeIdentifier;
 import tech.pegasys.peeps.node.model.TransactionReceipt;
+import tech.pegasys.peeps.node.rpc.NodeRpc;
 import tech.pegasys.peeps.node.rpc.NodeRpcClient;
-import tech.pegasys.peeps.node.rpc.NodeRpcMandatoryResponseDecorator;
+import tech.pegasys.peeps.node.rpc.NodeRpcMandatoryResponse;
 import tech.pegasys.peeps.node.rpc.admin.NodeInfo;
 import tech.pegasys.peeps.node.verification.AccountValue;
 import tech.pegasys.peeps.node.verification.NodeValueTransition;
@@ -69,14 +70,12 @@ public class Besu implements NetworkMember {
       "/etc/besu/keys/pmt_signing.priv";
 
   private final GenericContainer<?> besu;
-
-  // TODO use the interface here instead?
   private final NodeRpcClient nodeRpc;
-  private final NodeRpcMandatoryResponseDecorator rpc;
-
+  private final NodeRpc rpc;
   private final SubnetAddress ipAddress;
   private final NodeIdentifier identity;
   private final String enodeAddress;
+
   private String nodeId;
   private String enodeId;
   private String pubKey;
@@ -106,7 +105,7 @@ public class Besu implements NetworkMember {
         container.withCommand(commandLineOptions.toArray(new String[0])).waitingFor(liveliness());
 
     this.nodeRpc = new NodeRpcClient(config.getVertx(), dockerLogs());
-    this.rpc = new NodeRpcMandatoryResponseDecorator(nodeRpc);
+    this.rpc = new NodeRpcMandatoryResponse(nodeRpc);
     this.identity = config.getIdentity();
     this.pubKey = nodePublicKey(config);
     this.enodeAddress = enodeAddress(config);
@@ -189,7 +188,7 @@ public class Besu implements NetworkMember {
     return DockerLogs.format("Besu", besu);
   }
 
-  public NodeRpcMandatoryResponseDecorator rpc() {
+  public NodeRpc rpc() {
     return rpc;
   }
 

@@ -31,7 +31,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.tuweni.eth.Address;
 import org.apache.tuweni.units.ethereum.Wei;
 
-public class SignerRpcClient extends NodeRpcClient implements SignerRpc {
+public class SignerRpcClient extends NodeRpcClient {
 
   private static final Logger LOG = LogManager.getLogger();
   private static final Address NO_RECIPIENT = null;
@@ -41,7 +41,6 @@ public class SignerRpcClient extends NodeRpcClient implements SignerRpc {
     super(vertx, timeout, LOG, dockerLogs);
   }
 
-  @Override
   public Hash deployContractToPrivacyGroup(
       final Address sender,
       final String binary,
@@ -55,7 +54,6 @@ public class SignerRpcClient extends NodeRpcClient implements SignerRpc {
         .getResult();
   }
 
-  @Override
   public Hash transfer(final Address sender, final Address receiver, final Wei amount) {
     return post(
             "eth_sendTransaction",
@@ -64,7 +62,6 @@ public class SignerRpcClient extends NodeRpcClient implements SignerRpc {
         .getResult();
   }
 
-  @Override
   public String enode() {
     return post("net_enode", EnodeResponse.class).getResult();
   }

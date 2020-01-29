@@ -13,18 +13,17 @@
 package tech.pegasys.peeps.signer.rpc;
 
 import tech.pegasys.peeps.node.model.Hash;
-import tech.pegasys.peeps.node.rpc.NodeRpcMandatoryResponseDecorator;
+import tech.pegasys.peeps.node.rpc.NodeRpcMandatoryResponse;
 import tech.pegasys.peeps.privacy.model.PrivacyAddreess;
 
 import org.apache.tuweni.eth.Address;
 import org.apache.tuweni.units.ethereum.Wei;
 
-public class SignerRpcMandatoryResponseDecorator extends NodeRpcMandatoryResponseDecorator
-    implements SignerRpc {
+public class SignerRpcMandatoryResponse extends NodeRpcMandatoryResponse implements SignerRpc {
 
-  private final SignerRpc rpc;
+  private final SignerRpcClient rpc;
 
-  public SignerRpcMandatoryResponseDecorator(final SignerRpc rpc) {
+  public SignerRpcMandatoryResponse(final SignerRpcClient rpc) {
     super(rpc);
     this.rpc = rpc;
   }

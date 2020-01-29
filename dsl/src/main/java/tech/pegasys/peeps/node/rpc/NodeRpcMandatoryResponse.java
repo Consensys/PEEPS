@@ -13,6 +13,7 @@
 package tech.pegasys.peeps.node.rpc;
 
 import static tech.pegasys.peeps.util.Await.awaitData;
+import static tech.pegasys.peeps.util.Await.awaitPresence;
 
 import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.model.PrivacyTransactionReceipt;
@@ -25,36 +26,39 @@ import java.util.Set;
 import org.apache.tuweni.eth.Address;
 import org.apache.tuweni.units.ethereum.Wei;
 
-public class NodeRpcMandatoryResponseDecorator implements NodeRpc {
+public class NodeRpcMandatoryResponse implements NodeRpc {
 
-  private final NodeRpc rpc;
+  private final NodeRpcClient rpc;
 
-  public NodeRpcMandatoryResponseDecorator(final NodeRpc rpc) {
+  public NodeRpcMandatoryResponse(final NodeRpcClient rpc) {
     this.rpc = rpc;
   }
 
   @Override
   public PrivacyTransactionReceipt getPrivacyTransactionReceipt(final Hash receipt) {
-    return awaitData(
-        () -> rpc.getPrivacyTransactionReceipt(receipt),
-        "Failed to retrieve the private transaction receipt with hash: %s",
-        receipt);
+    return awaitPresence(
+            () -> rpc.getPrivacyTransactionReceipt(receipt),
+            "Failed to retrieve the private transaction receipt with hash: %s",
+            receipt)
+        .get();
   }
 
   @Override
   public TransactionReceipt getTransactionReceipt(final Hash receipt) {
-    return awaitData(
-        () -> rpc.getTransactionReceipt(receipt),
-        "Failed to retrieve the transaction receipt with hash: %s",
-        receipt);
+    return awaitPresence(
+            () -> rpc.getTransactionReceipt(receipt),
+            "Failed to retrieve the transaction receipt with hash: %s",
+            receipt)
+        .get();
   }
 
   @Override
   public Transaction getTransactionByHash(final Hash transaction) {
-    return awaitData(
-        () -> rpc.getTransactionByHash(transaction),
-        "Failed to retrieve the transaction with hash: %s",
-        transaction);
+    return awaitPresence(
+            () -> rpc.getTransactionByHash(transaction),
+            "Failed to retrieve the transaction with hash: %s",
+            transaction)
+        .get();
   }
 
   @Override
