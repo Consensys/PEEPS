@@ -14,12 +14,20 @@ package tech.pegasys.peeps.network.subnet;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.util.regex.Pattern;
+
 public class SubnetAddress {
+
+  private static final Pattern VALID_IP4_ADDRESS =
+      Pattern.compile("^(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})$");
 
   private final String address;
 
   public SubnetAddress(final String address) {
     checkArgument(address != null, "Address is mandatory");
+    checkArgument(
+        VALID_IP4_ADDRESS.matcher(address).matches(), "Address must be in an IP4 Address format");
+
     this.address = address;
   }
 
