@@ -14,19 +14,20 @@ package tech.pegasys.peeps.network;
 
 import static com.google.common.base.Preconditions.checkState;
 
-import tech.pegasys.peeps.network.model.SubnetAddress;
-import tech.pegasys.peeps.network.model.SubnetAddresses;
-
 import java.io.Closeable;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.github.dockerjava.api.model.Network.Ipam;
-import com.github.dockerjava.api.model.Network.Ipam.Config;
-import com.google.common.annotations.VisibleForTesting;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.testcontainers.containers.Network;
+
+import com.github.dockerjava.api.model.Network.Ipam;
+import com.github.dockerjava.api.model.Network.Ipam.Config;
+import com.google.common.annotations.VisibleForTesting;
+
+import tech.pegasys.peeps.network.model.SubnetAddress;
+import tech.pegasys.peeps.network.model.SubnetAddresses;
 
 public class Subnet implements Closeable {
 
