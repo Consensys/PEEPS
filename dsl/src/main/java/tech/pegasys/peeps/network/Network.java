@@ -18,22 +18,6 @@ import static com.google.common.base.Preconditions.checkState;
 import static org.assertj.core.api.Assertions.assertThat;
 import static tech.pegasys.peeps.util.Await.await;
 
-import java.io.Closeable;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import org.apache.tuweni.eth.Address;
-
-import com.google.common.annotations.VisibleForTesting;
-
-import io.vertx.core.Vertx;
 import tech.pegasys.peeps.node.Account;
 import tech.pegasys.peeps.node.Besu;
 import tech.pegasys.peeps.node.BesuConfigurationBuilder;
@@ -73,6 +57,21 @@ import tech.pegasys.peeps.signer.model.SignerIdentifier;
 import tech.pegasys.peeps.signer.model.WalletFileResources;
 import tech.pegasys.peeps.signer.rpc.SignerRpcExpectingData;
 import tech.pegasys.peeps.util.PathGenerator;
+
+import java.io.Closeable;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import com.google.common.annotations.VisibleForTesting;
+import io.vertx.core.Vertx;
+import org.apache.tuweni.eth.Address;
 
 public class Network implements Closeable {
 
