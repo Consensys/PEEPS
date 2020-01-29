@@ -47,9 +47,9 @@ public class Subnet implements Closeable {
       subnet = getNextSubnetAndIncrement();
 
       try {
-        possibleNetwork = createDockerNetwork(subnet);
+        possibleNetwork = createDockerNetwork(attempt, subnet);
       } catch (final UndeclaredThrowableException e) {
-        logSubnetUnavailable(subnet);
+        logSubnetUnavailable(attempt, subnet);
       }
 
       attempt++;
@@ -89,8 +89,8 @@ public class Subnet implements Closeable {
     return String.format(SUBNET_FORMAT, consumeNextThirdOctet());
   }
 
-  private void logSubnetUnavailable(final String subnet) {
-    LOG.warn("Failed to create Network with subnet: {}", subnet);
+  private void logSubnetUnavailable(final int attempt, final String subnet) {
+    LOG.warn("Attempt: {}, failed to create Network with subnet: {}", attempt, subnet);
   }
 
   private void logNetworkAndSubnet(final Network network, final String subnet) {
@@ -114,7 +114,7 @@ public class Subnet implements Closeable {
    * TestContainers uses lazy initialization of Docker networks, creation with the Docker client
    * being triggered by getId().
    */
-  private Network createDockerNetwork(final String subnet) {
+  private Network createDockerNetwork(final int attempt, final String subnet) {
     final Network network =
         Network.builder()
             .createNetworkCmdModifier(
@@ -122,7 +122,7 @@ public class Subnet implements Closeable {
                     modifier.withIpam(new Ipam().withConfig(new Config().withSubnet(subnet))))
             .build();
 
-    LOG.info("Attempting to create Network with subnet: {}", subnet);
+    LOG.info("Attempt: {}, creating Network with subnet: {}", attempt, subnet);
 
     checkState(network.getId() != null, "Creation of Network failed, no Id returned");
     checkState(!network.getId().isBlank(), "Network created with an empty Id returned");
