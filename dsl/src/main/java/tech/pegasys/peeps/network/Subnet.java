@@ -23,7 +23,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.github.dockerjava.api.model.Network.Ipam;
 import com.github.dockerjava.api.model.Network.Ipam.Config;
-import com.google.common.annotations.VisibleForTesting;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.testcontainers.containers.Network;
@@ -69,7 +68,6 @@ public class Subnet implements Closeable {
     this.addresses = new SubnetAddresses(subnetAddressFormat(subnet));
   }
 
-  // TODO stricter typing then String
   public SubnetAddress getAddressAndIncrement() {
     return addresses.getAddressAndIncrement();
   }
@@ -81,11 +79,6 @@ public class Subnet implements Closeable {
   @Override
   public void close() {
     network.close();
-  }
-
-  @VisibleForTesting
-  String nextSubnet() {
-    return String.format(SUBNET_FORMAT, THIRD_OCTET.get());
   }
 
   private String getNextSubnetAndIncrement() {
