@@ -44,16 +44,16 @@ public class Subnet implements Closeable {
     SubnetAddresses possibleAddresses = null;
     Network possibleNetwork = null;
 
-    for (; attempt < MAXIMUM_ATTEMPTS; attempt++) {
-
+    while (attempt < MAXIMUM_ATTEMPTS && possibleAddresses == null) {
       subnet = getNextSubnetAndIncrement();
 
       try {
         possibleNetwork = createDockerNetwork(subnet);
-        possibleAddresses = new SubnetAddresses(subnetAddressFormat(subnet));
       } catch (final UndeclaredThrowableException e) {
         logSubnetUnavailable(subnet);
       }
+
+      attempt++;
     }
 
     checkState(
@@ -62,8 +62,9 @@ public class Subnet implements Closeable {
         MAXIMUM_ATTEMPTS);
 
     logNetworkAndSubnet(possibleNetwork, subnet);
-    this.addresses = possibleAddresses;
+
     this.network = possibleNetwork;
+    this.addresses = new SubnetAddresses(subnetAddressFormat(subnet));
   }
 
   // TODO stricter typing then String
@@ -122,10 +123,10 @@ public class Subnet implements Closeable {
                     modifier.withIpam(new Ipam().withConfig(new Config().withSubnet(subnet))))
             .build();
 
-    LOG.info("Attempting to create Network using subnet: {}", subnet);
+    LOG.info("Attempting to create Network with subnet: {}", subnet);
 
-    checkState(network.getId() != null);
-    checkState(!network.getId().isBlank());
+    checkState(network.getId() != null, "Creation of Network failed, no Id returned");
+    checkState(!network.getId().isBlank(), "Network created with an empty Id returned");
 
     return network;
   }
