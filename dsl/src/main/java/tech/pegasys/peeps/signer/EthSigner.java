@@ -185,7 +185,7 @@ public class EthSigner implements NetworkMember {
   private void addDownstreamHost(
       final EthSignerConfiguration config, final List<String> commandLineOptions) {
     commandLineOptions.add("--downstream-http-host");
-    commandLineOptions.add(config.getDownstream().ipAddress());
+    commandLineOptions.add(config.getDownstream().ipAddress().get());
   }
 
   private void addContainerNetwork(
@@ -196,7 +196,7 @@ public class EthSigner implements NetworkMember {
   private void addContainerIpAddress(
       final EthSignerConfiguration config, final GenericContainer<?> container) {
     container.withCreateContainerCmdModifier(
-        modifier -> modifier.withIpv4Address(config.getIpAddress()));
+        modifier -> modifier.withIpv4Address(config.getIpAddress().get()));
   }
 
   private void addFileBasedSigner(

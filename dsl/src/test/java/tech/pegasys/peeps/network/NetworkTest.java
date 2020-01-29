@@ -19,6 +19,7 @@ import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
+import tech.pegasys.peeps.network.subnet.Subnet;
 import tech.pegasys.peeps.node.Besu;
 import tech.pegasys.peeps.node.model.NodeIdentifier;
 
@@ -37,6 +38,7 @@ public class NetworkTest {
 
   @Mock private NodeIdentifier nodeId;
   @Mock private Besu node;
+  @Mock private Subnet subnet;
   @TempDir Path configurationDirectory;
 
   private Network network;
@@ -44,7 +46,7 @@ public class NetworkTest {
   @BeforeEach
   public void setUp() {
     Runtime.getRuntime().addShutdownHook(new Thread(this::tearDown));
-    network = new Network(configurationDirectory);
+    network = new Network(configurationDirectory, subnet);
 
     lenient().when(node.identity()).thenReturn(nodeId);
   }
@@ -60,7 +62,7 @@ public class NetworkTest {
         assertThrows(
             IllegalArgumentException.class,
             () -> {
-              new Network(null);
+              new Network(null, subnet);
             });
 
     assertThat(exception.getMessage()).isEqualTo("Path to configuration directory is mandatory");

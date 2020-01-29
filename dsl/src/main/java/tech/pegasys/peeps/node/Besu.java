@@ -20,6 +20,7 @@ import static tech.pegasys.peeps.util.HexFormatter.ensureHexPrefix;
 import static tech.pegasys.peeps.util.HexFormatter.removeAnyHexPrefix;
 
 import tech.pegasys.peeps.network.NetworkMember;
+import tech.pegasys.peeps.network.subnet.SubnetAddress;
 import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.model.NodeIdentifier;
 import tech.pegasys.peeps.node.model.TransactionReceipt;
@@ -73,7 +74,7 @@ public class Besu implements NetworkMember {
   private final NodeRpcClient nodeRpc;
   private final NodeRpcMandatoryResponseDecorator rpc;
 
-  private final String ipAddress;
+  private final SubnetAddress ipAddress;
   private final NodeIdentifier identity;
   private final String enodeAddress;
   private String nodeId;
@@ -150,8 +151,7 @@ public class Besu implements NetworkMember {
     }
   }
 
-  // TODO stricter typing then String
-  public String ipAddress() {
+  public SubnetAddress ipAddress() {
     return ipAddress;
   }
 
@@ -285,7 +285,7 @@ public class Besu implements NetworkMember {
   private void addPeerToPeerHost(
       final BesuConfiguration config, final List<String> commandLineOptions) {
     commandLineOptions.add("--p2p-host");
-    commandLineOptions.add(config.getIpAddress());
+    commandLineOptions.add(config.getIpAddress().get());
   }
 
   private void addBootnodeAddress(
@@ -363,8 +363,9 @@ public class Besu implements NetworkMember {
         BindMode.READ_ONLY);
   }
 
-  private void addContainerIpAddress(final String ipAddress, final GenericContainer<?> container) {
-    container.withCreateContainerCmdModifier(modifier -> modifier.withIpv4Address(ipAddress));
+  private void addContainerIpAddress(
+      final SubnetAddress ipAddress, final GenericContainer<?> container) {
+    container.withCreateContainerCmdModifier(modifier -> modifier.withIpv4Address(ipAddress.get()));
   }
 
   private String nodePublicKey(final BesuConfiguration config) {
@@ -372,6 +373,7 @@ public class Besu implements NetworkMember {
   }
 
   private String enodeAddress(final BesuConfiguration config) {
-    return String.format("enode://%s@%s:%d", pubKey, config.getIpAddress(), CONTAINER_P2P_PORT);
+    return String.format(
+        "enode://%s@%s:%d", pubKey, config.getIpAddress().get(), CONTAINER_P2P_PORT);
   }
 }
