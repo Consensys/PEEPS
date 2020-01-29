@@ -94,7 +94,7 @@ public class Network implements Closeable {
   private Genesis genesis;
   private NetworkState state;
 
-  public Network(final Path configurationDirectory) {
+  public Network(final Path configurationDirectory, final Subnet subnet) {
     checkArgument(configurationDirectory != null, "Path to configuration directory is mandatory");
 
     this.privacyManagers = new HashMap<>();
@@ -103,7 +103,7 @@ public class Network implements Closeable {
     this.nodes = new HashMap<>();
     this.pathGenerator = new PathGenerator(configurationDirectory);
     this.vertx = Vertx.vertx();
-    this.subnet = new Subnet();
+    this.subnet = subnet;
     this.genesisFile = new BesuGenesisFile(pathGenerator.uniqueFile());
     this.state = NetworkState.STOPPED;
 
