@@ -15,7 +15,7 @@ package tech.pegasys.peeps.privacy;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import tech.pegasys.peeps.network.model.SubnetAddress;
+import tech.pegasys.peeps.network.subnet.SubnetAddress;
 import tech.pegasys.peeps.privacy.model.PrivacyKeyPair;
 import tech.pegasys.peeps.privacy.model.PrivacyPrivateKeyResource;
 import tech.pegasys.peeps.privacy.model.PrivacyPublicKeyResource;

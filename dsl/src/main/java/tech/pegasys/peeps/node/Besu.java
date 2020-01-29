@@ -20,7 +20,7 @@ import static tech.pegasys.peeps.util.HexFormatter.ensureHexPrefix;
 import static tech.pegasys.peeps.util.HexFormatter.removeAnyHexPrefix;
 
 import tech.pegasys.peeps.network.NetworkMember;
-import tech.pegasys.peeps.network.model.SubnetAddress;
+import tech.pegasys.peeps.network.subnet.SubnetAddress;
 import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.model.NodeIdentifier;
 import tech.pegasys.peeps.node.model.TransactionReceipt;

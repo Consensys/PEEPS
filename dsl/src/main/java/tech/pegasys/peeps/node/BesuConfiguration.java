@@ -12,7 +12,7 @@
  */
 package tech.pegasys.peeps.node;
 
-import tech.pegasys.peeps.network.model.SubnetAddress;
+import tech.pegasys.peeps.network.subnet.SubnetAddress;
 import tech.pegasys.peeps.node.model.NodeIdentifier;
 import tech.pegasys.peeps.node.model.NodeKey;
 import tech.pegasys.peeps.node.model.NodePrivateKeyResource;
