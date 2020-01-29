@@ -365,6 +365,7 @@ public class Besu implements NetworkMember {
   }
 
   private String enodeAddress(final BesuConfiguration config) {
-    return String.format("enode://%s@%s:%d", pubKey, config.getIpAddress(), CONTAINER_P2P_PORT);
+    return String.format(
+        "enode://%s@%s:%d", pubKey, config.getIpAddress().get(), CONTAINER_P2P_PORT);
   }
 }
