@@ -19,6 +19,7 @@ import tech.pegasys.peeps.SignerConfiguration;
 import tech.pegasys.peeps.contract.SimpleStorage;
 import tech.pegasys.peeps.network.Network;
 import tech.pegasys.peeps.node.model.Hash;
+import tech.pegasys.peeps.privacy.model.PrivacyGroup;
 
 import org.apache.commons.codec.DecoderException;
 import org.junit.jupiter.api.Test;
@@ -49,14 +50,12 @@ public class PrivacyContracDeploymentTest extends NetworkTest {
 
   @Test
   public void deploymentMustSucceed() throws DecoderException {
+    final PrivacyGroup group = new PrivacyGroup(privacyManagerAlpha.id(), privacyManagerBeta.id());
 
     final Hash pmt =
         execute(signer)
             .deployContractToPrivacyGroup(
-                signer.address(),
-                SimpleStorage.BINARY,
-                privacyManagerAlpha.address(),
-                privacyManagerBeta.address());
+                SimpleStorage.BINARY, privacyManagerAlpha.address(), privacyManagerBeta.address());
 
     await().consensusOnTransactionReciept(pmt);
 
@@ -64,7 +63,7 @@ public class PrivacyContracDeploymentTest extends NetworkTest {
     verify().consensusOnTransaction(pmt);
     verify().consensusOnPrivacyTransactionReceipt(pmt);
     verify()
-        .privacyGroup(privacyManagerAlpha.id(), privacyManagerBeta.id())
+        .privacyGroup(group)
         .consensusOnPrivacyPayload(execute(nodeAlpha).getTransactionByHash(pmt));
   }
 }
