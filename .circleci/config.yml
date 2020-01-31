@@ -104,7 +104,6 @@ jobs:
       - store_artifacts:
           path: end-to-end-tests/build/reports
           destination: end-to-end-tests-reports
-        - capture_test_results
 
 workflows:
   version: 2
