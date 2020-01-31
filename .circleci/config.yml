@@ -101,6 +101,7 @@ jobs:
           no_output_timeout: 20m
           command: |
             ./gradlew --no-daemon --parallel endToEndTest
+      - capture_test_results
       - store_artifacts:
           path: end-to-end-tests/build/reports
           destination: end-to-end-tests-reports
