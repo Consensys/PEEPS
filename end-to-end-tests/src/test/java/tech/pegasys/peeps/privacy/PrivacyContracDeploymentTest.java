@@ -59,7 +59,7 @@ public class PrivacyContracDeploymentTest extends NetworkTest {
 
     await().consensusOnTransactionReciept(pmt);
 
-    verify(nodeAlpha).successfulTransactionReceipt(pmt);
+    verifyOn(nodeAlpha).successfulTransactionReceipt(pmt);
     verify().consensusOnTransaction(pmt);
     verify().consensusOnPrivacyTransactionReceipt(pmt);
     verify()

@@ -70,7 +70,7 @@ public abstract class NetworkTest {
     return verify;
   }
 
-  protected NodeVerify verify(final NodeConfiguration id) {
+  protected NodeVerify verifyOn(final NodeConfiguration id) {
     return network.verify(id.id());
   }
 
