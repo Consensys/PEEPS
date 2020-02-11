@@ -10,7 +10,7 @@ decisions of the benevolent dictator through active engagement and contribution.
 # Principles
 
 The community adheres to the following principles:
-* Open: EthSigner is open source. See repository guidelines and CLA, below.
+* Open: PEEPS is open source. See repository guidelines and CLA, below.
 * Welcoming and respectful: See Code of Conduct, below.
 * Transparent and accessible: Work and collaboration should be done in public. 
 * Merit: Ideas and contributions are accepted according to their technical merit and alignment with
@@ -20,12 +20,13 @@ project objectives and design principles.
 See [code of conduct]
 
 # Decision Making
-Decision making will be handled by the Approvers (see [community membership]).  If consensus cannot 
+Decision making will be handled by the Approvers.  If consensus cannot 
 be reached, the Benevolent Dictator will provide the final word on the decision.
 
 # CLA
 
 All contributors must sign the CLA, as described in [CLA.md].
+
 ## Attribution
 
 This document was influenced by the following:

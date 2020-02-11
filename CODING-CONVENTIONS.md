@@ -11,7 +11,7 @@ This document contains guidelines (some stricter than others) so we can be consi
 
 The guidelines are intended to facilitate working together not to facilitate reviews that criticize without adding value. 
 
-Some guidelines are personal opinion.  The idea being we make a decision once, document it, and apply it for consistency.  Again, we can then spend more time on the interesting issues and less time discussing coding conventions :-)
+Some guidelines are personal opinion.  The idea being we make a decision once, document it, and apply it for consistency.  Again, we can then spend more time on the interesting issues and less time discussing coding conventions.
 
 # 2 General Design Philosophy 
 
@@ -49,7 +49,7 @@ The PEEPS design prioritizes meeting current requirements in the simplest, clear
 
 # 3 Specific Design Techniques
 
-# 3.1 Creating Understandable, Self-documenting Code 
+## 3.1 Creating Understandable, Self-documenting Code 
 
 To create understandable, self-documenting code:
   - Use clear naming for variables, methods, and classes
@@ -69,7 +69,7 @@ To create understandable, self-documenting code:
     * tx -> Transaction
     * RPC -> Remote Procedure Call
     
-# 3.2 Creating Code for Constant Refactoring and Evolving Design
+## 3.2 Creating Code for Constant Refactoring and Evolving Design
 
 So the code can cope with constant refactoring and evolving design, write code that:
 * Is well tested. 
