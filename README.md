@@ -14,4 +14,12 @@ Conceptually PEEPS consists of two parts:
 
 ## Architecture
 
+### End To End Tests
+The `end-to-end-tests` module, contains the product end to end tests and their resources.
 
+`NetworkTest` is intended as the abstract base class for all tests that require the Network primative as part of their testing, where a Network is connection between products (Ethereum nodes, Privacy Managers and Signers ...which should be every end to end test in PEEPS).
+
+### DSL
+The `dsl` module, contains the domain specific language syntax and semantic objects, in addition to the binding code the underlying products.
+
+When writing tests, the only reason to extend the DSL would be when adding a new product, or exposing a new service of the product, yet unexposed.
