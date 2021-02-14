@@ -17,6 +17,7 @@ import static tech.pegasys.peeps.util.Await.await;
 
 import tech.pegasys.peeps.network.NetworkMember;
 import tech.pegasys.peeps.node.Besu;
+import tech.pegasys.peeps.node.Web3Provider;
 import tech.pegasys.peeps.signer.rpc.SignerRpc;
 import tech.pegasys.peeps.signer.rpc.SignerRpcClient;
 import tech.pegasys.peeps.signer.rpc.SignerRpcMandatoryResponse;
@@ -54,7 +55,7 @@ public class EthSigner implements NetworkMember {
   private final GenericContainer<?> ethSigner;
   private final SignerRpcClient signerRpc;
   private final SignerRpc rpc;
-  private final Besu downstream;
+  private final Web3Provider downstream;
 
   public EthSigner(final EthSignerConfiguration config) {
 

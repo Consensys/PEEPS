@@ -19,24 +19,14 @@ import static tech.pegasys.peeps.util.Await.await;
 import static tech.pegasys.peeps.util.HexFormatter.ensureHexPrefix;
 import static tech.pegasys.peeps.util.HexFormatter.removeAnyHexPrefix;
 
-import tech.pegasys.peeps.network.subnet.SubnetAddress;
-import tech.pegasys.peeps.node.model.Hash;
-import tech.pegasys.peeps.node.model.NodeIdentifier;
-import tech.pegasys.peeps.node.model.TransactionReceipt;
-import tech.pegasys.peeps.node.rpc.NodeRpcClient;
-import tech.pegasys.peeps.node.rpc.NodeRpcMandatoryResponse;
-import tech.pegasys.peeps.node.rpc.admin.NodeInfo;
-import tech.pegasys.peeps.node.verification.AccountValue;
-import tech.pegasys.peeps.node.verification.NodeValueTransition;
-import tech.pegasys.peeps.util.ClasspathResources;
-
+import com.google.common.collect.Lists;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import com.google.common.collect.Lists;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.testcontainers.containers.BindMode;
@@ -45,8 +35,21 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.MountableFile;
+import tech.pegasys.peeps.network.NetworkMember;
+import tech.pegasys.peeps.network.subnet.SubnetAddress;
+import tech.pegasys.peeps.node.model.Hash;
+import tech.pegasys.peeps.node.model.NodeIdentifier;
+import tech.pegasys.peeps.node.model.TransactionReceipt;
+import tech.pegasys.peeps.node.rpc.NodeRpc;
+import tech.pegasys.peeps.node.rpc.NodeRpcClient;
+import tech.pegasys.peeps.node.rpc.NodeRpcMandatoryResponse;
+import tech.pegasys.peeps.node.rpc.admin.NodeInfo;
+import tech.pegasys.peeps.node.verification.AccountValue;
+import tech.pegasys.peeps.node.verification.NodeValueTransition;
+import tech.pegasys.peeps.util.ClasspathResources;
+import tech.pegasys.peeps.util.DockerLogs;
 
-public class Besu extends Web3Provider {
+public class GoQuorum extends Web3Provider {
 
   private static final Logger LOG = LogManager.getLogger();
 
@@ -54,18 +57,17 @@ public class Besu extends Web3Provider {
   private static final int ALIVE_STATUS_CODE = 200;
 
   //  private static final String BESU_IMAGE = "hyperledger/besu:latest";
-  private static final String BESU_IMAGE = "hyperledger/besu:develop";
+  private static final String IMAGE_NAME = "quorumengineering/quorum";
   private static final int CONTAINER_HTTP_RPC_PORT = 8545;
   private static final int CONTAINER_WS_RPC_PORT = 8546;
   private static final int CONTAINER_P2P_PORT = 30303;
-  private static final String CONTAINER_GENESIS_FILE = "/etc/besu/genesis.json";
+  private static final String CONTAINER_GENESIS_FILE = "/etc/genesis.json";
   private static final String CONTAINER_PRIVACY_PUBLIC_KEY_FILE =
       "/etc/besu/privacy_public_key.pub";
   private static final String CONTAINER_NODE_PRIVATE_KEY_FILE = "/etc/besu/keys/node.priv";
   private static final String CONTAINER_PRIVACY_SIGNING_PRIVATE_KEY_FILE =
       "/etc/besu/keys/pmt_signing.priv";
 
-  private GenericContainer<?> dockerContainer;
   private final SubnetAddress ipAddress;
   private final NodeIdentifier identity;
   private final String enodeAddress;
@@ -74,10 +76,8 @@ public class Besu extends Web3Provider {
   private String enodeId;
   private String pubKey;
 
-  public Besu(final Web3ProviderConfiguration config) {
-    super(config, BESU_IMAGE);
-
-    dockerContainer = new GenericContainer<>(BESU_IMAGE);
+  public GoQuorum(final Web3ProviderConfiguration config) {
+    super(config, IMAGE_NAME);
     final List<String> commandLineOptions = standardCommandLineOptions();
 
     this.ipAddress = config.getIpAddress();
@@ -88,15 +88,19 @@ public class Besu extends Web3Provider {
     addContainerNetwork(config, dockerContainer);
     addContainerIpAddress(ipAddress, dockerContainer);
     addNodePrivateKey(config, commandLineOptions, dockerContainer);
-    addGenesisFile(config, commandLineOptions, dockerContainer);
+    try {
+      addGenesisFile(config, commandLineOptions, dockerContainer);
+    } catch (final IOException | InterruptedException e) {
+      throw new RuntimeException("Couldn't set genesis file, sorry!", e);
+    }
 
     if (config.isPrivacyEnabled()) {
       addPrivacy(config, commandLineOptions, dockerContainer);
     }
 
-    LOG.info("Besu command line: {}", commandLineOptions);
-    dockerContainer.withCommand(commandLineOptions.toArray(new String[0])).waitingFor(liveliness());
+    LOG.info("GoQuorum command line: {}", commandLineOptions);
 
+    dockerContainer.withCommand(commandLineOptions.toArray(new String[0])).waitingFor(liveliness());
     this.identity = config.getIdentity();
     this.pubKey = nodePublicKey(config);
     this.enodeAddress = enodeAddress(config);
@@ -175,6 +179,29 @@ public class Besu extends Web3Provider {
     awaitPeerIdConnections(excludeSelf(expectedPeerIds(peers)));
   }
 
+  public String getLogs() {
+    return DockerLogs.format("Besu", dockerContainer);
+  }
+
+  public NodeRpc rpc() {
+    return rpc;
+  }
+
+  public void verifyTransition(final NodeValueTransition... changes) {
+    Stream.of(changes).parallel().forEach(change -> change.verify(rpc));
+  }
+
+  public void verifyValue(final Set<AccountValue> values) {
+    values.parallelStream().forEach(value -> value.verify(rpc));
+  }
+
+  public void verifySuccessfulTransactionReceipt(final Hash transaction) {
+    final TransactionReceipt receipt = rpc.getTransactionReceipt(transaction);
+
+    assertThat(receipt.getTransactionHash()).isEqualTo(transaction);
+    assertThat(receipt.isSuccess()).isTrue();
+  }
+
   public String getNodeId() {
     checkNotNull(nodeId, "NodeId only exists after the node has started");
     return nodeId;
@@ -205,6 +232,10 @@ public class Besu extends Web3Provider {
     return Wait.forHttp(AM_I_ALIVE_ENDPOINT)
         .forStatusCode(ALIVE_STATUS_CODE)
         .forPort(CONTAINER_HTTP_RPC_PORT);
+  }
+
+  private Set<Supplier<String>> dockerLogs() {
+    return Set.of(() -> getLogs());
   }
 
   private void logPortMappings() {
@@ -270,7 +301,7 @@ public class Besu extends Web3Provider {
     config
         .getCors()
         .ifPresent(
-            cors -> commandLineOptions.addAll(Lists.newArrayList("--rpc-http-cors-origins", cors)));
+            cors -> commandLineOptions.addAll(Lists.newArrayList("--rpccorsdomain", cors)));
   }
 
   private void addNodePrivateKey(
@@ -289,11 +320,12 @@ public class Besu extends Web3Provider {
   private void addGenesisFile(
       final Web3ProviderConfiguration config,
       final List<String> commandLineOptions,
-      final GenericContainer<?> container) {
-    commandLineOptions.add("--genesis-file");
-    commandLineOptions.add(CONTAINER_GENESIS_FILE);
+      final GenericContainer<?> container) throws IOException, InterruptedException {
     container.withCopyFileToContainer(
         MountableFile.forHostPath(config.getGenesisFile()), CONTAINER_GENESIS_FILE);
+    container.execInContainer("mkdir -p /et/geth");
+    container.execInContainer("geth --datadir \"/eth\" init " + CONTAINER_GENESIS_FILE);
+
   }
 
   private void addPrivacy(

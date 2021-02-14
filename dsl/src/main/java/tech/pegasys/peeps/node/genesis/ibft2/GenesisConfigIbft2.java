@@ -18,15 +18,15 @@ import com.fasterxml.jackson.annotation.JsonGetter;
 
 public class GenesisConfigIbft2 extends GenesisConfig {
 
-  private final Ibft2Config consensusConfig;
+  private final BftConfig consensusConfig;
 
-  public GenesisConfigIbft2(final long chainId, final Ibft2Config consensusConfig) {
+  public GenesisConfigIbft2(final long chainId, final BftConfig consensusConfig) {
     super(chainId);
     this.consensusConfig = consensusConfig;
   }
 
   @JsonGetter("ibft2")
-  public Ibft2Config getConsensusConfig() {
+  public BftConfig getConsensusConfig() {
     return consensusConfig;
   }
 }

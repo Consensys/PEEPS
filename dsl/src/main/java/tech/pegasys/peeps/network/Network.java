@@ -21,8 +21,11 @@ import static tech.pegasys.peeps.util.Await.await;
 import tech.pegasys.peeps.network.subnet.Subnet;
 import tech.pegasys.peeps.node.Account;
 import tech.pegasys.peeps.node.Besu;
-import tech.pegasys.peeps.node.BesuConfigurationBuilder;
+import tech.pegasys.peeps.node.GoQuorum;
+import tech.pegasys.peeps.node.Web3Provider;
+import tech.pegasys.peeps.node.Web3ProviderConfigurationBuilder;
 import tech.pegasys.peeps.node.NodeVerify;
+import tech.pegasys.peeps.node.Web3ProviderType;
 import tech.pegasys.peeps.node.genesis.BesuGenesisFile;
 import tech.pegasys.peeps.node.genesis.Genesis;
 import tech.pegasys.peeps.node.genesis.GenesisAccount;
@@ -35,7 +38,7 @@ import tech.pegasys.peeps.node.genesis.ethhash.EthHashConfig;
 import tech.pegasys.peeps.node.genesis.ethhash.GenesisConfigEthHash;
 import tech.pegasys.peeps.node.genesis.ibft2.GenesisConfigIbft2;
 import tech.pegasys.peeps.node.genesis.ibft2.GenesisExtraDataIbft2;
-import tech.pegasys.peeps.node.genesis.ibft2.Ibft2Config;
+import tech.pegasys.peeps.node.genesis.ibft2.BftConfig;
 import tech.pegasys.peeps.node.model.GenesisAddress;
 import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.model.NodeIdentifier;
@@ -80,7 +83,7 @@ public class Network implements Closeable {
 
   private final Map<PrivacyManagerIdentifier, Orion> privacyManagers;
   private final Map<SignerIdentifier, EthSigner> signers;
-  private final Map<NodeIdentifier, Besu> nodes;
+  private final Map<NodeIdentifier, Web3Provider> nodes;
   private final List<NetworkMember> members;
 
   private final BesuGenesisFile genesisFile;
@@ -155,14 +158,16 @@ public class Network implements Closeable {
             consensus, Account.of(Account.ALPHA, Account.BETA, Account.GAMMA), validators);
   }
 
-  public Besu addNode(final NodeIdentifier frameworkIdentity, final NodeKey ethereumIdentiity) {
+  public Web3Provider addNode(final NodeIdentifier frameworkIdentity,
+      final NodeKey ethereumIdentiity) {
     return addNode(
-        new BesuConfigurationBuilder()
+        new Web3ProviderConfigurationBuilder()
             .withIdentity(frameworkIdentity)
-            .withNodeKey(ethereumIdentiity));
+            .withNodeKey(ethereumIdentiity),
+        Web3ProviderType.BESU);
   }
 
-  public Besu addNode(
+  public Web3Provider addNode(
       final NodeIdentifier identity,
       final NodeKey ethereumIdentiity,
       final PrivacyManagerIdentifier privacyManager,
@@ -173,25 +178,30 @@ public class Network implements Closeable {
         privacyManager);
 
     return addNode(
-        new BesuConfigurationBuilder()
+        new Web3ProviderConfigurationBuilder()
             .withIdentity(identity)
             .withNodeKey(ethereumIdentiity)
             .withPrivacyUrl(privacyManagers.get(privacyManager))
-            .withPrivacyManagerPublicKey(privacyAddressResource.get()));
+            .withPrivacyManagerPublicKey(privacyAddressResource.get()),
+        Web3ProviderType.BESU);
   }
 
-  private Besu addNode(final BesuConfigurationBuilder config) {
-    final Besu besu =
-        new Besu(
-            config
-                .withVertx(vertx)
-                .withContainerNetwork(subnet.network())
-                .withIpAddress(subnet.getAddressAndIncrement())
-                .withGenesisFile(genesisFile)
-                .withBootnodeEnodeAddress(bootnodeEnodeAddresses())
-                .build());
+  private Web3Provider addNode(final Web3ProviderConfigurationBuilder config,
+      final Web3ProviderType providerType) {
+    final Web3Provider web3Provider;
+    config
+        .withVertx(vertx)
+        .withContainerNetwork(subnet.network())
+        .withIpAddress(subnet.getAddressAndIncrement())
+        .withGenesisFile(genesisFile)
+        .withBootnodeEnodeAddress(bootnodeEnodeAddresses());
+    if (providerType.equals(Web3ProviderType.BESU)) {
+      web3Provider = new Besu(config.build());
+    } else {
+      web3Provider = new GoQuorum(config.build());
+    }
 
-    return addNode(besu);
+    return addNode(web3Provider);
   }
 
   public Orion addPrivacyManager(
@@ -226,7 +236,7 @@ public class Network implements Closeable {
   }
 
   private EthSigner addSigner(
-      final SignerIdentifier wallet, final WalletFileResources resources, final Besu downstream) {
+      final SignerIdentifier wallet, final WalletFileResources resources, final Web3Provider downstream) {
     final EthSigner signer =
         new EthSigner(
             new EthSignerConfigurationBuilder()
@@ -277,7 +287,7 @@ public class Network implements Closeable {
     checkState(
         nodes.size() > 1, "There must be two or more nodes to be able to verify on consensus");
 
-    final Besu firstNode = nodes.values().iterator().next();
+    final Web3Provider firstNode = nodes.values().iterator().next();
     final Set<AccountValue> values =
         Stream.of(accounts)
             .parallel()
@@ -361,11 +371,11 @@ public class Network implements Closeable {
   }
 
   @VisibleForTesting
-  Besu addNode(final Besu besu) {
-    nodes.put(besu.identity(), besu);
-    members.add(besu);
+  Web3Provider addNode(final Web3Provider web3Provider) {
+    nodes.put(web3Provider.identity(), web3Provider);
+    members.add(web3Provider);
 
-    return besu;
+    return web3Provider;
   }
 
   private void checkNodeExistsFor(final NodeIdentifier id) {
@@ -402,7 +412,7 @@ public class Network implements Closeable {
         genesisConfig = new GenesisConfigClique(chainId, new CliqueConfig());
         break;
       case IBFT2:
-        genesisConfig = new GenesisConfigIbft2(chainId, new Ibft2Config());
+        genesisConfig = new GenesisConfigIbft2(chainId, new BftConfig());
         break;
       case ETH_HASH:
       default:
