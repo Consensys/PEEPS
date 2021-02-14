@@ -65,7 +65,7 @@ public class Besu extends Web3Provider {
   private static final String CONTAINER_PRIVACY_SIGNING_PRIVATE_KEY_FILE =
       "/etc/besu/keys/pmt_signing.priv";
 
-  private GenericContainer<?> dockerContainer;
+  ;
   private final SubnetAddress ipAddress;
   private final NodeIdentifier identity;
   private final String enodeAddress;
@@ -75,9 +75,7 @@ public class Besu extends Web3Provider {
   private String pubKey;
 
   public Besu(final Web3ProviderConfiguration config) {
-    super(config, BESU_IMAGE);
-
-    dockerContainer = new GenericContainer<>(BESU_IMAGE);
+    super(config, new GenericContainer<>(BESU_IMAGE));
     final List<String> commandLineOptions = standardCommandLineOptions();
 
     this.ipAddress = config.getIpAddress();

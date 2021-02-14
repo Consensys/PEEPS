@@ -40,9 +40,10 @@ public abstract class Web3Provider implements NetworkMember {
   protected final GenericContainer<?> dockerContainer;
   private final Web3ProviderConfiguration config;
 
-  public Web3Provider(final Web3ProviderConfiguration config, final String imageName) {
+  public Web3Provider(final Web3ProviderConfiguration config,
+      final GenericContainer<?> dockerContainer) {
     this.config = config;
-    this.dockerContainer = new GenericContainer<>(imageName);
+    this.dockerContainer = dockerContainer;
     this.nodeRpc = new NodeRpcClient(config.getVertx(), dockerLogs());
     this.rpc = new NodeRpcMandatoryResponse(nodeRpc);
   }

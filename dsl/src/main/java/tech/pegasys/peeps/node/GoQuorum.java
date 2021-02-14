@@ -77,7 +77,7 @@ public class GoQuorum extends Web3Provider {
   private String pubKey;
 
   public GoQuorum(final Web3ProviderConfiguration config) {
-    super(config, IMAGE_NAME);
+    super(config, new GenericContainer<>(IMAGE_NAME));
     final List<String> commandLineOptions = standardCommandLineOptions();
 
     this.ipAddress = config.getIpAddress();
