@@ -13,7 +13,6 @@
 package tech.pegasys.peeps.signer;
 
 import tech.pegasys.peeps.network.subnet.SubnetAddress;
-import tech.pegasys.peeps.node.Besu;
 import tech.pegasys.peeps.node.Web3Provider;
 import tech.pegasys.peeps.signer.model.SignerKeyFileResource;
 import tech.pegasys.peeps.signer.model.SignerPasswordFileResource;

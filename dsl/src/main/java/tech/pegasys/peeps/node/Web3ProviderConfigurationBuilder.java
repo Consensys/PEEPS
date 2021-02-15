@@ -69,7 +69,8 @@ public class Web3ProviderConfigurationBuilder {
     return this;
   }
 
-  public Web3ProviderConfigurationBuilder withBootnodeEnodeAddress(final String bootnodeEnodeAddress) {
+  public Web3ProviderConfigurationBuilder withBootnodeEnodeAddress(
+      final String bootnodeEnodeAddress) {
     this.bootnodeEnodeAddress = bootnodeEnodeAddress;
     return this;
   }

@@ -12,266 +12,73 @@
  */
 package tech.pegasys.peeps.node;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-import static org.assertj.core.api.Assertions.assertThat;
-import static tech.pegasys.peeps.util.Await.await;
-import static tech.pegasys.peeps.util.HexFormatter.ensureHexPrefix;
-import static tech.pegasys.peeps.util.HexFormatter.removeAnyHexPrefix;
+import tech.pegasys.peeps.util.DockerLogs;
+
+import java.util.List;
 
 import com.google.common.collect.Lists;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-import java.util.StringJoiner;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.testcontainers.containers.BindMode;
-import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
-import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.MountableFile;
-import tech.pegasys.peeps.network.NetworkMember;
-import tech.pegasys.peeps.network.subnet.SubnetAddress;
-import tech.pegasys.peeps.node.model.Hash;
-import tech.pegasys.peeps.node.model.NodeIdentifier;
-import tech.pegasys.peeps.node.model.TransactionReceipt;
-import tech.pegasys.peeps.node.rpc.NodeRpc;
-import tech.pegasys.peeps.node.rpc.NodeRpcClient;
-import tech.pegasys.peeps.node.rpc.NodeRpcMandatoryResponse;
-import tech.pegasys.peeps.node.rpc.admin.NodeInfo;
-import tech.pegasys.peeps.node.verification.AccountValue;
-import tech.pegasys.peeps.node.verification.NodeValueTransition;
-import tech.pegasys.peeps.util.ClasspathResources;
-import tech.pegasys.peeps.util.DockerLogs;
 
 public class GoQuorum extends Web3Provider {
 
   private static final Logger LOG = LogManager.getLogger();
 
-  private static final String AM_I_ALIVE_ENDPOINT = "";
-  private static final int ALIVE_STATUS_CODE = 200;
-
-  //  private static final String BESU_IMAGE = "hyperledger/besu:latest";
+  //  private static final String IMAGE_NAME = "hyperledger/besu:latest";
   private static final String IMAGE_NAME = "quorumengineering/quorum";
-  private static final int CONTAINER_HTTP_RPC_PORT = 8545;
-  private static final int CONTAINER_WS_RPC_PORT = 8546;
-  private static final int CONTAINER_P2P_PORT = 30303;
   private static final String CONTAINER_GENESIS_FILE = "/etc/genesis.json";
-  private static final String CONTAINER_PRIVACY_PUBLIC_KEY_FILE =
-      "/etc/besu/privacy_public_key.pub";
-  private static final String CONTAINER_NODE_PRIVATE_KEY_FILE = "/etc/besu/keys/node.priv";
-  private static final String CONTAINER_PRIVACY_SIGNING_PRIVATE_KEY_FILE =
-      "/etc/besu/keys/pmt_signing.priv";
+  private static final String CONTAINER_NODE_PRIVATE_KEY_FILE = "/etc/keys/node.priv";
   private static final String DATA_DIR = "/eth";
-
-  private final SubnetAddress ipAddress;
-  private final NodeIdentifier identity;
-  private final String enodeAddress;
-
-  private String nodeId;
-  private String enodeId;
-  private String pubKey;
 
   public GoQuorum(final Web3ProviderConfiguration config) {
     super(config, new GenericContainer<>(IMAGE_NAME));
     final List<String> commandLineOptions = standardCommandLineOptions();
 
-    this.ipAddress = config.getIpAddress();
-
-    addPeerToPeerHost(config, commandLineOptions);
-    //addCorsOrigins(config, commandLineOptions);
-    //addBootnodeAddress(config, commandLineOptions);
-    addContainerNetwork(config, dockerContainer);
-    addContainerIpAddress(ipAddress, dockerContainer);
+    addCorsOrigins(config, commandLineOptions);
+    addBootnodeAddress(config, commandLineOptions);
+    addContainerNetwork(config, container);
+    addContainerIpAddress(ipAddress(), container);
     commandLineOptions.addAll(List.of("--datadir", "\"" + DATA_DIR + "\""));
 
-    dockerContainer.withCopyFileToContainer(
+    container.withCopyFileToContainer(
         MountableFile.forHostPath(config.getGenesisFile()), CONTAINER_GENESIS_FILE);
-    List<String> entryPoint = Lists.newArrayList(
-        "/bin/sh",
-        "-c");
-    final String initCmd = "mkdir -p '" + DATA_DIR + "/geth' && geth --datadir \"" + DATA_DIR + "\" init " + CONTAINER_GENESIS_FILE + " && echo '##### GoQuorum INITIAILSED #####' && ";
+    final List<String> entryPoint = Lists.newArrayList("/bin/sh", "-c");
+    final String initCmd =
+        "mkdir -p '"
+            + DATA_DIR
+            + "/geth' && geth --datadir \""
+            + DATA_DIR
+            + "\" init "
+            + CONTAINER_GENESIS_FILE
+            + " && echo '##### GoQuorum INITIAILSED #####' && ";
 
-//    addNodePrivateKey(config, commandLineOptions, dockerContainer);
-//    if (config.isPrivacyEnabled()) {
-//      addPrivacy(config, commandLineOptions, dockerContainer);
-//    }
+    addNodePrivateKey(config, commandLineOptions, container);
+    //    if (config.isPrivacyEnabled()) {
+    //      addPrivacy(config, commandLineOptions, dockerContainer);
+    //    }
 
     final String goCommandLine = initCmd + "geth " + String.join(" ", commandLineOptions);
     LOG.info("GoQuorum command line: {}", goCommandLine);
 
     entryPoint.add(goCommandLine);
 
-    dockerContainer.withCreateContainerCmdModifier(cmd ->
-        cmd.withEntrypoint(entryPoint)).waitingFor(liveliness());
-
-    this.identity = config.getIdentity();
-    this.pubKey = nodePublicKey(config);
-    this.enodeAddress = enodeAddress(config);
+    container
+        .withCreateContainerCmdModifier(cmd -> cmd.withEntrypoint(entryPoint))
+        .waitingFor(liveliness());
   }
 
   @Override
-  public void start() {
-    try {
-      dockerContainer.start();
-
-      LOG.info(getLogs());
-
-      nodeRpc.bind(
-          dockerContainer.getContainerId(),
-          dockerContainer.getContainerIpAddress(),
-          dockerContainer.getMappedPort(CONTAINER_HTTP_RPC_PORT));
-
-      final NodeInfo info = nodeRpc.nodeInfo();
-      nodeId = info.getId();
-
-      // TODO enode must match enodeAddress - otherwise error
-      // TODO remove enodeId - then rename enodeAddress to enodeId
-      enodeId = info.getEnode();
-
-      // TODO validate the node has the expected state, e.g. consensus, genesis,
-      // networkId,
-      // protocol(s), ports, listen address
-
-      logPortMappings();
-      logContainerNetworkDetails();
-    } catch (final Throwable e) {
-      LOG.error(dockerContainer.getLogs());
-      throw e;
-    }
-  }
-
-  @Override
-  public void stop() {
-    if (dockerContainer != null) {
-      dockerContainer.stop();
-    }
-    if (nodeRpc != null) {
-      nodeRpc.close();
-    }
-  }
-
-  public SubnetAddress ipAddress() {
-    return ipAddress;
-  }
-
-  // TODO these may not have a value, i.e. node not started :. optional
-  public String enodeId() {
-    return enodeId;
-  }
-
-  // TODO stricter typing then String
-  public String enodeAddress() {
-    return enodeAddress;
-  }
-
-  public String nodePublicKey() {
-    return pubKey;
-  }
-
-  public NodeIdentifier identity() {
-    return identity;
-  }
-
-  public int httpRpcPort() {
-    return CONTAINER_HTTP_RPC_PORT;
-  }
-
-  public int p2pPort() {
-    return CONTAINER_P2P_PORT;
-  }
-
-  public void awaitConnectivity(final Collection<Web3Provider> peers) {
-    awaitPeerIdConnections(excludeSelf(expectedPeerIds(peers)));
-  }
-
   public String getLogs() {
-    return DockerLogs.format("GoQuorum", dockerContainer);
-  }
-
-  public NodeRpc rpc() {
-    return rpc;
-  }
-
-  public void verifyTransition(final NodeValueTransition... changes) {
-    Stream.of(changes).parallel().forEach(change -> change.verify(rpc));
-  }
-
-  public void verifyValue(final Set<AccountValue> values) {
-    values.parallelStream().forEach(value -> value.verify(rpc));
-  }
-
-  public void verifySuccessfulTransactionReceipt(final Hash transaction) {
-    final TransactionReceipt receipt = rpc.getTransactionReceipt(transaction);
-
-    assertThat(receipt.getTransactionHash()).isEqualTo(transaction);
-    assertThat(receipt.isSuccess()).isTrue();
-  }
-
-  public String getNodeId() {
-    checkNotNull(nodeId, "NodeId only exists after the node has started");
-    return nodeId;
-  }
-
-  private void awaitPeerIdConnections(final Set<String> peerIds) {
-    await(
-        () -> assertThat(nodeRpc.getConnectedPeerIds().containsAll(peerIds)).isTrue(),
-        "Failed to connect in time to peers: %s",
-        peerIds);
-  }
-
-  private Set<String> expectedPeerIds(final Collection<Web3Provider> peers) {
-    return peers
-        .parallelStream()
-        .map(node -> ensureHexPrefix(node.getNodeId()))
-        .collect(Collectors.toSet());
-  }
-
-  private Set<String> excludeSelf(final Set<String> peers) {
-    return peers
-        .parallelStream()
-        .filter(peer -> !peer.contains(nodeId))
-        .collect(Collectors.toSet());
+    return DockerLogs.format("GoQuorum", container);
   }
 
   private AbstractWaitStrategy liveliness() {
     return Wait.forLogMessage(".*endpoint=0.0.0.0:8545.*", 1);
-  }
-
-  private Set<Supplier<String>> dockerLogs() {
-    return Set.of(() -> getLogs());
-  }
-
-  private void logPortMappings() {
-    LOG.info(
-        "Besu Container: {}, HTTP RPC port mapping: {} -> {}, WS RPC port mapping: {} -> {}, p2p port mapping: {} -> {}",
-        dockerContainer.getContainerId(),
-        CONTAINER_HTTP_RPC_PORT,
-        dockerContainer.getMappedPort(CONTAINER_HTTP_RPC_PORT),
-        CONTAINER_WS_RPC_PORT,
-        dockerContainer.getMappedPort(CONTAINER_WS_RPC_PORT),
-        CONTAINER_P2P_PORT,
-        dockerContainer.getMappedPort(CONTAINER_P2P_PORT));
-  }
-
-  private void logContainerNetworkDetails() {
-    if (dockerContainer.getNetwork() == null) {
-      LOG.info("GoQuorum Container: {}, has no network", dockerContainer.getContainerId());
-    } else {
-      LOG.info(
-          "GoQuorum Container: {}, IP address: {}, Network: {}",
-          dockerContainer.getContainerId(),
-          dockerContainer.getContainerIpAddress(),
-          dockerContainer.getNetwork().getId());
-    }
   }
 
   private List<String> standardCommandLineOptions() {
@@ -280,9 +87,9 @@ public class GoQuorum extends Web3Provider {
         "5",
         "--rpccorsdomain",
         "\"*\"",
-        //"--mine",
-        //"--miner.etherbase",
-        //"1b23ba34ca45bb56aa67bc78be89ac00ca00da00",
+        // "--mine",
+        // "--miner.etherbase",
+        // "1b23ba34ca45bb56aa67bc78be89ac00ca00da00",
         "--rpc",
         "--rpcaddr",
         "\"0.0.0.0\"",
@@ -294,17 +101,16 @@ public class GoQuorum extends Web3Provider {
         "--debug");
   }
 
-  private void addPeerToPeerHost(
-      final Web3ProviderConfiguration config, final List<String> commandLineOptions) {
-//    commandLineOptions.add("--p2p-host");
-//    commandLineOptions.add(config.getIpAddress().get());
-  }
-
   private void addBootnodeAddress(
       final Web3ProviderConfiguration config, final List<String> commandLineOptions) {
     config
         .getBootnodeEnodeAddress()
-        .ifPresent(enode -> commandLineOptions.addAll(Lists.newArrayList("--bootnodes", enode)));
+        .ifPresent(
+            enode -> {
+              if (!enode.isEmpty()) {
+                commandLineOptions.addAll(Lists.newArrayList("--bootnodes", enode));
+              }
+            });
   }
 
   private void addContainerNetwork(
@@ -314,68 +120,50 @@ public class GoQuorum extends Web3Provider {
 
   private void addCorsOrigins(
       final Web3ProviderConfiguration config, final List<String> commandLineOptions) {
-
     config
         .getCors()
-        .ifPresent(
-            cors -> commandLineOptions.addAll(Lists.newArrayList("--rpccorsdomain", cors)));
+        .ifPresent(cors -> commandLineOptions.addAll(Lists.newArrayList("--rpccorsdomain", cors)));
   }
 
   private void addNodePrivateKey(
       final Web3ProviderConfiguration config,
       final List<String> commandLineOptions,
       final GenericContainer<?> container) {
-
     container.withClasspathResourceMapping(
         config.getNodeKeyPrivateKeyResource().get(),
         CONTAINER_NODE_PRIVATE_KEY_FILE,
         BindMode.READ_ONLY);
-    commandLineOptions.addAll(
-        Lists.newArrayList("--node-private-key-file", CONTAINER_NODE_PRIVATE_KEY_FILE));
+    commandLineOptions.addAll(Lists.newArrayList("--nodekey", CONTAINER_NODE_PRIVATE_KEY_FILE));
   }
 
-  private void addPrivacy(
-      final Web3ProviderConfiguration config,
-      final List<String> commandLineOptions,
-      final GenericContainer<?> container) {
-
-    checkArgument(
-        config.getPrivacyUrl() != null && config.getPrivacyUrl().isPresent(),
-        "Privacy URL is mandatory when using Privacy");
-    checkArgument(
-        config.getPrivacyMarkerSigningPrivateKeyFile() != null
-            && config.getPrivacyMarkerSigningPrivateKeyFile().isPresent(),
-        "Private Marker Transaction key file is mandatory when using Privacy");
-
-    commandLineOptions.add("--privacy-enabled");
-    commandLineOptions.add("--privacy-url");
-    commandLineOptions.add(config.getPrivacyUrl().get());
-    commandLineOptions.add("--privacy-public-key-file");
-    commandLineOptions.add(CONTAINER_PRIVACY_PUBLIC_KEY_FILE);
-    container.withClasspathResourceMapping(
-        config.getPrivacyPublicKeyResource(),
-        CONTAINER_PRIVACY_PUBLIC_KEY_FILE,
-        BindMode.READ_ONLY);
-    commandLineOptions.add("--privacy-marker-transaction-signing-key-file");
-    commandLineOptions.add(CONTAINER_PRIVACY_SIGNING_PRIVATE_KEY_FILE);
-
-    container.withClasspathResourceMapping(
-        config.getPrivacyMarkerSigningPrivateKeyFile().get(),
-        CONTAINER_PRIVACY_SIGNING_PRIVATE_KEY_FILE,
-        BindMode.READ_ONLY);
-  }
-
-  private void addContainerIpAddress(
-      final SubnetAddress ipAddress, final GenericContainer<?> container) {
-    container.withCreateContainerCmdModifier(modifier -> modifier.withIpv4Address(ipAddress.get()));
-  }
-
-  private String nodePublicKey(final Web3ProviderConfiguration config) {
-    return removeAnyHexPrefix(ClasspathResources.read(config.getNodeKeyPublicKeyResource().get()));
-  }
-
-  private String enodeAddress(final Web3ProviderConfiguration config) {
-    return String.format(
-        "enode://%s@%s:%d", pubKey, config.getIpAddress().get(), CONTAINER_P2P_PORT);
-  }
+  //  private void addPrivacy(
+  //      final Web3ProviderConfiguration config,
+  //      final List<String> commandLineOptions,
+  //      final GenericContainer<?> container) {
+  //
+  //    checkArgument(
+  //        config.getPrivacyUrl() != null && config.getPrivacyUrl().isPresent(),
+  //        "Privacy URL is mandatory when using Privacy");
+  //    checkArgument(
+  //        config.getPrivacyMarkerSigningPrivateKeyFile() != null
+  //            && config.getPrivacyMarkerSigningPrivateKeyFile().isPresent(),
+  //        "Private Marker Transaction key file is mandatory when using Privacy");
+  //
+  //    commandLineOptions.add("--privacy-enabled");
+  //    commandLineOptions.add("--privacy-url");
+  //    commandLineOptions.add(config.getPrivacyUrl().get());
+  //    commandLineOptions.add("--privacy-public-key-file");
+  //    commandLineOptions.add(CONTAINER_PRIVACY_PUBLIC_KEY_FILE);
+  //    container.withClasspathResourceMapping(
+  //        config.getPrivacyPublicKeyResource(),
+  //        CONTAINER_PRIVACY_PUBLIC_KEY_FILE,
+  //        BindMode.READ_ONLY);
+  //    commandLineOptions.add("--privacy-marker-transaction-signing-key-file");
+  //    commandLineOptions.add(CONTAINER_PRIVACY_SIGNING_PRIVATE_KEY_FILE);
+  //
+  //    container.withClasspathResourceMapping(
+  //        config.getPrivacyMarkerSigningPrivateKeyFile().get(),
+  //        CONTAINER_PRIVACY_SIGNING_PRIVATE_KEY_FILE,
+  //        BindMode.READ_ONLY);
+  //  }
 }

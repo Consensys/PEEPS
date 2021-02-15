@@ -16,7 +16,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static tech.pegasys.peeps.util.Await.await;
 
 import tech.pegasys.peeps.network.NetworkMember;
-import tech.pegasys.peeps.node.Besu;
 import tech.pegasys.peeps.node.Web3Provider;
 import tech.pegasys.peeps.signer.rpc.SignerRpc;
 import tech.pegasys.peeps.signer.rpc.SignerRpcClient;

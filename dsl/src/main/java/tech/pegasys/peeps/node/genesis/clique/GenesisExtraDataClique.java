@@ -12,7 +12,6 @@
  */
 package tech.pegasys.peeps.node.genesis.clique;
 
-import tech.pegasys.peeps.node.Besu;
 import tech.pegasys.peeps.node.Web3Provider;
 import tech.pegasys.peeps.node.genesis.GenesisExtraData;
 

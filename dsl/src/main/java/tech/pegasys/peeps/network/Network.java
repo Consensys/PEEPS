@@ -22,9 +22,9 @@ import tech.pegasys.peeps.network.subnet.Subnet;
 import tech.pegasys.peeps.node.Account;
 import tech.pegasys.peeps.node.Besu;
 import tech.pegasys.peeps.node.GoQuorum;
+import tech.pegasys.peeps.node.NodeVerify;
 import tech.pegasys.peeps.node.Web3Provider;
 import tech.pegasys.peeps.node.Web3ProviderConfigurationBuilder;
-import tech.pegasys.peeps.node.NodeVerify;
 import tech.pegasys.peeps.node.Web3ProviderType;
 import tech.pegasys.peeps.node.genesis.BesuGenesisFile;
 import tech.pegasys.peeps.node.genesis.Genesis;
@@ -36,9 +36,9 @@ import tech.pegasys.peeps.node.genesis.clique.GenesisConfigClique;
 import tech.pegasys.peeps.node.genesis.clique.GenesisExtraDataClique;
 import tech.pegasys.peeps.node.genesis.ethhash.EthHashConfig;
 import tech.pegasys.peeps.node.genesis.ethhash.GenesisConfigEthHash;
+import tech.pegasys.peeps.node.genesis.ibft2.BftConfig;
 import tech.pegasys.peeps.node.genesis.ibft2.GenesisConfigIbft2;
 import tech.pegasys.peeps.node.genesis.ibft2.GenesisExtraDataIbft2;
-import tech.pegasys.peeps.node.genesis.ibft2.BftConfig;
 import tech.pegasys.peeps.node.model.GenesisAddress;
 import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.model.NodeIdentifier;
@@ -158,8 +158,8 @@ public class Network implements Closeable {
             consensus, Account.of(Account.ALPHA, Account.BETA, Account.GAMMA), validators);
   }
 
-  public Web3Provider addNode(final NodeIdentifier frameworkIdentity,
-      final NodeKey ethereumIdentiity) {
+  public Web3Provider addNode(
+      final NodeIdentifier frameworkIdentity, final NodeKey ethereumIdentiity) {
     return addNode(
         new Web3ProviderConfigurationBuilder()
             .withIdentity(frameworkIdentity)
@@ -167,8 +167,10 @@ public class Network implements Closeable {
         Web3ProviderType.BESU);
   }
 
-  public Web3Provider addNode(final NodeIdentifier frameworkIdentity,
-      final NodeKey ethereumIdentiity, final Web3ProviderType providerType) {
+  public Web3Provider addNode(
+      final NodeIdentifier frameworkIdentity,
+      final NodeKey ethereumIdentiity,
+      final Web3ProviderType providerType) {
     return addNode(
         new Web3ProviderConfigurationBuilder()
             .withIdentity(frameworkIdentity)
@@ -195,8 +197,8 @@ public class Network implements Closeable {
         Web3ProviderType.BESU);
   }
 
-  private Web3Provider addNode(final Web3ProviderConfigurationBuilder config,
-      final Web3ProviderType providerType) {
+  private Web3Provider addNode(
+      final Web3ProviderConfigurationBuilder config, final Web3ProviderType providerType) {
     final Web3Provider web3Provider;
     config
         .withVertx(vertx)
@@ -245,7 +247,8 @@ public class Network implements Closeable {
   }
 
   private EthSigner addSigner(
-      final SignerIdentifier wallet, final WalletFileResources resources,
+      final SignerIdentifier wallet,
+      final WalletFileResources resources,
       final Web3Provider downstream) {
     final EthSigner signer =
         new EthSigner(
@@ -267,6 +270,8 @@ public class Network implements Closeable {
   /**
    * Waits until either all nodes in the network reach consensus on the Transaction Receipt (that
    * includes a block hash), or exceptions when wait time has been exceeded.
+   *
+   * @param transaction the hash of the transaction who's receipt is being checked.
    */
   public void awaitConsensusOnTransactionReceipt(final Hash transaction) {
     checkState(nodes.size() > 1, "There must be two or more nodes to be able to wait on consensus");

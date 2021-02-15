@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 ConsenSys AG.
+ * Copyright 2021 ConsenSys AG.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -9,18 +9,15 @@
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
  */
 package tech.pegasys.peeps.node;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static org.assertj.core.api.Assertions.assertThat;
+import static tech.pegasys.peeps.util.Await.await;
+import static tech.pegasys.peeps.util.HexFormatter.ensureHexPrefix;
+import static tech.pegasys.peeps.util.HexFormatter.removeAnyHexPrefix;
 
-import java.util.Collection;
-import java.util.Set;
-import java.util.function.Supplier;
-import java.util.stream.Stream;
-import org.testcontainers.containers.GenericContainer;
 import tech.pegasys.peeps.network.NetworkMember;
 import tech.pegasys.peeps.network.subnet.SubnetAddress;
 import tech.pegasys.peeps.node.model.Hash;
@@ -29,42 +26,151 @@ import tech.pegasys.peeps.node.model.TransactionReceipt;
 import tech.pegasys.peeps.node.rpc.NodeRpc;
 import tech.pegasys.peeps.node.rpc.NodeRpcClient;
 import tech.pegasys.peeps.node.rpc.NodeRpcMandatoryResponse;
+import tech.pegasys.peeps.node.rpc.admin.NodeInfo;
 import tech.pegasys.peeps.node.verification.AccountValue;
 import tech.pegasys.peeps.node.verification.NodeValueTransition;
-import tech.pegasys.peeps.util.DockerLogs;
+import tech.pegasys.peeps.util.ClasspathResources;
+
+import java.util.Collection;
+import java.util.Set;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.testcontainers.containers.GenericContainer;
 
 public abstract class Web3Provider implements NetworkMember {
 
+  private static final Logger LOG = LogManager.getLogger();
+
+  public static final int CONTAINER_HTTP_RPC_PORT = 8545;
+  public static final int CONTAINER_WS_RPC_PORT = 8546;
+  public static final int CONTAINER_P2P_PORT = 30303;
+
   protected final NodeRpcClient nodeRpc;
   protected final NodeRpc rpc;
-  protected GenericContainer<?> dockerContainer;
-  private final Web3ProviderConfiguration config;
+  protected GenericContainer<?> container;
+  private final SubnetAddress ipAddress;
+  private final NodeIdentifier identity;
+  private final String enodeAddress;
+  private final String pubKey;
 
-  public Web3Provider(final Web3ProviderConfiguration config,
-      final GenericContainer<?> dockerContainer) {
-    this.config = config;
-    this.dockerContainer = dockerContainer;
+  private String nodeId;
+  private String enodeId;
+
+  public Web3Provider(final Web3ProviderConfiguration config, final GenericContainer<?> container) {
+    this.container = container;
     this.nodeRpc = new NodeRpcClient(config.getVertx(), dockerLogs());
     this.rpc = new NodeRpcMandatoryResponse(nodeRpc);
+    this.ipAddress = config.getIpAddress();
+
+    this.identity = config.getIdentity();
+    this.pubKey = nodePublicKey(config);
+    this.enodeAddress = enodeAddress(config);
   }
 
-  public abstract SubnetAddress ipAddress();
+  @Override
+  public void start() {
+    try {
+      container.start();
+
+      LOG.info(getLogs());
+
+      nodeRpc.bind(
+          container.getContainerId(),
+          container.getContainerIpAddress(),
+          container.getMappedPort(CONTAINER_HTTP_RPC_PORT));
+
+      final NodeInfo info = nodeRpc.nodeInfo();
+      nodeId = info.getId();
+
+      // TODO enode must match enodeAddress - otherwise error
+      // TODO remove enodeId - then rename enodeAddress to enodeId
+      enodeId = info.getEnode();
+
+      // TODO validate the node has the expected state, e.g. consensus, genesis,
+      // networkId,
+      // protocol(s), ports, listen address
+
+      logPortMappings();
+      logContainerNetworkDetails();
+    } catch (final Throwable e) {
+      LOG.error(container.getLogs());
+      throw e;
+    }
+  }
+
+  @Override
+  public void stop() {
+    if (container != null) {
+      container.stop();
+    }
+    if (nodeRpc != null) {
+      nodeRpc.close();
+    }
+  }
+
+  public SubnetAddress ipAddress() {
+    return ipAddress;
+  }
 
   // TODO these may not have a value, i.e. node not started :. optional
-  public abstract String enodeId();
+  public String enodeId() {
+    return enodeId;
+  }
 
   // TODO stricter typing then String
-  public abstract String enodeAddress();
+  public String enodeAddress() {
+    return enodeAddress;
+  }
 
-  public abstract String nodePublicKey();
+  public String nodePublicKey() {
+    return pubKey;
+  }
 
-  public abstract NodeIdentifier identity();
+  public NodeIdentifier identity() {
+    return identity;
+  }
 
-  public abstract int httpRpcPort();
+  public int httpRpcPort() {
+    return CONTAINER_HTTP_RPC_PORT;
+  }
 
-  public abstract void awaitConnectivity(final Collection<Web3Provider> peers);
+  public int p2pPort() {
+    return CONTAINER_P2P_PORT;
+  }
 
-  public abstract String getNodeId();
+  public void awaitConnectivity(final Collection<Web3Provider> peers) {
+    awaitPeerIdConnections(excludeSelf(expectedPeerIds(peers)));
+  }
+
+  private void awaitPeerIdConnections(final Set<String> peerIds) {
+    await(
+        () -> assertThat(nodeRpc.getConnectedPeerIds().containsAll(peerIds)).isTrue(),
+        "Failed to connect in time to peers: %s",
+        peerIds);
+  }
+
+  private Set<String> expectedPeerIds(final Collection<Web3Provider> peers) {
+    return peers
+        .parallelStream()
+        .map(node -> ensureHexPrefix(node.getNodeId()))
+        .collect(Collectors.toSet());
+  }
+
+  private Set<String> excludeSelf(final Set<String> peers) {
+    return peers
+        .parallelStream()
+        .filter(peer -> !peer.contains(getNodeId()))
+        .collect(Collectors.toSet());
+  }
+
+  public String getNodeId() {
+    checkNotNull(nodeId, "NodeId only exists after the node has started");
+    return nodeId;
+  }
 
   public void verifyValue(final Set<AccountValue> values) {
     values.parallelStream().forEach(value -> value.verify(rpc));
@@ -74,9 +180,7 @@ public abstract class Web3Provider implements NetworkMember {
     return Set.of(() -> getLogs());
   }
 
-  public String getLogs() {
-    return DockerLogs.format("Web3Provider", dockerContainer);
-  }
+  public abstract String getLogs();
 
   public NodeRpc rpc() {
     return rpc;
@@ -91,5 +195,43 @@ public abstract class Web3Provider implements NetworkMember {
 
     assertThat(receipt.getTransactionHash()).isEqualTo(transaction);
     assertThat(receipt.isSuccess()).isTrue();
+  }
+
+  private String enodeAddress(final Web3ProviderConfiguration config) {
+    return String.format(
+        "enode://%s@%s:%d", pubKey, config.getIpAddress().get(), CONTAINER_P2P_PORT);
+  }
+
+  private String nodePublicKey(final Web3ProviderConfiguration config) {
+    return removeAnyHexPrefix(ClasspathResources.read(config.getNodeKeyPublicKeyResource().get()));
+  }
+
+  private void logPortMappings() {
+    LOG.info(
+        "Besu Container: {}, HTTP RPC port mapping: {} -> {}, WS RPC port mapping: {} -> {}, p2p port mapping: {} -> {}",
+        container.getContainerId(),
+        CONTAINER_HTTP_RPC_PORT,
+        container.getMappedPort(CONTAINER_HTTP_RPC_PORT),
+        CONTAINER_WS_RPC_PORT,
+        container.getMappedPort(CONTAINER_WS_RPC_PORT),
+        CONTAINER_P2P_PORT,
+        container.getMappedPort(CONTAINER_P2P_PORT));
+  }
+
+  private void logContainerNetworkDetails() {
+    if (container.getNetwork() == null) {
+      LOG.info("GoQuorum Container: {}, has no network", container.getContainerId());
+    } else {
+      LOG.info(
+          "GoQuorum Container: {}, IP address: {}, Network: {}",
+          container.getContainerId(),
+          container.getContainerIpAddress(),
+          container.getNetwork().getId());
+    }
+  }
+
+  protected void addContainerIpAddress(
+      final SubnetAddress ipAddress, final GenericContainer<?> container) {
+    container.withCreateContainerCmdModifier(modifier -> modifier.withIpv4Address(ipAddress.get()));
   }
 }
