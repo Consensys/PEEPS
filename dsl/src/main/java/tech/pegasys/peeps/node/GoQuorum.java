@@ -21,9 +21,11 @@ import static tech.pegasys.peeps.util.HexFormatter.removeAnyHexPrefix;
 
 import com.google.common.collect.Lists;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.StringJoiner;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -32,6 +34,7 @@ import org.apache.logging.log4j.Logger;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.MountableFile;
@@ -53,7 +56,7 @@ public class GoQuorum extends Web3Provider {
 
   private static final Logger LOG = LogManager.getLogger();
 
-  private static final String AM_I_ALIVE_ENDPOINT = "/liveness";
+  private static final String AM_I_ALIVE_ENDPOINT = "";
   private static final int ALIVE_STATUS_CODE = 200;
 
   //  private static final String BESU_IMAGE = "hyperledger/besu:latest";
@@ -67,6 +70,7 @@ public class GoQuorum extends Web3Provider {
   private static final String CONTAINER_NODE_PRIVATE_KEY_FILE = "/etc/besu/keys/node.priv";
   private static final String CONTAINER_PRIVACY_SIGNING_PRIVATE_KEY_FILE =
       "/etc/besu/keys/pmt_signing.priv";
+  private static final String DATA_DIR = "/eth";
 
   private final SubnetAddress ipAddress;
   private final NodeIdentifier identity;
@@ -83,24 +87,32 @@ public class GoQuorum extends Web3Provider {
     this.ipAddress = config.getIpAddress();
 
     addPeerToPeerHost(config, commandLineOptions);
-    addCorsOrigins(config, commandLineOptions);
-    addBootnodeAddress(config, commandLineOptions);
+    //addCorsOrigins(config, commandLineOptions);
+    //addBootnodeAddress(config, commandLineOptions);
     addContainerNetwork(config, dockerContainer);
     addContainerIpAddress(ipAddress, dockerContainer);
-    addNodePrivateKey(config, commandLineOptions, dockerContainer);
-    try {
-      addGenesisFile(config, commandLineOptions, dockerContainer);
-    } catch (final IOException | InterruptedException e) {
-      throw new RuntimeException("Couldn't set genesis file, sorry!", e);
-    }
+    commandLineOptions.addAll(List.of("--datadir", "\"" + DATA_DIR + "\""));
 
-    if (config.isPrivacyEnabled()) {
-      addPrivacy(config, commandLineOptions, dockerContainer);
-    }
+    dockerContainer.withCopyFileToContainer(
+        MountableFile.forHostPath(config.getGenesisFile()), CONTAINER_GENESIS_FILE);
+    List<String> entryPoint = Lists.newArrayList(
+        "/bin/sh",
+        "-c");
+    final String initCmd = "mkdir -p '" + DATA_DIR + "/geth' && geth --datadir \"" + DATA_DIR + "\" init " + CONTAINER_GENESIS_FILE + " && echo '##### GoQuorum INITIAILSED #####' && ";
 
-    LOG.info("GoQuorum command line: {}", commandLineOptions);
+//    addNodePrivateKey(config, commandLineOptions, dockerContainer);
+//    if (config.isPrivacyEnabled()) {
+//      addPrivacy(config, commandLineOptions, dockerContainer);
+//    }
 
-    dockerContainer.withCommand(commandLineOptions.toArray(new String[0])).waitingFor(liveliness());
+    final String goCommandLine = initCmd + "geth " + String.join(" ", commandLineOptions);
+    LOG.info("GoQuorum command line: {}", goCommandLine);
+
+    entryPoint.add(goCommandLine);
+
+    dockerContainer.withCreateContainerCmdModifier(cmd ->
+        cmd.withEntrypoint(entryPoint)).waitingFor(liveliness());
+
     this.identity = config.getIdentity();
     this.pubKey = nodePublicKey(config);
     this.enodeAddress = enodeAddress(config);
@@ -110,6 +122,8 @@ public class GoQuorum extends Web3Provider {
   public void start() {
     try {
       dockerContainer.start();
+
+      LOG.info(getLogs());
 
       nodeRpc.bind(
           dockerContainer.getContainerId(),
@@ -129,7 +143,7 @@ public class GoQuorum extends Web3Provider {
 
       logPortMappings();
       logContainerNetworkDetails();
-    } catch (final ContainerLaunchException e) {
+    } catch (final Throwable e) {
       LOG.error(dockerContainer.getLogs());
       throw e;
     }
@@ -180,7 +194,7 @@ public class GoQuorum extends Web3Provider {
   }
 
   public String getLogs() {
-    return DockerLogs.format("Besu", dockerContainer);
+    return DockerLogs.format("GoQuorum", dockerContainer);
   }
 
   public NodeRpc rpc() {
@@ -228,10 +242,8 @@ public class GoQuorum extends Web3Provider {
         .collect(Collectors.toSet());
   }
 
-  private HttpWaitStrategy liveliness() {
-    return Wait.forHttp(AM_I_ALIVE_ENDPOINT)
-        .forStatusCode(ALIVE_STATUS_CODE)
-        .forPort(CONTAINER_HTTP_RPC_PORT);
+  private AbstractWaitStrategy liveliness() {
+    return Wait.forLogMessage(".*endpoint=0.0.0.0:8545.*", 1);
   }
 
   private Set<Supplier<String>> dockerLogs() {
@@ -252,10 +264,10 @@ public class GoQuorum extends Web3Provider {
 
   private void logContainerNetworkDetails() {
     if (dockerContainer.getNetwork() == null) {
-      LOG.info("Besu Container: {}, has no network", dockerContainer.getContainerId());
+      LOG.info("GoQuorum Container: {}, has no network", dockerContainer.getContainerId());
     } else {
       LOG.info(
-          "Besu Container: {}, IP address: {}, Network: {}",
+          "GoQuorum Container: {}, IP address: {}, Network: {}",
           dockerContainer.getContainerId(),
           dockerContainer.getContainerIpAddress(),
           dockerContainer.getNetwork().getId());
@@ -264,23 +276,28 @@ public class GoQuorum extends Web3Provider {
 
   private List<String> standardCommandLineOptions() {
     return Lists.newArrayList(
-        "--logging",
-        "DEBUG",
-        "--miner-enabled",
-        "--miner-coinbase",
-        "1b23ba34ca45bb56aa67bc78be89ac00ca00da00",
-        "--host-whitelist",
-        "*",
-        "--rpc-http-enabled",
-        "--rpc-ws-enabled",
-        "--rpc-http-apis",
-        "ADMIN,ETH,NET,WEB3,EEA,PRIV");
+        "--verbosity",
+        "5",
+        "--rpccorsdomain",
+        "\"*\"",
+        //"--mine",
+        //"--miner.etherbase",
+        //"1b23ba34ca45bb56aa67bc78be89ac00ca00da00",
+        "--rpc",
+        "--rpcaddr",
+        "\"0.0.0.0\"",
+        "--rpcport",
+        "8545",
+        "--rpcapi",
+        "admin,debug,web3,eth,txpool,personal,clique,miner,net",
+        "--ws",
+        "--debug");
   }
 
   private void addPeerToPeerHost(
       final Web3ProviderConfiguration config, final List<String> commandLineOptions) {
-    commandLineOptions.add("--p2p-host");
-    commandLineOptions.add(config.getIpAddress().get());
+//    commandLineOptions.add("--p2p-host");
+//    commandLineOptions.add(config.getIpAddress().get());
   }
 
   private void addBootnodeAddress(
@@ -315,17 +332,6 @@ public class GoQuorum extends Web3Provider {
         BindMode.READ_ONLY);
     commandLineOptions.addAll(
         Lists.newArrayList("--node-private-key-file", CONTAINER_NODE_PRIVATE_KEY_FILE));
-  }
-
-  private void addGenesisFile(
-      final Web3ProviderConfiguration config,
-      final List<String> commandLineOptions,
-      final GenericContainer<?> container) throws IOException, InterruptedException {
-    container.withCopyFileToContainer(
-        MountableFile.forHostPath(config.getGenesisFile()), CONTAINER_GENESIS_FILE);
-    container.execInContainer("mkdir -p /et/geth");
-    container.execInContainer("geth --datadir \"/eth\" init " + CONTAINER_GENESIS_FILE);
-
   }
 
   private void addPrivacy(

@@ -37,7 +37,7 @@ public abstract class Web3Provider implements NetworkMember {
 
   protected final NodeRpcClient nodeRpc;
   protected final NodeRpc rpc;
-  protected final GenericContainer<?> dockerContainer;
+  protected GenericContainer<?> dockerContainer;
   private final Web3ProviderConfiguration config;
 
   public Web3Provider(final Web3ProviderConfiguration config,

@@ -17,6 +17,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
 
+import org.apache.logging.log4j.LogManager;
 import tech.pegasys.peeps.json.Json;
 
 import java.time.Duration;
@@ -32,6 +33,8 @@ import io.vertx.ext.web.client.WebClientOptions;
 import org.apache.logging.log4j.Logger;
 
 public abstract class RpcClient {
+
+  private static final Logger LOG = LogManager.getLogger();
 
   private static final int HTTP_STATUS_OK = 200;
 
@@ -55,22 +58,26 @@ public abstract class RpcClient {
   }
 
   public void bind(final String containerId, final String ipAddress, final int httpJsonRpcPort) {
-    this.containerId = containerId;
+    try {
+      this.containerId = containerId;
 
-    checkNotNull(ipAddress, "Container IP address must be set");
-    checkState(httpJsonRpcPort > 0, "Container HTTP PRC port must be set");
-    checkState(
-        rpc == null,
-        "The underlying HttpClient is still open. Perform close() before a creating new binding.");
+      checkNotNull(ipAddress, "Container IP address must be set");
+      checkState(httpJsonRpcPort > 0, "Container HTTP PRC port must be set");
+      checkState(
+          rpc == null,
+          "The underlying HttpClient is still open. Perform close() before a creating new binding.");
 
-    log.info("Binding HttpClient on {}:{}", ipAddress, httpJsonRpcPort);
+      log.info("Binding HttpClient on {}:{}", ipAddress, httpJsonRpcPort);
 
-    rpc =
-        vertx.createHttpClient(
-            new WebClientOptions()
-                .setDefaultPort(httpJsonRpcPort)
-                .setDefaultHost(ipAddress)
-                .setConnectTimeout((int) connectionTimeout.toMillis()));
+      rpc =
+          vertx.createHttpClient(
+              new WebClientOptions()
+                  .setDefaultPort(httpJsonRpcPort)
+                  .setDefaultHost(ipAddress)
+                  .setConnectTimeout((int) connectionTimeout.toMillis()));
+    } catch(final Exception e) {
+      LOG.error("OOPS!", e);
+    }
   }
 
   public void close() {
@@ -84,7 +91,7 @@ public abstract class RpcClient {
     try {
       return performPost(relativeUri, requestPojo, clazz);
 
-    } catch (final RuntimeException e) {
+    } catch (final Throwable e) {
       dockerLogs.stream().forEach(dockerLog -> log.error(dockerLog.get()));
       throw e;
     }
@@ -122,13 +129,16 @@ public abstract class RpcClient {
             });
 
     request.putHeader(CONTENT_TYPE, APPLICATION_JSON.getMediaType());
+    request.exceptionHandler(thrown -> {
+      LOG.info("Thrown = {}", thrown);
+    });
 
     request.setChunked(true);
     request.end(json);
 
     try {
       return future.get();
-    } catch (final InterruptedException | ExecutionException e) {
+    } catch (final Throwable e) {
       throw new RuntimeException("No response receive from: " + relativeUri, e);
     }
   }

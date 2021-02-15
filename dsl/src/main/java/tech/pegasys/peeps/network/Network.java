@@ -143,11 +143,11 @@ public class Network implements Closeable {
         Stream.of(validators)
             .parallel()
             .map(validator -> nodes.get(validator))
-            .toArray((Besu[]::new)));
+            .toArray((Web3Provider[]::new)));
   }
 
   // TODO validators hacky, dynamically figure out after the nodes are all added
-  public void set(final ConsensusMechanism consensus, final Besu... validators) {
+  public void set(final ConsensusMechanism consensus, final Web3Provider... validators) {
     checkState(
         state.isUninitialized(),
         "Cannot set consensus mechanism while the Network is already started");
@@ -165,6 +165,15 @@ public class Network implements Closeable {
             .withIdentity(frameworkIdentity)
             .withNodeKey(ethereumIdentiity),
         Web3ProviderType.BESU);
+  }
+
+  public Web3Provider addNode(final NodeIdentifier frameworkIdentity,
+      final NodeKey ethereumIdentiity, final Web3ProviderType providerType) {
+    return addNode(
+        new Web3ProviderConfigurationBuilder()
+            .withIdentity(frameworkIdentity)
+            .withNodeKey(ethereumIdentiity),
+        providerType);
   }
 
   public Web3Provider addNode(
@@ -236,7 +245,8 @@ public class Network implements Closeable {
   }
 
   private EthSigner addSigner(
-      final SignerIdentifier wallet, final WalletFileResources resources, final Web3Provider downstream) {
+      final SignerIdentifier wallet, final WalletFileResources resources,
+      final Web3Provider downstream) {
     final EthSigner signer =
         new EthSigner(
             new EthSignerConfigurationBuilder()
@@ -402,7 +412,7 @@ public class Network implements Closeable {
   private Genesis createGenesis(
       final ConsensusMechanism consensus,
       final Map<GenesisAddress, GenesisAccount> genesisAccounts,
-      final Besu... validators) {
+      final Web3Provider... validators) {
     final long chainId = Math.round(Math.random() * Long.MAX_VALUE);
 
     final GenesisConfig genesisConfig;
