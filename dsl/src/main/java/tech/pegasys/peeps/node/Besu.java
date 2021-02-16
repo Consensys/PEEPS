@@ -14,6 +14,8 @@ package tech.pegasys.peeps.node;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.time.Duration;
+import org.testcontainers.images.PullPolicy;
 import tech.pegasys.peeps.util.DockerLogs;
 
 import java.util.List;
@@ -43,7 +45,8 @@ public class Besu extends Web3Provider {
       "/etc/besu/keys/pmt_signing.priv";
 
   public Besu(final Web3ProviderConfiguration config) {
-    super(config, new GenericContainer<>(BESU_IMAGE));
+    super(config, new GenericContainer<>(BESU_IMAGE).withImagePullPolicy(PullPolicy.ageBased(
+        Duration.ofHours(1))));
     final List<String> commandLineOptions = standardCommandLineOptions();
 
     addPeerToPeerHost(config, commandLineOptions);

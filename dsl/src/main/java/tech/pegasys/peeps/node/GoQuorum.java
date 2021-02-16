@@ -12,6 +12,8 @@
  */
 package tech.pegasys.peeps.node;
 
+import java.time.Duration;
+import org.testcontainers.images.PullPolicy;
 import tech.pegasys.peeps.util.DockerLogs;
 
 import java.util.List;
@@ -36,7 +38,8 @@ public class GoQuorum extends Web3Provider {
   private static final String DATA_DIR = "/eth";
 
   public GoQuorum(final Web3ProviderConfiguration config) {
-    super(config, new GenericContainer<>(IMAGE_NAME));
+    super(config, new GenericContainer<>(IMAGE_NAME).withImagePullPolicy(PullPolicy.ageBased(
+        Duration.ofHours(1))));
     final List<String> commandLineOptions = standardCommandLineOptions();
 
     addCorsOrigins(config, commandLineOptions);
