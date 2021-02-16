@@ -15,11 +15,23 @@ package tech.pegasys.peeps.node;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.assertj.core.api.Assertions.assertThat;
 import static tech.pegasys.peeps.util.Await.await;
-import static tech.pegasys.peeps.util.HexFormatter.ensureHexPrefix;
 import static tech.pegasys.peeps.util.HexFormatter.removeAnyHexPrefix;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.tuweni.bytes.Bytes;
+import org.testcontainers.containers.GenericContainer;
 import tech.pegasys.peeps.network.NetworkMember;
 import tech.pegasys.peeps.network.subnet.SubnetAddress;
+import tech.pegasys.peeps.node.model.EnodeHelpers;
 import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.model.NodeIdentifier;
 import tech.pegasys.peeps.node.model.TransactionReceipt;
@@ -30,16 +42,6 @@ import tech.pegasys.peeps.node.rpc.admin.NodeInfo;
 import tech.pegasys.peeps.node.verification.AccountValue;
 import tech.pegasys.peeps.node.verification.NodeValueTransition;
 import tech.pegasys.peeps.util.ClasspathResources;
-
-import java.util.Collection;
-import java.util.Set;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.testcontainers.containers.GenericContainer;
 
 public abstract class Web3Provider implements NetworkMember {
 
@@ -76,7 +78,8 @@ public abstract class Web3Provider implements NetworkMember {
     try {
       container.start();
 
-      LOG.info(getLogs());
+      container.followOutput(
+          outputFrame -> LOG.info("{}: {}", getNodeName(), outputFrame.getUtf8String()));
 
       nodeRpc.bind(
           container.getContainerId(),
@@ -112,12 +115,14 @@ public abstract class Web3Provider implements NetworkMember {
     }
   }
 
+  public abstract String getNodeName();
+
   public SubnetAddress ipAddress() {
     return ipAddress;
   }
 
   // TODO these may not have a value, i.e. node not started :. optional
-  public String enodeId() {
+  public String getEnodeId() {
     return enodeId;
   }
 
@@ -143,27 +148,32 @@ public abstract class Web3Provider implements NetworkMember {
   }
 
   public void awaitConnectivity(final Collection<Web3Provider> peers) {
-    awaitPeerIdConnections(excludeSelf(expectedPeerIds(peers)));
+    awaitPeerIdConnections(excludeSelf(expectedEnodes(peers)));
   }
 
-  private void awaitPeerIdConnections(final Set<String> peerIds) {
+  private void awaitPeerIdConnections(final Set<String> peerEnodes) {
     await(
-        () -> assertThat(nodeRpc.getConnectedPeerIds().containsAll(peerIds)).isTrue(),
+        () -> {
+          final Set<String> peerPubKeys = EnodeHelpers.extractPubKeysFromEnodes(peerEnodes);
+          final Set<String> connectedPeerPubKeys =
+              EnodeHelpers.extractPubKeysFromEnodes(nodeRpc.getConnectedPeerEnodes());
+          assertThat(connectedPeerPubKeys).containsExactlyInAnyOrderElementsOf(peerPubKeys);
+        },
         "Failed to connect in time to peers: %s",
-        peerIds);
+        peerEnodes);
   }
 
-  private Set<String> expectedPeerIds(final Collection<Web3Provider> peers) {
+  private Set<String> expectedEnodes(final Collection<Web3Provider> peers) {
     return peers
         .parallelStream()
-        .map(node -> ensureHexPrefix(node.getNodeId()))
+        .map(Web3Provider::getEnodeId)
         .collect(Collectors.toSet());
   }
 
   private Set<String> excludeSelf(final Set<String> peers) {
     return peers
         .parallelStream()
-        .filter(peer -> !peer.contains(getNodeId()))
+        .filter(peer -> !peer.contains(getEnodeId()))
         .collect(Collectors.toSet());
   }
 

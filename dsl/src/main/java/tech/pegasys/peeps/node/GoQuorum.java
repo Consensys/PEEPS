@@ -44,6 +44,7 @@ public class GoQuorum extends Web3Provider {
     addContainerNetwork(config, container);
     addContainerIpAddress(ipAddress(), container);
     commandLineOptions.addAll(List.of("--datadir", "\"" + DATA_DIR + "\""));
+    commandLineOptions.addAll(List.of("--networkid", "15"));
 
     container.withCopyFileToContainer(
         MountableFile.forHostPath(config.getGenesisFile()), CONTAINER_GENESIS_FILE);
@@ -73,6 +74,11 @@ public class GoQuorum extends Web3Provider {
   }
 
   @Override
+  public String getNodeName() {
+    return "GoQuorum";
+  }
+
+  @Override
   public String getLogs() {
     return DockerLogs.format("GoQuorum", container);
   }
@@ -84,12 +90,12 @@ public class GoQuorum extends Web3Provider {
   private List<String> standardCommandLineOptions() {
     return Lists.newArrayList(
         "--verbosity",
-        "5",
+        "3",
         "--rpccorsdomain",
         "\"*\"",
-        // "--mine",
-        // "--miner.etherbase",
-        // "1b23ba34ca45bb56aa67bc78be89ac00ca00da00",
+//        "--mine",
+//        "--miner.etherbase",
+//        "fe3b557e8fb62b89f4916b721be55ceb828dbd73",
         "--rpc",
         "--rpcaddr",
         "\"0.0.0.0\"",
@@ -109,6 +115,8 @@ public class GoQuorum extends Web3Provider {
             enode -> {
               if (!enode.isEmpty()) {
                 commandLineOptions.addAll(Lists.newArrayList("--bootnodes", enode));
+              } else {
+                commandLineOptions.addAll(Lists.newArrayList("--bootnodes", "\"\""));
               }
             });
   }

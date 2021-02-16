@@ -37,7 +37,7 @@ public class GoQuorumCliqueConsensusTest extends NetworkTest {
     network.addNode(node.id(), node.keys(), Web3ProviderType.GOQUORUM);
     network.addNode(NodeConfiguration.BETA.id(), NodeConfiguration.BETA.keys());
 
-    network.set(ConsensusMechanism.CLIQUE, node.id());
+    network.set(ConsensusMechanism.CLIQUE, NodeConfiguration.BETA.id());
 
     network.addSigner(signer.id(), signer.resources(), node.id());
   }

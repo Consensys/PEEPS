@@ -14,6 +14,7 @@ package tech.pegasys.peeps.signer.rpc;
 
 import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.rpc.NodeRpcClient;
+import tech.pegasys.peeps.node.rpc.admin.NodeInfo;
 import tech.pegasys.peeps.privacy.model.PrivacyAddreess;
 import tech.pegasys.peeps.signer.rpc.eea.SendPrivacyTransactionRequest;
 import tech.pegasys.peeps.signer.rpc.eea.SendPrivacyTransactionResponse;
@@ -60,9 +61,5 @@ public class SignerRpcClient extends NodeRpcClient {
             SendTransactionResponse.class,
             new SendTransactionRequest(sender, receiver, null, amount))
         .getResult();
-  }
-
-  public String enode() {
-    return post("net_enode", EnodeResponse.class).getResult();
   }
 }

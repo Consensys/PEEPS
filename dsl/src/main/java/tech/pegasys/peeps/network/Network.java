@@ -270,7 +270,6 @@ public class Network implements Closeable {
   /**
    * Waits until either all nodes in the network reach consensus on the Transaction Receipt (that
    * includes a block hash), or exceptions when wait time has been exceeded.
-   *
    * @param transaction the hash of the transaction who's receipt is being checked.
    */
   public void awaitConsensusOnTransactionReceipt(final Hash transaction) {
@@ -421,32 +420,21 @@ public class Network implements Closeable {
     final long chainId = Math.round(Math.random() * Long.MAX_VALUE);
 
     final GenesisConfig genesisConfig;
-
-    switch (consensus) {
-      case CLIQUE:
-        genesisConfig = new GenesisConfigClique(chainId, new CliqueConfig());
-        break;
-      case IBFT2:
-        genesisConfig = new GenesisConfigIbft2(chainId, new BftConfig());
-        break;
-      case ETH_HASH:
-      default:
-        genesisConfig = new GenesisConfigEthHash(chainId, new EthHashConfig());
-        break;
-    }
-
     final GenesisExtraData extraData;
 
     switch (consensus) {
       case CLIQUE:
+        genesisConfig = new GenesisConfigClique(chainId, new CliqueConfig());
         extraData = new GenesisExtraDataClique(validators);
         break;
       case IBFT2:
+        genesisConfig = new GenesisConfigIbft2(chainId, new BftConfig());
         extraData = new GenesisExtraDataIbft2(validators);
         break;
       case ETH_HASH:
       default:
         extraData = null;
+        genesisConfig = new GenesisConfigEthHash(chainId, new EthHashConfig());
         break;
     }
 

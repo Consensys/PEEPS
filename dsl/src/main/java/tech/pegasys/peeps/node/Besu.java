@@ -34,7 +34,7 @@ public class Besu extends Web3Provider {
   private static final String AM_I_ALIVE_ENDPOINT = "/liveness";
   private static final int ALIVE_STATUS_CODE = 200;
 
-  private static final String BESU_IMAGE = "hyperledger/besu:latest";
+  private static final String BESU_IMAGE = "hyperledger/besu:21.1.1-SNAPSHOT-openjdk-11";
   private static final String CONTAINER_GENESIS_FILE = "/etc/besu/genesis.json";
   private static final String CONTAINER_PRIVACY_PUBLIC_KEY_FILE =
       "/etc/besu/privacy_public_key.pub";
@@ -53,6 +53,7 @@ public class Besu extends Web3Provider {
     addContainerIpAddress(config.getIpAddress(), container);
     addNodePrivateKey(config, commandLineOptions, container);
     addGenesisFile(config, commandLineOptions, container);
+    commandLineOptions.addAll(List.of("--network-id", "15"));
 
     if (config.isPrivacyEnabled()) {
       addPrivacy(config, commandLineOptions, container);
@@ -60,6 +61,11 @@ public class Besu extends Web3Provider {
 
     LOG.info("Besu command line: {}", commandLineOptions);
     container.withCommand(commandLineOptions.toArray(new String[0])).waitingFor(liveliness());
+  }
+
+  @Override
+  public String getNodeName() {
+    return "Besu";
   }
 
   @Override
@@ -80,6 +86,8 @@ public class Besu extends Web3Provider {
         "--miner-enabled",
         "--miner-coinbase",
         "1b23ba34ca45bb56aa67bc78be89ac00ca00da00",
+        "--min-gas-price",
+        "0",
         "--host-whitelist",
         "*",
         "--rpc-http-enabled",
