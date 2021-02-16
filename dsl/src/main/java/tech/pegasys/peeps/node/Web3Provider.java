@@ -17,18 +17,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static tech.pegasys.peeps.util.Await.await;
 import static tech.pegasys.peeps.util.HexFormatter.removeAnyHexPrefix;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.apache.tuweni.bytes.Bytes;
-import org.testcontainers.containers.GenericContainer;
 import tech.pegasys.peeps.network.NetworkMember;
 import tech.pegasys.peeps.network.subnet.SubnetAddress;
 import tech.pegasys.peeps.node.model.EnodeHelpers;
@@ -42,6 +30,16 @@ import tech.pegasys.peeps.node.rpc.admin.NodeInfo;
 import tech.pegasys.peeps.node.verification.AccountValue;
 import tech.pegasys.peeps.node.verification.NodeValueTransition;
 import tech.pegasys.peeps.util.ClasspathResources;
+
+import java.util.Collection;
+import java.util.Set;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.testcontainers.containers.GenericContainer;
 
 public abstract class Web3Provider implements NetworkMember {
 
@@ -164,10 +162,7 @@ public abstract class Web3Provider implements NetworkMember {
   }
 
   private Set<String> expectedEnodes(final Collection<Web3Provider> peers) {
-    return peers
-        .parallelStream()
-        .map(Web3Provider::getEnodeId)
-        .collect(Collectors.toSet());
+    return peers.parallelStream().map(Web3Provider::getEnodeId).collect(Collectors.toSet());
   }
 
   private Set<String> excludeSelf(final Set<String> peers) {

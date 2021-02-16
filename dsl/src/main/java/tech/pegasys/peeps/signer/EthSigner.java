@@ -115,8 +115,9 @@ public class EthSigner implements NetworkMember {
 
   public void awaitConnectivityToDownstream() {
     await(
-        () -> assertThat(EnodeHelpers.extractPubKeyFromEnode(signerRpc.nodeInfo().getEnode()))
-            .isEqualTo(EnodeHelpers.extractPubKeyFromEnode(downstream.getEnodeId())),
+        () ->
+            assertThat(EnodeHelpers.extractPubKeyFromEnode(signerRpc.nodeInfo().getEnode()))
+                .isEqualTo(EnodeHelpers.extractPubKeyFromEnode(downstream.getEnodeId())),
         "Failed to connect to node: %s",
         downstream.getEnodeId());
   }

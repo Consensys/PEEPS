@@ -159,28 +159,28 @@ public class Network implements Closeable {
   }
 
   public Web3Provider addNode(
-      final NodeIdentifier frameworkIdentity, final NodeKey ethereumIdentiity) {
+      final NodeIdentifier frameworkIdentity, final NodeKey ethereumIdentity) {
     return addNode(
         new Web3ProviderConfigurationBuilder()
             .withIdentity(frameworkIdentity)
-            .withNodeKey(ethereumIdentiity),
+            .withNodeKey(ethereumIdentity),
         Web3ProviderType.BESU);
   }
 
   public Web3Provider addNode(
       final NodeIdentifier frameworkIdentity,
-      final NodeKey ethereumIdentiity,
+      final NodeKey ethereumIdentity,
       final Web3ProviderType providerType) {
     return addNode(
         new Web3ProviderConfigurationBuilder()
             .withIdentity(frameworkIdentity)
-            .withNodeKey(ethereumIdentiity),
+            .withNodeKey(ethereumIdentity),
         providerType);
   }
 
   public Web3Provider addNode(
       final NodeIdentifier identity,
-      final NodeKey ethereumIdentiity,
+      final NodeKey ethereumIdentity,
       final PrivacyManagerIdentifier privacyManager,
       final PrivacyPublicKeyResource privacyAddressResource) {
     checkArgument(
@@ -191,7 +191,7 @@ public class Network implements Closeable {
     return addNode(
         new Web3ProviderConfigurationBuilder()
             .withIdentity(identity)
-            .withNodeKey(ethereumIdentiity)
+            .withNodeKey(ethereumIdentity)
             .withPrivacyUrl(privacyManagers.get(privacyManager))
             .withPrivacyManagerPublicKey(privacyAddressResource.get()),
         Web3ProviderType.BESU);
@@ -270,6 +270,7 @@ public class Network implements Closeable {
   /**
    * Waits until either all nodes in the network reach consensus on the Transaction Receipt (that
    * includes a block hash), or exceptions when wait time has been exceeded.
+   *
    * @param transaction the hash of the transaction who's receipt is being checked.
    */
   public void awaitConsensusOnTransactionReceipt(final Hash transaction) {

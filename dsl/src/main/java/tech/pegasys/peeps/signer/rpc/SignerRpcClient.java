@@ -14,13 +14,11 @@ package tech.pegasys.peeps.signer.rpc;
 
 import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.rpc.NodeRpcClient;
-import tech.pegasys.peeps.node.rpc.admin.NodeInfo;
 import tech.pegasys.peeps.privacy.model.PrivacyAddreess;
 import tech.pegasys.peeps.signer.rpc.eea.SendPrivacyTransactionRequest;
 import tech.pegasys.peeps.signer.rpc.eea.SendPrivacyTransactionResponse;
 import tech.pegasys.peeps.signer.rpc.eth.SendTransactionRequest;
 import tech.pegasys.peeps.signer.rpc.eth.SendTransactionResponse;
-import tech.pegasys.peeps.signer.rpc.net.EnodeResponse;
 
 import java.time.Duration;
 import java.util.Set;

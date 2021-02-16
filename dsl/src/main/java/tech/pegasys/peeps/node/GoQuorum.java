@@ -56,7 +56,7 @@ public class GoQuorum extends Web3Provider {
             + DATA_DIR
             + "\" init "
             + CONTAINER_GENESIS_FILE
-            + " && echo '##### GoQuorum INITIAILSED #####' && ";
+            + " && echo '##### GoQuorum INITIALISED #####' && ";
 
     addNodePrivateKey(config, commandLineOptions, container);
     //    if (config.isPrivacyEnabled()) {
