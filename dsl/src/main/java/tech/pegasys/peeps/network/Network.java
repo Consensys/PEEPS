@@ -408,7 +408,7 @@ public class Network implements Closeable {
         genesisConfig = new GenesisConfigIbft2(chainId, new Ibft2Config());
         break;
       case IBFT1:
-        genesisConfig = new GenesisConfigIbftLegacy(chainId,new IbftLegacyConfig());
+        genesisConfig = new GenesisConfigIbftLegacy(chainId, new IbftLegacyConfig());
         break;
       case ETH_HASH:
       default:

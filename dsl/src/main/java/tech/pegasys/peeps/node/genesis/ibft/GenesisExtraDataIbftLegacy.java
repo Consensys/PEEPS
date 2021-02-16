@@ -12,17 +12,19 @@
  */
 package tech.pegasys.peeps.node.genesis.ibft;
 
+import tech.pegasys.peeps.node.Besu;
+import tech.pegasys.peeps.node.genesis.GenesisExtraData;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 import org.apache.tuweni.bytes.Bytes;
 import org.apache.tuweni.crypto.Hash;
 import org.apache.tuweni.crypto.SECP256K1.Signature;
 import org.apache.tuweni.eth.Address;
 import org.apache.tuweni.rlp.RLP;
-import tech.pegasys.peeps.node.Besu;
-import tech.pegasys.peeps.node.genesis.GenesisExtraData;
 
 public class GenesisExtraDataIbftLegacy extends GenesisExtraData {
 
@@ -50,16 +52,18 @@ public class GenesisExtraDataIbftLegacy extends GenesisExtraData {
 
     final Bytes vanityDataBytes = Bytes.wrap(vanityData);
 
-    final Bytes rlpedData = RLP.encode(
-        writer -> {
-          writer.writeList(
-              listWriter -> {
-                listWriter.writeList(
-                    validators, (rlp, validator) -> rlp.writeValue(validator.toBytes()));
-                writer.writeRLP(Bytes.EMPTY);
-                writer.writeList(Collections.emptyList(), (rlp, v) -> rlp.writeValue(Bytes.EMPTY));
-              });
-        });
+    final Bytes rlpedData =
+        RLP.encode(
+            writer -> {
+              writer.writeList(
+                  listWriter -> {
+                    listWriter.writeList(
+                        validators, (rlp, validator) -> rlp.writeValue(validator.toBytes()));
+                    writer.writeRLP(Bytes.EMPTY);
+                    writer.writeList(
+                        Collections.emptyList(), (rlp, v) -> rlp.writeValue(Bytes.EMPTY));
+                  });
+            });
     return Bytes.concatenate(vanityDataBytes, rlpedData);
   }
 }
