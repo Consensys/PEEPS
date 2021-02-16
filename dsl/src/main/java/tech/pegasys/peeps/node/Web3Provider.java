@@ -213,7 +213,7 @@ public abstract class Web3Provider implements NetworkMember {
 
   private void logPortMappings() {
     LOG.info(
-        "Besu Container: {}, HTTP RPC port mapping: {} -> {}, WS RPC port mapping: {} -> {}, p2p port mapping: {} -> {}",
+        "Web3Provider Container: {}, HTTP RPC port mapping: {} -> {}, WS RPC port mapping: {} -> {}, p2p port mapping: {} -> {}",
         container.getContainerId(),
         CONTAINER_HTTP_RPC_PORT,
         container.getMappedPort(CONTAINER_HTTP_RPC_PORT),
@@ -225,10 +225,10 @@ public abstract class Web3Provider implements NetworkMember {
 
   private void logContainerNetworkDetails() {
     if (container.getNetwork() == null) {
-      LOG.info("GoQuorum Container: {}, has no network", container.getContainerId());
+      LOG.info("Web3Provider Container: {}, has no network", container.getContainerId());
     } else {
       LOG.info(
-          "GoQuorum Container: {}, IP address: {}, Network: {}",
+          "Web3Provider Container: {}, IP address: {}, Network: {}",
           container.getContainerId(),
           container.getContainerIpAddress(),
           container.getNetwork().getId());
