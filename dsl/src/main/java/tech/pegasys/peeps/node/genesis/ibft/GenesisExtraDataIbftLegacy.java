@@ -22,7 +22,6 @@ import java.util.stream.Stream;
 
 import org.apache.tuweni.bytes.Bytes;
 import org.apache.tuweni.crypto.Hash;
-import org.apache.tuweni.crypto.SECP256K1.Signature;
 import org.apache.tuweni.eth.Address;
 import org.apache.tuweni.rlp.RLP;
 
@@ -47,8 +46,6 @@ public class GenesisExtraDataIbftLegacy extends GenesisExtraData {
 
   private static Bytes encode(final List<Address> validators) {
     final byte[] vanityData = new byte[32];
-    final byte[] votes = new byte[0];
-    final List<Signature> seals = Collections.emptyList();
 
     final Bytes vanityDataBytes = Bytes.wrap(vanityData);
 
