@@ -15,6 +15,7 @@ package tech.pegasys.peeps.node.genesis.ibft2;
 import tech.pegasys.peeps.node.genesis.GenesisConfig;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
+import tech.pegasys.peeps.node.genesis.bft.BftConfig;
 
 public class GenesisConfigIbft2 extends GenesisConfig {
 

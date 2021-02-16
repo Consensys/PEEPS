@@ -36,7 +36,7 @@ import tech.pegasys.peeps.node.genesis.clique.GenesisConfigClique;
 import tech.pegasys.peeps.node.genesis.clique.GenesisExtraDataClique;
 import tech.pegasys.peeps.node.genesis.ethhash.EthHashConfig;
 import tech.pegasys.peeps.node.genesis.ethhash.GenesisConfigEthHash;
-import tech.pegasys.peeps.node.genesis.ibft2.BftConfig;
+import tech.pegasys.peeps.node.genesis.bft.BftConfig;
 import tech.pegasys.peeps.node.genesis.ibft2.GenesisConfigIbft2;
 import tech.pegasys.peeps.node.genesis.ibft2.GenesisExtraDataIbft2;
 import tech.pegasys.peeps.node.model.GenesisAddress;
