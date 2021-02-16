@@ -44,7 +44,7 @@ public class Besu extends Web3Provider {
       "/etc/besu/keys/pmt_signing.priv";
 
   public Besu(final Web3ProviderConfiguration config) {
-    super(config, new GenericContainer<>(BESU_IMAGE).withImagePullPolicy(PullPolicy.alwaysPull()));
+    super(config, new GenericContainer<>(BESU_IMAGE));
     final List<String> commandLineOptions = standardCommandLineOptions();
 
     addPeerToPeerHost(config, commandLineOptions);
