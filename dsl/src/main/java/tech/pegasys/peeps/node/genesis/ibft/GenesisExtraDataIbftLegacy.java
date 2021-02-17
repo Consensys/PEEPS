@@ -56,7 +56,7 @@ public class GenesisExtraDataIbftLegacy extends GenesisExtraData {
                   listWriter -> {
                     listWriter.writeList(
                         validators, (rlp, validator) -> rlp.writeValue(validator.toBytes()));
-                    listWriter.writeRLP(Bytes.of((byte) 0x80));
+                    listWriter.writeByteArray(new byte[0]); // represents the proposer seal
                     listWriter.writeList(
                         Collections.emptyList(), (rlp, v) -> rlp.writeValue(Bytes.EMPTY));
                   });
