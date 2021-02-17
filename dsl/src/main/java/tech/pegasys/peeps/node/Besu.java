@@ -14,6 +14,12 @@ package tech.pegasys.peeps.node;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.google.common.io.Resources;
+import java.io.IOException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import tech.pegasys.peeps.util.DockerLogs;
 
 import java.time.Duration;
@@ -133,10 +139,19 @@ public class Besu extends Web3Provider {
       final List<String> commandLineOptions,
       final GenericContainer<?> container) {
 
-    container.withClasspathResourceMapping(
-        config.getNodeKeyPrivateKeyResource().get(),
-        CONTAINER_NODE_PRIVATE_KEY_FILE,
-        BindMode.READ_ONLY);
+    final Path tempFile;
+    try {
+      final URL keyURL = Resources.getResource(config.getNodeKeyPrivateKeyResource().get());
+      final String text = Resources.toString(keyURL, StandardCharsets.UTF_8);
+      tempFile = Files.createTempFile("nodekey", ".priv");
+      Files.write(tempFile, text.getBytes(StandardCharsets.UTF_8));
+    } catch (final IOException e) {
+      throw new RuntimeException("Unable to create node key file", e);
+    }
+
+    container.withCopyFileToContainer(
+        MountableFile.forHostPath(tempFile),
+        CONTAINER_NODE_PRIVATE_KEY_FILE);
     commandLineOptions.addAll(
         Lists.newArrayList("--node-private-key-file", CONTAINER_NODE_PRIVATE_KEY_FILE));
   }
