@@ -14,6 +14,10 @@ package tech.pegasys.peeps.node;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import com.google.common.io.Resources;
+import java.io.IOException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import tech.pegasys.peeps.network.subnet.SubnetAddress;
 import tech.pegasys.peeps.node.genesis.BesuGenesisFile;
 import tech.pegasys.peeps.node.model.NodeIdentifier;
@@ -115,6 +119,14 @@ public class Web3ProviderConfigurationBuilder {
         ethereumIdentity.nodePublicKeyResource(),
         "Public key resource for the Node Key is mandatory");
 
+    final URL keyURL = Resources.getResource(ethereumIdentity.nodePrivateKeyResource().get());
+    final String privateKeyHex;
+    try {
+      privateKeyHex = Resources.toString(keyURL, StandardCharsets.UTF_8);
+    } catch (IOException e) {
+      throw new RuntimeException("Unable to extact priv key from Resource", e);
+    }
+
     return new Web3ProviderConfiguration(
         genesisFile.getGenesisFile(),
         privacyManagerPublicKeyFile,
@@ -126,6 +138,7 @@ public class Web3ProviderConfigurationBuilder {
         ipAddress,
         frameworkIdentity,
         ethereumIdentity,
-        bootnodeEnodeAddress);
+        bootnodeEnodeAddress,
+        privateKeyHex);
   }
 }
