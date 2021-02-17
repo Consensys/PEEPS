@@ -12,7 +12,7 @@
  */
 package tech.pegasys.peeps.node.genesis.ibft;
 
-import tech.pegasys.peeps.node.Besu;
+import tech.pegasys.peeps.node.Web3Provider;
 import tech.pegasys.peeps.node.genesis.GenesisExtraData;
 
 import java.util.Collections;
@@ -27,11 +27,11 @@ import org.apache.tuweni.rlp.RLP;
 
 public class GenesisExtraDataIbftLegacy extends GenesisExtraData {
 
-  public GenesisExtraDataIbftLegacy(final Besu... validators) {
+  public GenesisExtraDataIbftLegacy(final Web3Provider... validators) {
     super(encode(validators));
   }
 
-  public static Bytes encode(final Besu... validators) {
+  public static Bytes encode(final Web3Provider... validators) {
 
     return encode(
         Stream.of(validators)
@@ -56,8 +56,8 @@ public class GenesisExtraDataIbftLegacy extends GenesisExtraData {
                   listWriter -> {
                     listWriter.writeList(
                         validators, (rlp, validator) -> rlp.writeValue(validator.toBytes()));
-                    writer.writeRLP(Bytes.EMPTY);
-                    writer.writeList(
+                    listWriter.writeRLP(Bytes.of((byte) 0x80));
+                    listWriter.writeList(
                         Collections.emptyList(), (rlp, v) -> rlp.writeValue(Bytes.EMPTY));
                   });
             });

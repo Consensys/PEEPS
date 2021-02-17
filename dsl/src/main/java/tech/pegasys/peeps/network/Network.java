@@ -21,7 +21,6 @@ import static tech.pegasys.peeps.util.Await.await;
 import tech.pegasys.peeps.network.subnet.Subnet;
 import tech.pegasys.peeps.node.Account;
 import tech.pegasys.peeps.node.Besu;
-import tech.pegasys.peeps.node.BesuConfigurationBuilder;
 import tech.pegasys.peeps.node.GoQuorum;
 import tech.pegasys.peeps.node.NodeVerify;
 import tech.pegasys.peeps.node.Web3Provider;
@@ -43,7 +42,6 @@ import tech.pegasys.peeps.node.genesis.ibft.GenesisExtraDataIbftLegacy;
 import tech.pegasys.peeps.node.genesis.ibft.IbftLegacyConfig;
 import tech.pegasys.peeps.node.genesis.ibft2.GenesisConfigIbft2;
 import tech.pegasys.peeps.node.genesis.ibft2.GenesisExtraDataIbft2;
-import tech.pegasys.peeps.node.genesis.ibft2.Ibft2Config;
 import tech.pegasys.peeps.node.model.GenesisAddress;
 import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.model.NodeIdentifier;
@@ -437,7 +435,7 @@ public class Network implements Closeable {
         genesisConfig = new GenesisConfigIbft2(chainId, new BftConfig());
         extraData = new GenesisExtraDataIbft2(validators);
         break;
-      case IBFT1:
+      case IBFT:
         genesisConfig = new GenesisConfigIbftLegacy(chainId, new IbftLegacyConfig());
         extraData = new GenesisExtraDataIbftLegacy(validators);
         break;
