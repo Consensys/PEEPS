@@ -14,13 +14,17 @@ package tech.pegasys.peeps.node;
 
 import tech.pegasys.peeps.util.DockerLogs;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.time.Duration;
 import java.util.List;
 
 import com.google.common.collect.Lists;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
 import org.testcontainers.containers.wait.strategy.Wait;
@@ -76,11 +80,6 @@ public class GoQuorum extends Web3Provider {
     container
         .withCreateContainerCmdModifier(cmd -> cmd.withEntrypoint(entryPoint))
         .waitingFor(liveliness());
-  }
-
-  @Override
-  public String getNodeName() {
-    return "GoQuorum";
   }
 
   @Override
@@ -145,10 +144,20 @@ public class GoQuorum extends Web3Provider {
       final Web3ProviderConfiguration config,
       final List<String> commandLineOptions,
       final GenericContainer<?> container) {
-    container.withClasspathResourceMapping(
-        config.getNodeKeyPrivateKeyResource().get(),
-        CONTAINER_NODE_PRIVATE_KEY_FILE,
-        BindMode.READ_ONLY);
+    // NOTE: This is 90% the same as Besu's setup (except for cmdline at the end).
+    final Path tempFile;
+    try {
+      tempFile = Files.createTempFile("nodekey", ".priv");
+      Files.setPosixFilePermissions(tempFile, PosixFilePermissions.fromString("rwxrwxrwx"));
+      Files.write(
+          tempFile,
+          config.getNodeKeys().secretKey().bytes().toHexString().getBytes(StandardCharsets.UTF_8));
+    } catch (final IOException e) {
+      throw new RuntimeException("Unable to create node key file", e);
+    }
+
+    container.withCopyFileToContainer(
+        MountableFile.forHostPath(tempFile), CONTAINER_NODE_PRIVATE_KEY_FILE);
     commandLineOptions.addAll(Lists.newArrayList("--nodekey", CONTAINER_NODE_PRIVATE_KEY_FILE));
   }
 

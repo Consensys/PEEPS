@@ -14,16 +14,13 @@ package tech.pegasys.peeps.node;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import com.google.common.io.Resources;
-import java.io.FilePermission;
+import tech.pegasys.peeps.util.DockerLogs;
+
 import java.io.IOException;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermissions;
-import tech.pegasys.peeps.util.DockerLogs;
-
 import java.time.Duration;
 import java.util.List;
 
@@ -74,11 +71,6 @@ public class Besu extends Web3Provider {
 
     LOG.info("Besu command line: {}", commandLineOptions);
     container.withCommand(commandLineOptions.toArray(new String[0])).waitingFor(liveliness());
-  }
-
-  @Override
-  public String getNodeName() {
-    return "Besu";
   }
 
   @Override
@@ -145,14 +137,15 @@ public class Besu extends Web3Provider {
     try {
       tempFile = Files.createTempFile("nodekey", ".priv");
       Files.setPosixFilePermissions(tempFile, PosixFilePermissions.fromString("rwxrwxrwx"));
-      Files.write(tempFile, config.getNodePrivateKey().getBytes(StandardCharsets.UTF_8));
+      Files.write(
+          tempFile,
+          config.getNodeKeys().secretKey().bytes().toHexString().getBytes(StandardCharsets.UTF_8));
     } catch (final IOException e) {
       throw new RuntimeException("Unable to create node key file", e);
     }
 
     container.withCopyFileToContainer(
-        MountableFile.forHostPath(tempFile),
-        CONTAINER_NODE_PRIVATE_KEY_FILE);
+        MountableFile.forHostPath(tempFile), CONTAINER_NODE_PRIVATE_KEY_FILE);
     commandLineOptions.addAll(
         Lists.newArrayList("--node-private-key-file", CONTAINER_NODE_PRIVATE_KEY_FILE));
   }

@@ -44,12 +44,9 @@ import tech.pegasys.peeps.node.genesis.ibft2.GenesisConfigIbft2;
 import tech.pegasys.peeps.node.genesis.ibft2.GenesisExtraDataIbft2;
 import tech.pegasys.peeps.node.model.GenesisAddress;
 import tech.pegasys.peeps.node.model.Hash;
-import tech.pegasys.peeps.node.model.NodeIdentifier;
-import tech.pegasys.peeps.node.model.NodeKey;
 import tech.pegasys.peeps.node.model.PrivacyTransactionReceipt;
 import tech.pegasys.peeps.node.model.Transaction;
 import tech.pegasys.peeps.node.model.TransactionReceipt;
-import tech.pegasys.peeps.node.rpc.NodeRpc;
 import tech.pegasys.peeps.node.verification.AccountValue;
 import tech.pegasys.peeps.privacy.Orion;
 import tech.pegasys.peeps.privacy.OrionConfiguration;
@@ -80,13 +77,14 @@ import java.util.stream.Stream;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.vertx.core.Vertx;
+import org.apache.tuweni.crypto.SECP256K1.KeyPair;
 import org.apache.tuweni.eth.Address;
 
 public class Network implements Closeable {
 
   private final Map<PrivacyManagerIdentifier, Orion> privacyManagers;
   private final Map<SignerIdentifier, EthSigner> signers;
-  private final Map<NodeIdentifier, Web3Provider> nodes;
+  private final Map<String, Web3Provider> nodes;
   private final List<NetworkMember> members;
 
   private final BesuGenesisFile genesisFile;
@@ -139,16 +137,6 @@ public class Network implements Closeable {
     set(consensus, (Besu) null);
   }
 
-  public void set(final ConsensusMechanism consensus, final NodeIdentifier... validators) {
-    // TODO check arg - validators must be in nodes (perform during steam mapping
-    set(
-        consensus,
-        Stream.of(validators)
-            .parallel()
-            .map(validator -> nodes.get(validator))
-            .toArray((Web3Provider[]::new)));
-  }
-
   // TODO validators hacky, dynamically figure out after the nodes are all added
   public void set(final ConsensusMechanism consensus, final Web3Provider... validators) {
     checkState(
@@ -161,29 +149,15 @@ public class Network implements Closeable {
             consensus, Account.of(Account.ALPHA, Account.BETA, Account.GAMMA), validators);
   }
 
-  public Web3Provider addNode(
-      final NodeIdentifier frameworkIdentity, final NodeKey ethereumIdentity) {
+  public Web3Provider addNode(final String nodeIdentifier, final KeyPair nodeKeys) {
     return addNode(
-        new Web3ProviderConfigurationBuilder()
-            .withIdentity(frameworkIdentity)
-            .withNodeKey(ethereumIdentity),
+        new Web3ProviderConfigurationBuilder().withIdentity(nodeIdentifier).withNodeKeys(nodeKeys),
         Web3ProviderType.BESU);
   }
 
   public Web3Provider addNode(
-      final NodeIdentifier frameworkIdentity,
-      final NodeKey ethereumIdentity,
-      final Web3ProviderType providerType) {
-    return addNode(
-        new Web3ProviderConfigurationBuilder()
-            .withIdentity(frameworkIdentity)
-            .withNodeKey(ethereumIdentity),
-        providerType);
-  }
-
-  public Web3Provider addNode(
-      final NodeIdentifier identity,
-      final NodeKey ethereumIdentity,
+      final String identity,
+      final KeyPair nodeKeys,
       final PrivacyManagerIdentifier privacyManager,
       final PrivacyPublicKeyResource privacyAddressResource) {
     checkArgument(
@@ -194,7 +168,7 @@ public class Network implements Closeable {
     return addNode(
         new Web3ProviderConfigurationBuilder()
             .withIdentity(identity)
-            .withNodeKey(ethereumIdentity)
+            .withNodeKeys(nodeKeys)
             .withPrivacyUrl(privacyManagers.get(privacyManager))
             .withPrivacyManagerPublicKey(privacyAddressResource.get()),
         Web3ProviderType.BESU);
@@ -242,14 +216,6 @@ public class Network implements Closeable {
   }
 
   public EthSigner addSigner(
-      final SignerIdentifier wallet,
-      final WalletFileResources resources,
-      final NodeIdentifier downstream) {
-    checkNodeExistsFor(downstream);
-    return addSigner(wallet, resources, nodes.get(downstream));
-  }
-
-  private EthSigner addSigner(
       final SignerIdentifier wallet,
       final WalletFileResources resources,
       final Web3Provider downstream) {
@@ -357,10 +323,8 @@ public class Network implements Closeable {
   }
 
   // TODO these Mediator method could be refactored elsewhere?
-  public NodeVerify verify(final NodeIdentifier id) {
-    checkNodeExistsFor(id);
-
-    return new NodeVerify(nodes.get(id));
+  public NodeVerify verify(final Web3Provider node) {
+    return new NodeVerify(node);
   }
 
   public SignerRpcSenderKnown rpc(final SignerIdentifier id, final Address sender) {
@@ -374,11 +338,11 @@ public class Network implements Closeable {
     return new SignerRpcSenderKnown(signers.get(id).rpc(), sender);
   }
 
-  public NodeRpc rpc(final NodeIdentifier id) {
-    checkNodeExistsFor(id);
-
-    return nodes.get(id).rpc();
-  }
+  //  public NodeRpc rpc(final NodeIdentifier id) {
+  //    checkNodeExistsFor(id);
+  //
+  //    return nodes.get(id).rpc();
+  //  }
 
   public PrivacyGroupVerify privacyGroup(final PrivacyGroup group) {
     return new PrivacyGroupVerify(
@@ -394,15 +358,6 @@ public class Network implements Closeable {
     members.add(web3Provider);
 
     return web3Provider;
-  }
-
-  private void checkNodeExistsFor(final NodeIdentifier id) {
-    checkNotNull(id, "Node Identifier is mandatory");
-    checkState(
-        nodes.containsKey(id),
-        "Node Identifier: {}, does not match any available: {}",
-        id,
-        nodes.keySet());
   }
 
   private String bootnodeEnodeAddresses() {

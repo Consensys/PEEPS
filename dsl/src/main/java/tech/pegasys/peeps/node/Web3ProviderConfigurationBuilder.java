@@ -14,17 +14,12 @@ package tech.pegasys.peeps.node;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import com.google.common.io.Resources;
-import java.io.IOException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import tech.pegasys.peeps.network.subnet.SubnetAddress;
 import tech.pegasys.peeps.node.genesis.BesuGenesisFile;
-import tech.pegasys.peeps.node.model.NodeIdentifier;
-import tech.pegasys.peeps.node.model.NodeKey;
 import tech.pegasys.peeps.privacy.Orion;
 
 import io.vertx.core.Vertx;
+import org.apache.tuweni.crypto.SECP256K1.KeyPair;
 import org.testcontainers.containers.Network;
 
 public class Web3ProviderConfigurationBuilder {
@@ -34,7 +29,7 @@ public class Web3ProviderConfigurationBuilder {
       "node/keys/pmt_signing.priv";
 
   private BesuGenesisFile genesisFile;
-  private NodeIdentifier frameworkIdentity;
+  private String identity;
 
   // TODO better typing then String
   private String privacyManagerPublicKeyFile;
@@ -42,7 +37,7 @@ public class Web3ProviderConfigurationBuilder {
   private String privacyTransactionManagerUrl;
   private String cors;
   private String bootnodeEnodeAddress;
-  private NodeKey ethereumIdentity;
+  private KeyPair nodeKeys;
 
   // TODO these into their own builder, not node related but test container related
   private Network containerNetwork;
@@ -79,8 +74,8 @@ public class Web3ProviderConfigurationBuilder {
     return this;
   }
 
-  public Web3ProviderConfigurationBuilder withIdentity(final NodeIdentifier identity) {
-    this.frameworkIdentity = identity;
+  public Web3ProviderConfigurationBuilder withIdentity(final String identity) {
+    this.identity = identity;
     return this;
   }
 
@@ -100,32 +95,19 @@ public class Web3ProviderConfigurationBuilder {
     return this;
   }
 
-  public Web3ProviderConfigurationBuilder withNodeKey(final NodeKey ethereumIdentity) {
-    this.ethereumIdentity = ethereumIdentity;
+  public Web3ProviderConfigurationBuilder withNodeKeys(final KeyPair nodeKeys) {
+    this.nodeKeys = nodeKeys;
     return this;
   }
 
   public Web3ProviderConfiguration build() {
     checkNotNull(genesisFile, "A genesis file path is mandatory");
-    checkNotNull(frameworkIdentity, "A NodeKey is mandatory");
+    checkNotNull(identity, "A NodeKey is mandatory");
     checkNotNull(vertx, "A Vertx instance is mandatory");
     checkNotNull(ipAddress, "Container IP address is mandatory");
     checkNotNull(containerNetwork, "Container network is mandatory");
-    checkNotNull(ethereumIdentity, "Ethereum identity is mandatory");
-    checkNotNull(
-        ethereumIdentity.nodePrivateKeyResource(),
-        "Private key resource for the Node Key is mandatory");
-    checkNotNull(
-        ethereumIdentity.nodePublicKeyResource(),
-        "Public key resource for the Node Key is mandatory");
-
-    final URL keyURL = Resources.getResource(ethereumIdentity.nodePrivateKeyResource().get());
-    final String privateKeyHex;
-    try {
-      privateKeyHex = Resources.toString(keyURL, StandardCharsets.UTF_8);
-    } catch (IOException e) {
-      throw new RuntimeException("Unable to extact priv key from Resource", e);
-    }
+    checkNotNull(nodeKeys, "Ethereum identity is mandatory");
+    checkNotNull(nodeKeys, "Node Key is mandatory");
 
     return new Web3ProviderConfiguration(
         genesisFile.getGenesisFile(),
@@ -136,9 +118,8 @@ public class Web3ProviderConfigurationBuilder {
         containerNetwork,
         vertx,
         ipAddress,
-        frameworkIdentity,
-        ethereumIdentity,
-        bootnodeEnodeAddress,
-        privateKeyHex);
+        identity,
+        nodeKeys,
+        bootnodeEnodeAddress);
   }
 }

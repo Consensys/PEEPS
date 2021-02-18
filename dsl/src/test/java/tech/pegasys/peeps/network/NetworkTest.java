@@ -48,7 +48,7 @@ public class NetworkTest {
     Runtime.getRuntime().addShutdownHook(new Thread(this::tearDown));
     network = new Network(configurationDirectory, subnet);
 
-    lenient().when(node.identity()).thenReturn(nodeId);
+    lenient().when(node.identity()).thenReturn("alpha");
   }
 
   @AfterEach
