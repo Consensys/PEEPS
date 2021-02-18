@@ -155,6 +155,12 @@ public class Network implements Closeable {
         Web3ProviderType.BESU);
   }
 
+  public Web3Provider addNode(final String nodeIdentifier, final KeyPair nodeKeys, final Web3ProviderType nodeType) {
+    return addNode(
+        new Web3ProviderConfigurationBuilder().withIdentity(nodeIdentifier).withNodeKeys(nodeKeys),
+        nodeType);
+  }
+
   public Web3Provider addNode(
       final String identity,
       final KeyPair nodeKeys,

@@ -59,13 +59,9 @@ public class GoQuorum extends Web3Provider {
         MountableFile.forHostPath(config.getGenesisFile()), CONTAINER_GENESIS_FILE);
     final List<String> entryPoint = Lists.newArrayList("/bin/sh", "-c");
     final String initCmd =
-        "mkdir -p '"
-            + DATA_DIR
-            + "/geth' && geth --datadir \""
-            + DATA_DIR
-            + "\" init "
-            + CONTAINER_GENESIS_FILE
-            + " && echo '##### GoQuorum INITIALISED #####' && ";
+        "mkdir -p '" + DATA_DIR + "/geth' && "
+            + "geth --datadir \"" + DATA_DIR + "\" init " + CONTAINER_GENESIS_FILE + " ** "
+            + " echo '##### GoQuorum INITIALISED #####' && ";
 
     addNodePrivateKey(config, commandLineOptions, container);
     //    if (config.isPrivacyEnabled()) {
@@ -151,7 +147,8 @@ public class GoQuorum extends Web3Provider {
       Files.setPosixFilePermissions(tempFile, PosixFilePermissions.fromString("rwxrwxrwx"));
       Files.write(
           tempFile,
-          config.getNodeKeys().secretKey().bytes().toHexString().getBytes(StandardCharsets.UTF_8));
+          config.getNodeKeys().secretKey().bytes().toUnprefixedHexString()
+              .getBytes(StandardCharsets.UTF_8));
     } catch (final IOException e) {
       throw new RuntimeException("Unable to create node key file", e);
     }
