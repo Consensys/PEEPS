@@ -23,6 +23,7 @@ import tech.pegasys.peeps.node.Account;
 import tech.pegasys.peeps.node.Besu;
 import tech.pegasys.peeps.node.GoQuorum;
 import tech.pegasys.peeps.node.NodeVerify;
+import tech.pegasys.peeps.node.EthereumAddressProvider;
 import tech.pegasys.peeps.node.Web3Provider;
 import tech.pegasys.peeps.node.Web3ProviderConfigurationBuilder;
 import tech.pegasys.peeps.node.Web3ProviderType;
@@ -59,6 +60,7 @@ import tech.pegasys.peeps.privacy.model.PrivacyManagerIdentifier;
 import tech.pegasys.peeps.privacy.model.PrivacyPublicKeyResource;
 import tech.pegasys.peeps.signer.EthSigner;
 import tech.pegasys.peeps.signer.EthSignerConfigurationBuilder;
+import tech.pegasys.peeps.signer.SignerConfiguration;
 import tech.pegasys.peeps.signer.model.SignerIdentifier;
 import tech.pegasys.peeps.signer.model.WalletFileResources;
 import tech.pegasys.peeps.signer.rpc.SignerRpcSenderKnown;
@@ -84,7 +86,7 @@ public class Network implements Closeable {
 
   private final Map<PrivacyManagerIdentifier, Orion> privacyManagers;
   private final Map<SignerIdentifier, EthSigner> signers;
-  private final Map<String, Web3Provider> nodes;
+  private final List<Web3Provider> nodes;
   private final List<NetworkMember> members;
 
   private final BesuGenesisFile genesisFile;
@@ -101,7 +103,7 @@ public class Network implements Closeable {
     this.privacyManagers = new HashMap<>();
     this.members = new ArrayList<>();
     this.signers = new HashMap<>();
-    this.nodes = new HashMap<>();
+    this.nodes = new ArrayList<>();
     this.pathGenerator = new PathGenerator(configurationDirectory);
     this.vertx = Vertx.vertx();
     this.subnet = subnet;
@@ -138,7 +140,7 @@ public class Network implements Closeable {
   }
 
   // TODO validators hacky, dynamically figure out after the nodes are all added
-  public void set(final ConsensusMechanism consensus, final Web3Provider... validators) {
+  public void set(final ConsensusMechanism consensus, final EthereumAddressProvider... validators) {
     checkState(
         state.isUninitialized(),
         "Cannot set consensus mechanism while the Network is already started");
@@ -155,9 +157,19 @@ public class Network implements Closeable {
         Web3ProviderType.BESU);
   }
 
-  public Web3Provider addNode(final String nodeIdentifier, final KeyPair nodeKeys, final Web3ProviderType nodeType) {
+  public Web3Provider addNode(
+      final String nodeIdentifier, final KeyPair nodeKeys, final Web3ProviderType nodeType) {
     return addNode(
         new Web3ProviderConfigurationBuilder().withIdentity(nodeIdentifier).withNodeKeys(nodeKeys),
+        nodeType);
+  }
+
+  public Web3Provider addNode(
+      final String nodeIdentifier, final KeyPair nodeKeys, final Web3ProviderType nodeType, final
+  SignerConfiguration wallet) {
+    return addNode(
+        new Web3ProviderConfigurationBuilder().withIdentity(nodeIdentifier).withNodeKeys(nodeKeys)
+            .withWallet(wallet),
         nodeType);
   }
 
@@ -255,9 +267,8 @@ public class Network implements Closeable {
         () -> {
           final List<TransactionReceipt> receipts =
               nodes
-                  .values()
                   .parallelStream()
-                  .map(node -> node.rpc().getTransactionReceipt(transaction))
+                  .map(node -> node.theOtherRpc().getTransactionReceipt(transaction))
                   .collect(Collectors.toList());
 
           assertThat(receipts.size()).isEqualTo(nodes.size());
@@ -277,14 +288,14 @@ public class Network implements Closeable {
     checkState(
         nodes.size() > 1, "There must be two or more nodes to be able to verify on consensus");
 
-    final Web3Provider firstNode = nodes.values().iterator().next();
+    final Web3Provider firstNode = nodes.iterator().next();
     final Set<AccountValue> values =
         Stream.of(accounts)
             .parallel()
-            .map(account -> new AccountValue(account, firstNode.rpc().getBalance(account)))
+            .map(account -> new AccountValue(account, firstNode.theOtherRpc().getBalance(account)))
             .collect(Collectors.toSet());
 
-    nodes.values().parallelStream().forEach(node -> node.verifyValue(values));
+    nodes.parallelStream().forEach(node -> node.verifyValue(values));
   }
 
   public void verifyConsensusOnTransaction(final Hash transaction) {
@@ -293,9 +304,8 @@ public class Network implements Closeable {
 
     final Set<Transaction> transactions =
         nodes
-            .values()
             .parallelStream()
-            .map(node -> node.rpc().getTransactionByHash(transaction))
+            .map(node -> node.theOtherRpc().getTransactionByHash(transaction))
             .collect(Collectors.toSet());
 
     assertThat(transactions).isNotEmpty();
@@ -314,9 +324,8 @@ public class Network implements Closeable {
 
     final Set<PrivacyTransactionReceipt> transactions =
         nodes
-            .values()
             .parallelStream()
-            .map(node -> node.rpc().getPrivacyTransactionReceipt(transaction))
+            .map(node -> node.theOtherRpc().getPrivacyTransactionReceipt(transaction))
             .collect(Collectors.toSet());
 
     assertThat(transactions).isNotEmpty();
@@ -360,7 +369,7 @@ public class Network implements Closeable {
 
   @VisibleForTesting
   Web3Provider addNode(final Web3Provider web3Provider) {
-    nodes.put(web3Provider.identity(), web3Provider);
+    nodes.add(web3Provider);
     members.add(web3Provider);
 
     return web3Provider;
@@ -368,20 +377,22 @@ public class Network implements Closeable {
 
   private String bootnodeEnodeAddresses() {
     return nodes
-        .values()
         .parallelStream()
-        .map(node -> node.enodeAddress())
+        .map(Web3Provider::enodeAddress)
         .collect(Collectors.joining(","));
   }
 
   private void everyMember(Consumer<NetworkMember> action) {
-    members.parallelStream().forEach(action);
+    // start the first node (which has NO bootnodes).
+    final NetworkMember bootNode = members.get(0); // TODO(tmm): Assumes this IS a Ethereum node
+    action.accept(bootNode);
+    members.parallelStream().filter(m -> !m.equals(bootNode)).forEach(action);
   }
 
   private Genesis createGenesis(
       final ConsensusMechanism consensus,
       final Map<GenesisAddress, GenesisAccount> genesisAccounts,
-      final Web3Provider... validators) {
+      final EthereumAddressProvider... validators) {
     final long chainId = Math.round(Math.random() * Long.MAX_VALUE);
 
     final GenesisConfig genesisConfig;
@@ -411,7 +422,7 @@ public class Network implements Closeable {
   }
 
   private void awaitConnectivity() {
-    nodes.values().parallelStream().forEach(node -> node.awaitConnectivity(nodes.values()));
+    nodes.parallelStream().forEach(node -> node.awaitConnectivity(nodes));
 
     privacyManagers
         .values()

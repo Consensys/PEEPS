@@ -52,7 +52,7 @@ class GenesisExtraDataIbftLegacyTest {
     final Web3Provider[] mockProviders = new Web3Provider[validatorPublicKeys.size()];
     for (int i = 0; i < validatorPublicKeys.size(); i++) {
       mockProviders[i] = mock(Web3Provider.class);
-      when(mockProviders[i].nodePublicKey()).thenReturn(validatorPublicKeys.get(i));
+      when(mockProviders[i].getAddress()).thenReturn(validatorPublicKeys.get(i));
     }
 
     final Bytes extraDataBytes = GenesisExtraDataIbftLegacy.encode(mockProviders);

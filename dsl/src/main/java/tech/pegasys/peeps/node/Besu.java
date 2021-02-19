@@ -14,6 +14,9 @@ package tech.pegasys.peeps.node;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import tech.pegasys.peeps.node.rpc.NodeRpc;
+import tech.pegasys.peeps.node.rpc.NodeRpcClient;
+import tech.pegasys.peeps.node.rpc.NodeRpcMandatoryResponse;
 import tech.pegasys.peeps.util.DockerLogs;
 
 import java.io.IOException;
@@ -41,7 +44,7 @@ public class Besu extends Web3Provider {
   private static final String AM_I_ALIVE_ENDPOINT = "/liveness";
   private static final int ALIVE_STATUS_CODE = 200;
 
-  private static final String BESU_IMAGE = "hyperledger/besu:develop";
+  private static final String BESU_IMAGE = "hyperledger/besu:21.1.1-SNAPSHOT-openjdk-11";
   private static final String CONTAINER_GENESIS_FILE = "/etc/besu/genesis.json";
   private static final String CONTAINER_PRIVACY_PUBLIC_KEY_FILE =
       "/etc/besu/privacy_public_key.pub";
@@ -53,7 +56,8 @@ public class Besu extends Web3Provider {
     super(
         config,
         new GenericContainer<>(BESU_IMAGE)
-            .withImagePullPolicy(PullPolicy.ageBased(Duration.ofHours(1))));
+            .withImagePullPolicy(PullPolicy.defaultPolicy()));
+
     final List<String> commandLineOptions = standardCommandLineOptions();
 
     addPeerToPeerHost(config, commandLineOptions);
@@ -87,7 +91,7 @@ public class Besu extends Web3Provider {
   private List<String> standardCommandLineOptions() {
     return Lists.newArrayList(
         "--logging",
-        "DEBUG",
+        "TRACE",
         "--miner-enabled",
         "--miner-coinbase",
         "1b23ba34ca45bb56aa67bc78be89ac00ca00da00",
@@ -98,7 +102,9 @@ public class Besu extends Web3Provider {
         "--rpc-http-enabled",
         "--rpc-ws-enabled",
         "--rpc-http-apis",
-        "ADMIN,ETH,NET,WEB3,EEA,PRIV");
+        "ADMIN,ETH,NET,WEB3,EEA,PRIV",
+        "--sync-mode",
+        "FULL");
   }
 
   private void addPeerToPeerHost(

@@ -12,7 +12,7 @@
  */
 package tech.pegasys.peeps.node.genesis.clique;
 
-import tech.pegasys.peeps.node.Web3Provider;
+import tech.pegasys.peeps.node.EthereumAddressProvider;
 import tech.pegasys.peeps.node.genesis.GenesisExtraData;
 
 import java.util.List;
@@ -25,20 +25,16 @@ import org.apache.tuweni.eth.Address;
 
 public class GenesisExtraDataClique extends GenesisExtraData {
 
-  public GenesisExtraDataClique(final Web3Provider... validators) {
+  public GenesisExtraDataClique(final EthereumAddressProvider... validators) {
     super(encode(validators));
   }
 
-  private static Bytes encode(final Web3Provider... validators) {
+  private static Bytes encode(final EthereumAddressProvider... validators) {
 
     return encode(
         Stream.of(validators)
             .parallel()
-            .map(
-                validator ->
-                    Address.fromBytes(
-                        Hash.keccak256(Bytes.fromHexString(validator.nodePublicKey()))
-                            .slice(12, 20)))
+            .map(EthereumAddressProvider::getAddress)
             .collect(Collectors.toList()));
   }
 

@@ -12,7 +12,7 @@
  */
 package tech.pegasys.peeps.node.genesis.ibft;
 
-import tech.pegasys.peeps.node.Web3Provider;
+import tech.pegasys.peeps.node.EthereumAddressProvider;
 import tech.pegasys.peeps.node.genesis.GenesisExtraData;
 
 import java.util.Collections;
@@ -27,20 +27,16 @@ import org.apache.tuweni.rlp.RLP;
 
 public class GenesisExtraDataIbftLegacy extends GenesisExtraData {
 
-  public GenesisExtraDataIbftLegacy(final Web3Provider... validators) {
+  public GenesisExtraDataIbftLegacy(final EthereumAddressProvider... validators) {
     super(encode(validators));
   }
 
-  public static Bytes encode(final Web3Provider... validators) {
+  public static Bytes encode(final EthereumAddressProvider... validators) {
 
     return encode(
         Stream.of(validators)
             .parallel()
-            .map(
-                validator ->
-                    Address.fromBytes(
-                        Hash.keccak256(Bytes.fromHexString(validator.nodePublicKey()))
-                            .slice(12, 20)))
+            .map(EthereumAddressProvider::getAddress)
             .collect(Collectors.toList()));
   }
 

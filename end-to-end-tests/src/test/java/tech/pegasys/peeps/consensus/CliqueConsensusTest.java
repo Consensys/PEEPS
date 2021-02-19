@@ -12,11 +12,12 @@
  */
 package tech.pegasys.peeps.consensus;
 
+import tech.pegasys.peeps.FixedSignerConfigs;
 import tech.pegasys.peeps.NetworkTest;
-import tech.pegasys.peeps.SignerConfiguration;
+import tech.pegasys.peeps.node.Account;
+import tech.pegasys.peeps.signer.SignerConfiguration;
 import tech.pegasys.peeps.network.ConsensusMechanism;
 import tech.pegasys.peeps.network.Network;
-import tech.pegasys.peeps.node.Account;
 import tech.pegasys.peeps.node.Web3Provider;
 import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.verification.ValueReceived;
@@ -30,7 +31,7 @@ import org.junit.jupiter.api.Test;
 public class CliqueConsensusTest extends NetworkTest {
 
   private Web3Provider alphaNode;
-  private final SignerConfiguration signer = SignerConfiguration.ALPHA;
+  private final SignerConfiguration signer = FixedSignerConfigs.ALPHA;
 
   @Override
   protected void setUpNetwork(final Network network) {
@@ -48,8 +49,8 @@ public class CliqueConsensusTest extends NetworkTest {
 
     verify().consensusOnValueAt(sender, receiver);
 
-    final Wei senderStartBalance = alphaNode.rpc().getBalance(sender);
-    final Wei receiverStartBalance = alphaNode.rpc().getBalance(receiver);
+    final Wei senderStartBalance = execute(alphaNode).getBalance(sender);
+    final Wei receiverStartBalance = execute(alphaNode).getBalance(receiver);
 
     final Hash receipt = execute(signer).transferTo(receiver, transferAmount);
 

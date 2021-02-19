@@ -14,6 +14,8 @@ package tech.pegasys.peeps.node;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.List;
+import org.apache.commons.compress.utils.Lists;
 import tech.pegasys.peeps.network.subnet.SubnetAddress;
 import tech.pegasys.peeps.node.genesis.BesuGenesisFile;
 import tech.pegasys.peeps.privacy.Orion;
@@ -21,6 +23,8 @@ import tech.pegasys.peeps.privacy.Orion;
 import io.vertx.core.Vertx;
 import org.apache.tuweni.crypto.SECP256K1.KeyPair;
 import org.testcontainers.containers.Network;
+import tech.pegasys.peeps.signer.SignerConfiguration;
+import tech.pegasys.peeps.signer.model.WalletFileResources;
 
 public class Web3ProviderConfigurationBuilder {
 
@@ -38,6 +42,7 @@ public class Web3ProviderConfigurationBuilder {
   private String cors;
   private String bootnodeEnodeAddress;
   private KeyPair nodeKeys;
+  private SignerConfiguration wallet;
 
   // TODO these into their own builder, not node related but test container related
   private Network containerNetwork;
@@ -100,6 +105,11 @@ public class Web3ProviderConfigurationBuilder {
     return this;
   }
 
+  public Web3ProviderConfigurationBuilder withWallet(final SignerConfiguration wallet) {
+    this.wallet = wallet;
+    return this;
+  }
+
   public Web3ProviderConfiguration build() {
     checkNotNull(genesisFile, "A genesis file path is mandatory");
     checkNotNull(identity, "A NodeKey is mandatory");
@@ -120,6 +130,7 @@ public class Web3ProviderConfigurationBuilder {
         ipAddress,
         identity,
         nodeKeys,
-        bootnodeEnodeAddress);
+        bootnodeEnodeAddress,
+        wallet);
   }
 }

@@ -12,6 +12,7 @@
  */
 package tech.pegasys.peeps.node.genesis.clique;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonGetter;
 
 public class CliqueConfig {
@@ -33,8 +34,18 @@ public class CliqueConfig {
     return blockPeriodSeconds;
   }
 
+  @JsonGetter("period")
+  public int getPeriod() {
+    return blockPeriodSeconds;
+  }
+
   @JsonGetter("epochlength")
   public int getEpochLength() {
+    return epochLength;
+  }
+
+  @JsonGetter("epoch")
+  public int getEpoch() {
     return epochLength;
   }
 }

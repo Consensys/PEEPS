@@ -12,6 +12,11 @@
  */
 package tech.pegasys.peeps.node;
 
+import org.testcontainers.containers.BindMode;
+import tech.pegasys.peeps.node.rpc.NodeRpcMandatoryResponse;
+import tech.pegasys.peeps.signer.rpc.SignerRpc;
+import tech.pegasys.peeps.signer.rpc.SignerRpcClient;
+import tech.pegasys.peeps.signer.rpc.SignerRpcMandatoryResponse;
 import tech.pegasys.peeps.util.DockerLogs;
 
 import java.io.IOException;
@@ -39,28 +44,34 @@ public class GoQuorum extends Web3Provider {
   private static final String IMAGE_NAME = "quorumengineering/quorum:latest";
   private static final String CONTAINER_GENESIS_FILE = "/etc/genesis.json";
   private static final String CONTAINER_NODE_PRIVATE_KEY_FILE = "/etc/keys/node.priv";
+  private static final String CONTAINER_PASSWORD_FILE = "/etc/password";
   private static final String DATA_DIR = "/eth";
 
   public GoQuorum(final Web3ProviderConfiguration config) {
     super(
         config,
         new GenericContainer<>(IMAGE_NAME)
-            .withImagePullPolicy(PullPolicy.ageBased(Duration.ofHours(1))));
+            .withImagePullPolicy(PullPolicy.ageBased(Duration.ofHours(1)))
+            .withReuse(false));
+
     final List<String> commandLineOptions = standardCommandLineOptions();
 
     addCorsOrigins(config, commandLineOptions);
     addBootnodeAddress(config, commandLineOptions);
     addContainerNetwork(config, container);
     addContainerIpAddress(ipAddress(), container);
+    addWallets(config, commandLineOptions, container);
     commandLineOptions.addAll(List.of("--datadir", "\"" + DATA_DIR + "\""));
     commandLineOptions.addAll(List.of("--networkid", "15"));
+    commandLineOptions.addAll(List.of("--identity", config.getIdentity()));
 
     container.withCopyFileToContainer(
         MountableFile.forHostPath(config.getGenesisFile()), CONTAINER_GENESIS_FILE);
     final List<String> entryPoint = Lists.newArrayList("/bin/sh", "-c");
     final String initCmd =
         "mkdir -p '" + DATA_DIR + "/geth' && "
-            + "geth --datadir \"" + DATA_DIR + "\" init " + CONTAINER_GENESIS_FILE + " ** "
+            + "mkdir -p '" + DATA_DIR + "/keystore' && "
+            + "geth --datadir \"" + DATA_DIR + "\" init " + CONTAINER_GENESIS_FILE + " && "
             + " echo '##### GoQuorum INITIALISED #####' && ";
 
     addNodePrivateKey(config, commandLineOptions, container);
@@ -90,23 +101,22 @@ public class GoQuorum extends Web3Provider {
   private List<String> standardCommandLineOptions() {
     return Lists.newArrayList(
         "--nousb",
+        "--allow-insecure-unlock",
         "--verbosity",
         "5",
-        "--rpccorsdomain",
-        "\"*\"",
         "--syncmode",
         "full",
-        //        "--mine",
-        //        "--miner.etherbase",
-        //        "fe3b557e8fb62b89f4916b721be55ceb828dbd73",
-        "--rpc",
-        "--rpcaddr",
+        "--mine",
+        "--http",
+        "--http.addr",
         "\"0.0.0.0\"",
-        "--rpcport",
+        "--http.port",
         "8545",
-        "--rpcapi",
-        "admin,debug,web3,eth,txpool,personal,clique,miner,net",
+        "--http.api",
+        "admin,debug,web3,eth,txpool,personal,clique,miner,net,istanbul",
         "--ws",
+        "--gasprice",
+        "0",
         "--debug");
   }
 
@@ -133,7 +143,8 @@ public class GoQuorum extends Web3Provider {
       final Web3ProviderConfiguration config, final List<String> commandLineOptions) {
     config
         .getCors()
-        .ifPresent(cors -> commandLineOptions.addAll(Lists.newArrayList("--rpccorsdomain", cors)));
+        .ifPresent(
+            cors -> commandLineOptions.addAll(Lists.newArrayList("--http.corsdomain", cors)));
   }
 
   private void addNodePrivateKey(
@@ -156,6 +167,24 @@ public class GoQuorum extends Web3Provider {
     container.withCopyFileToContainer(
         MountableFile.forHostPath(tempFile), CONTAINER_NODE_PRIVATE_KEY_FILE);
     commandLineOptions.addAll(Lists.newArrayList("--nodekey", CONTAINER_NODE_PRIVATE_KEY_FILE));
+  }
+
+  private void addWallets(
+      final Web3ProviderConfiguration config,
+      final List<String> commandLineOptions,
+      final GenericContainer<?> container) {
+    config.getWallet().ifPresent(wallet -> {
+          container
+              .withClasspathResourceMapping(wallet.resources().getKey().get(), DATA_DIR + "/keystore/",
+                  BindMode.READ_ONLY);
+          container.withClasspathResourceMapping(wallet.resources().getPassword().get(),
+              CONTAINER_PASSWORD_FILE,
+              BindMode.READ_ONLY);
+          commandLineOptions.addAll(List.of("--unlock", wallet.address().toHexString(), "--password",
+              CONTAINER_PASSWORD_FILE));
+          commandLineOptions.addAll(List.of("--miner.etherbase", wallet.address().toHexString()));
+        }
+    );
   }
 
   //  private void addPrivacy(

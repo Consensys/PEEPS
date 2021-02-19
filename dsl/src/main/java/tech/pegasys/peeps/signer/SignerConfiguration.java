@@ -10,31 +10,22 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package tech.pegasys.peeps;
+package tech.pegasys.peeps.signer;
 
-import tech.pegasys.peeps.node.Account;
+import org.apache.tuweni.eth.Address;
+import tech.pegasys.peeps.node.EthereumAddressProvider;
 import tech.pegasys.peeps.signer.model.SignerIdentifier;
 import tech.pegasys.peeps.signer.model.SignerKeyFileResource;
 import tech.pegasys.peeps.signer.model.SignerPasswordFileResource;
 import tech.pegasys.peeps.signer.model.WalletFileResources;
 
-import org.apache.tuweni.eth.Address;
-
-public enum SignerConfiguration {
-  ALPHA(
-      "signer/account/funded/wallet_a.v3",
-      "signer/account/funded/wallet_a.pass",
-      Account.ALPHA.address()),
-  BETA(
-      "signer/account/funded/wallet_b.v3",
-      "signer/account/funded/wallet_b.pass",
-      Account.BETA.address());
+public class SignerConfiguration implements EthereumAddressProvider {
 
   private final Address address;
   private final SignerIdentifier id;
   private final WalletFileResources resources;
 
-  SignerConfiguration(
+  public SignerConfiguration(final String name,
       final String keyResource, final String passwordResource, final Address address) {
     this.address = address;
 
@@ -52,7 +43,7 @@ public enum SignerConfiguration {
           }
         };
 
-    this.id = new SignerIdentifier(name());
+    this.id = new SignerIdentifier(name);
   }
 
   public SignerIdentifier id() {
@@ -65,5 +56,10 @@ public enum SignerConfiguration {
 
   public WalletFileResources resources() {
     return resources;
+  }
+
+  @Override
+  public Address getAddress() {
+    return address;
   }
 }

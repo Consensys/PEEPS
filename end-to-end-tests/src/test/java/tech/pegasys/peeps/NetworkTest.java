@@ -12,22 +12,24 @@
  */
 package tech.pegasys.peeps;
 
-import tech.pegasys.peeps.network.Network;
-import tech.pegasys.peeps.network.NetworkAwait;
-import tech.pegasys.peeps.network.NetworkVerify;
-import tech.pegasys.peeps.network.subnet.Subnet;
-import tech.pegasys.peeps.node.NodeVerify;
-import tech.pegasys.peeps.node.Web3Provider;
-import tech.pegasys.peeps.node.rpc.NodeRpc;
-import tech.pegasys.peeps.signer.rpc.SignerRpcSenderKnown;
-
 import java.nio.file.Path;
 import java.security.Security;
-
+import org.apache.tuweni.eth.Address;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.io.TempDir;
+import tech.pegasys.peeps.network.Network;
+import tech.pegasys.peeps.network.NetworkAwait;
+import tech.pegasys.peeps.network.NetworkVerify;
+import tech.pegasys.peeps.network.subnet.Subnet;
+import tech.pegasys.peeps.node.GoQuorum;
+import tech.pegasys.peeps.node.NodeVerify;
+import tech.pegasys.peeps.node.Web3Provider;
+import tech.pegasys.peeps.signer.SignerConfiguration;
+import tech.pegasys.peeps.signer.rpc.SignerRpc;
+import tech.pegasys.peeps.signer.rpc.SignerRpcClient;
+import tech.pegasys.peeps.signer.rpc.SignerRpcSenderKnown;
 
 public abstract class NetworkTest {
 
@@ -79,7 +81,11 @@ public abstract class NetworkTest {
     return network.rpc(id.id(), id.address());
   }
 
-  protected NodeRpc execute(final Web3Provider web3Provider) {
-    return web3Provider.rpc();
+  protected SignerRpc execute(final Web3Provider web3Provider) {
+    return web3Provider.theOtherRpc();
+  }
+
+  protected SignerRpcSenderKnown execute(final Web3Provider signingNode, final Address sender) {
+    return new SignerRpcSenderKnown(signingNode.theOtherRpc(), sender);
   }
 }

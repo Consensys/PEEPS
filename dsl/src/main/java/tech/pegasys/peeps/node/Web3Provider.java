@@ -16,14 +16,14 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static org.assertj.core.api.Assertions.assertThat;
 import static tech.pegasys.peeps.util.Await.await;
 
+import java.time.Duration;
+import org.apache.tuweni.bytes.Bytes;
+import org.apache.tuweni.eth.Address;
 import tech.pegasys.peeps.network.NetworkMember;
 import tech.pegasys.peeps.network.subnet.SubnetAddress;
 import tech.pegasys.peeps.node.model.EnodeHelpers;
 import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.model.TransactionReceipt;
-import tech.pegasys.peeps.node.rpc.NodeRpc;
-import tech.pegasys.peeps.node.rpc.NodeRpcClient;
-import tech.pegasys.peeps.node.rpc.NodeRpcMandatoryResponse;
 import tech.pegasys.peeps.node.rpc.admin.NodeInfo;
 import tech.pegasys.peeps.node.verification.AccountValue;
 import tech.pegasys.peeps.node.verification.NodeValueTransition;
@@ -37,8 +37,11 @@ import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.testcontainers.containers.GenericContainer;
+import tech.pegasys.peeps.signer.rpc.SignerRpc;
+import tech.pegasys.peeps.signer.rpc.SignerRpcClient;
+import tech.pegasys.peeps.signer.rpc.SignerRpcMandatoryResponse;
 
-public abstract class Web3Provider implements NetworkMember {
+public abstract class Web3Provider implements NetworkMember, EthereumAddressProvider {
 
   private static final Logger LOG = LogManager.getLogger();
 
@@ -46,32 +49,43 @@ public abstract class Web3Provider implements NetworkMember {
   public static final int CONTAINER_WS_RPC_PORT = 8546;
   public static final int CONTAINER_P2P_PORT = 30303;
 
-  protected final NodeRpcClient nodeRpc;
-  protected final NodeRpc rpc;
+  protected final SignerRpcClient nodeRpc;
+  protected final SignerRpcMandatoryResponse rpc;
+
   protected GenericContainer<?> container;
   private final SubnetAddress ipAddress;
   private final String identity;
   private final String enodeAddress;
   private final String pubKey;
+  private final Address ethereumAddress;
 
   private String nodeId;
   private String enodeId;
 
+
   public Web3Provider(final Web3ProviderConfiguration config, final GenericContainer<?> container) {
     this.container = container;
-    this.nodeRpc = new NodeRpcClient(config.getVertx(), dockerLogs());
-    this.rpc = new NodeRpcMandatoryResponse(nodeRpc);
+    this.nodeRpc = new SignerRpcClient(config.getVertx(), Duration.ofSeconds(10), dockerLogs());
+    this.rpc = new SignerRpcMandatoryResponse(nodeRpc);
     this.ipAddress = config.getIpAddress();
 
-    this.identity = config.getIdentity();
     this.pubKey = config.getNodeKeys().publicKey().bytes().toUnprefixedHexString();
+    this.ethereumAddress =
+        Address.fromBytes(
+            org.apache.tuweni.crypto.Hash.keccak256(Bytes.fromHexString(pubKey)).slice(12, 20));
+
+    this.identity = config.getIdentity();
+
     this.enodeAddress = enodeAddress(config);
   }
 
   @Override
   public void start() {
     try {
+
       container.start();
+      LOG.info("Starting {} : {},  {} ", identity, container.getDockerImageName(),
+          container.getContainerId(), container.getContainerInfo().getImageId());
 
       container.followOutput(
           outputFrame -> LOG.info("{}: {}", identity, outputFrame.getUtf8String()));
@@ -124,8 +138,9 @@ public abstract class Web3Provider implements NetworkMember {
     return enodeAddress;
   }
 
-  public String nodePublicKey() {
-    return pubKey;
+  @Override
+  public Address getAddress() {
+    return ethereumAddress;
   }
 
   public String identity() {
@@ -182,7 +197,11 @@ public abstract class Web3Provider implements NetworkMember {
 
   public abstract String getLogs();
 
-  public NodeRpc rpc() {
+  public SignerRpcClient rpc() {
+    return nodeRpc;
+  }
+
+  public SignerRpc theOtherRpc() {
     return rpc;
   }
 
