@@ -12,7 +12,7 @@
  */
 package tech.pegasys.peeps.privacy.rpc.send;
 
-import tech.pegasys.peeps.privacy.model.OrionKey;
+import tech.pegasys.peeps.privacy.model.TransactionManagerKey;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -20,13 +20,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SendResponse {
 
-  private final OrionKey key;
+  private final TransactionManagerKey key;
 
-  public SendResponse(@JsonProperty("key") final OrionKey key) {
+  public SendResponse(@JsonProperty("key") final TransactionManagerKey key) {
     this.key = key;
   }
 
-  public OrionKey getKey() {
+  public TransactionManagerKey getKey() {
     return key;
   }
 }

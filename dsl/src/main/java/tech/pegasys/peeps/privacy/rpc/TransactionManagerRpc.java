@@ -13,7 +13,7 @@
 package tech.pegasys.peeps.privacy.rpc;
 
 import tech.pegasys.peeps.json.rpc.RpcClient;
-import tech.pegasys.peeps.privacy.model.OrionKey;
+import tech.pegasys.peeps.privacy.model.TransactionManagerKey;
 import tech.pegasys.peeps.privacy.rpc.receive.ReceiveRequest;
 import tech.pegasys.peeps.privacy.rpc.receive.ReceiveResponse;
 import tech.pegasys.peeps.privacy.rpc.send.SendRequest;
@@ -40,12 +40,12 @@ public class TransactionManagerRpc extends RpcClient {
     this.pubKey = pubKey;
   }
 
-  public OrionKey send(final String to, final String payload) {
+  public TransactionManagerKey send(final String to, final String payload) {
     return post("/send", new SendRequest(pubKey, new String[] {to}, payload), SendResponse.class)
         .getKey();
   }
 
-  public String receive(final OrionKey key) {
+  public String receive(final TransactionManagerKey key) {
     return post("/receive", new ReceiveRequest(pubKey, key), ReceiveResponse.class).getPayload();
   }
 }

@@ -14,7 +14,7 @@ package tech.pegasys.peeps.privacy.rpc;
 
 import static tech.pegasys.peeps.util.Await.awaitData;
 
-import tech.pegasys.peeps.privacy.model.OrionKey;
+import tech.pegasys.peeps.privacy.model.TransactionManagerKey;
 
 public class TransactionManagerRpcExpectingData {
 
@@ -24,12 +24,12 @@ public class TransactionManagerRpcExpectingData {
     this.rpc = rpc;
   }
 
-  public OrionKey send(final String to, final String payload) {
+  public TransactionManagerKey send(final String to, final String payload) {
     return awaitData(
         () -> rpc.send(to, payload), "Failed to sent payload: %s, to peer: %s", payload, to);
   }
 
-  public String receive(final OrionKey receipt) {
+  public String receive(final TransactionManagerKey receipt) {
     return awaitData(
         () -> rpc.receive(receipt), "Failed to retrieve payload with key: %s", receipt);
   }

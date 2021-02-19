@@ -15,7 +15,7 @@ package tech.pegasys.peeps.privacy;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import tech.pegasys.peeps.node.model.Transaction;
-import tech.pegasys.peeps.privacy.model.OrionKey;
+import tech.pegasys.peeps.privacy.model.TransactionManagerKey;
 
 import java.util.Set;
 
@@ -31,7 +31,7 @@ public class PrivacyGroupVerify {
   public void consensusOnPrivacyPayload(final Transaction pmt) {
     // TODO check key != null
 
-    final OrionKey key = OrionKey.from(pmt);
+    final TransactionManagerKey key = TransactionManagerKey.from(pmt);
     // TODO check key != null
 
     final String firstPayload = group.iterator().next().getPayload(key);
