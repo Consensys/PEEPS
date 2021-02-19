@@ -34,8 +34,7 @@ import org.apache.logging.log4j.Logger;
 
 public abstract class RpcClient {
 
-  private static final int HTTP_STATUS_OK = 200;
-  private static final int HTTP_STATUS_CREATED = 201;
+  private static final List<Integer> HTTP_OK_STATUSES = List.of(200, 201);
 
   private final Vertx vertx;
   private final Logger log;
@@ -102,7 +101,7 @@ public abstract class RpcClient {
         rpc.post(
             relativeUri,
             result -> {
-              if (List.of(HTTP_STATUS_OK, HTTP_STATUS_CREATED).contains(result.statusCode())) {
+              if (HTTP_OK_STATUSES.contains(result.statusCode())) {
                 result.bodyHandler(
                     body -> {
                       log.info(

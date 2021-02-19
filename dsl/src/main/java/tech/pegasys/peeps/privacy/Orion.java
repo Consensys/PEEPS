@@ -62,7 +62,7 @@ public class Orion implements TransactionManager {
   // TODO typing for key?
   private final String id;
 
-  public Orion(final OrionConfiguration config) {
+  public Orion(final TransactionManagerConfiguration config) {
 
     final GenericContainer<?> container = new GenericContainer<>(ORION_IMAGE);
     addContainerNetwork(config, container);
@@ -170,7 +170,7 @@ public class Orion implements TransactionManager {
   }
 
   private void addPrivateKeys(
-      final OrionConfiguration config, final GenericContainer<?> container) {
+      final TransactionManagerConfiguration config, final GenericContainer<?> container) {
     for (final PrivacyPrivateKeyResource key : config.getPrivateKeys()) {
       final String location = key.get();
       container.withClasspathResourceMapping(
@@ -178,7 +178,8 @@ public class Orion implements TransactionManager {
     }
   }
 
-  private void addPublicKeys(final OrionConfiguration config, final GenericContainer<?> container) {
+  private void addPublicKeys(
+      final TransactionManagerConfiguration config, final GenericContainer<?> container) {
     for (final PrivacyPublicKeyResource key : config.getPublicKeys()) {
       final String location = key.get();
       container.withClasspathResourceMapping(
@@ -227,18 +228,18 @@ public class Orion implements TransactionManager {
   }
 
   private void addContainerNetwork(
-      final OrionConfiguration config, final GenericContainer<?> container) {
+      final TransactionManagerConfiguration config, final GenericContainer<?> container) {
     container.withNetwork(config.getContainerNetwork());
   }
 
   private void addContainerIpAddress(
-      final OrionConfiguration config, final GenericContainer<?> container) {
+      final TransactionManagerConfiguration config, final GenericContainer<?> container) {
     container.withCreateContainerCmdModifier(
         modifier -> modifier.withIpv4Address(config.getIpAddress().get()));
   }
 
   private void addConfigurationFile(
-      final OrionConfiguration config, final GenericContainer<?> container) {
+      final TransactionManagerConfiguration config, final GenericContainer<?> container) {
     container.withCopyFileToContainer(
         MountableFile.forHostPath(config.getFileSystemConfigurationFile()), CONTAINER_CONFIG_FILE);
   }

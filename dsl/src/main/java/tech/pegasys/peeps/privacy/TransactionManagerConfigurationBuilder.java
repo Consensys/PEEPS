@@ -27,7 +27,7 @@ import java.util.List;
 import io.vertx.core.Vertx;
 import org.testcontainers.containers.Network;
 
-public class TesseraConfigurationBuilder {
+public class TransactionManagerConfigurationBuilder {
 
   private List<PrivacyPrivateKeyResource> privKeys;
   private List<PrivacyPublicKeyResource> pubKeys;
@@ -39,7 +39,7 @@ public class TesseraConfigurationBuilder {
   private SubnetAddress ipAddress;
   private Vertx vertx;
 
-  public TesseraConfigurationBuilder withKeyPairs(final List<PrivacyKeyPair> keyPairs) {
+  public TransactionManagerConfigurationBuilder withKeyPairs(final List<PrivacyKeyPair> keyPairs) {
     this.pubKeys = new ArrayList<>();
     this.privKeys = new ArrayList<>();
 
@@ -51,33 +51,35 @@ public class TesseraConfigurationBuilder {
     return this;
   }
 
-  public TesseraConfigurationBuilder withBootnodeUrls(final List<String> bootnodeUrls) {
+  public TransactionManagerConfigurationBuilder withBootnodeUrls(final List<String> bootnodeUrls) {
     this.bootnodeUrls = bootnodeUrls;
     return this;
   }
 
-  public TesseraConfigurationBuilder withContainerNetwork(final Network containerNetwork) {
+  public TransactionManagerConfigurationBuilder withContainerNetwork(
+      final Network containerNetwork) {
     this.containerNetwork = containerNetwork;
     return this;
   }
 
-  public TesseraConfigurationBuilder withIpAddress(final SubnetAddress networkIpAddress) {
+  public TransactionManagerConfigurationBuilder withIpAddress(
+      final SubnetAddress networkIpAddress) {
     this.ipAddress = networkIpAddress;
     return this;
   }
 
-  public TesseraConfigurationBuilder withFileSystemConfigurationFile(
+  public TransactionManagerConfigurationBuilder withFileSystemConfigurationFile(
       final Path fileSystemConfigFile) {
     this.fileSystemConfigFile = fileSystemConfigFile;
     return this;
   }
 
-  public TesseraConfigurationBuilder withVertx(final Vertx vertx) {
+  public TransactionManagerConfigurationBuilder withVertx(final Vertx vertx) {
     this.vertx = vertx;
     return this;
   }
 
-  public TesseraConfiguration build() {
+  public TransactionManagerConfiguration build() {
     checkNotNull(privKeys, "Private keys are mandatory");
     checkArgument(privKeys.size() > 0, "At least one private key is required");
     checkNotNull(pubKeys, "Public keys are mandatory");
@@ -87,7 +89,7 @@ public class TesseraConfigurationBuilder {
     checkNotNull(vertx, "A Vertx instance is mandatory");
     checkNotNull(ipAddress, "Container IP Address is mandatory");
 
-    return new TesseraConfiguration(
+    return new TransactionManagerConfiguration(
         privKeys, pubKeys, bootnodeUrls, ipAddress, containerNetwork, vertx, fileSystemConfigFile);
   }
 }

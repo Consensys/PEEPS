@@ -36,7 +36,7 @@ public class TesseraConfigurationFile {
   private static final int THIRD_PARTY_RPC_PORT = 8890;
   private static final int PEER_TO_PEER_PORT = 8080;
 
-  public static void write(TesseraConfiguration config) {
+  public static void write(TransactionManagerConfiguration config) {
     final Map<String, Object> content = new HashMap<>();
     content.put("useWhiteList", false);
     content.put(

@@ -52,15 +52,13 @@ import tech.pegasys.peeps.node.model.TransactionReceipt;
 import tech.pegasys.peeps.node.rpc.NodeRpc;
 import tech.pegasys.peeps.node.verification.AccountValue;
 import tech.pegasys.peeps.privacy.Orion;
-import tech.pegasys.peeps.privacy.OrionConfiguration;
-import tech.pegasys.peeps.privacy.OrionConfigurationBuilder;
 import tech.pegasys.peeps.privacy.OrionConfigurationFile;
 import tech.pegasys.peeps.privacy.PrivacyGroupVerify;
 import tech.pegasys.peeps.privacy.Tessera;
-import tech.pegasys.peeps.privacy.TesseraConfiguration;
-import tech.pegasys.peeps.privacy.TesseraConfigurationBuilder;
 import tech.pegasys.peeps.privacy.TesseraConfigurationFile;
 import tech.pegasys.peeps.privacy.TransactionManager;
+import tech.pegasys.peeps.privacy.TransactionManagerConfiguration;
+import tech.pegasys.peeps.privacy.TransactionManagerConfigurationBuilder;
 import tech.pegasys.peeps.privacy.TransactionManagerType;
 import tech.pegasys.peeps.privacy.model.PrivacyGroup;
 import tech.pegasys.peeps.privacy.model.PrivacyKeyPair;
@@ -229,30 +227,19 @@ public class Network implements Closeable {
       final List<PrivacyKeyPair> keys,
       final TransactionManagerType transactionManagerType) {
     final TransactionManager manager;
+    final TransactionManagerConfiguration configuration =
+        new TransactionManagerConfigurationBuilder()
+            .withVertx(vertx)
+            .withContainerNetwork(subnet.network())
+            .withIpAddress(subnet.getAddressAndIncrement())
+            .withFileSystemConfigurationFile(pathGenerator.uniqueFile())
+            .withBootnodeUrls(privacyManagerBootnodeUrls())
+            .withKeyPairs(keys)
+            .build();
     if (transactionManagerType.equals(TransactionManagerType.ORION)) {
-      // TODO JF create common configuration for transaction manager
-      final OrionConfiguration configuration =
-          new OrionConfigurationBuilder()
-              .withVertx(vertx)
-              .withContainerNetwork(subnet.network())
-              .withIpAddress(subnet.getAddressAndIncrement())
-              .withFileSystemConfigurationFile(pathGenerator.uniqueFile())
-              .withBootnodeUrls(privacyManagerBootnodeUrls())
-              .withKeyPairs(keys)
-              .build();
       OrionConfigurationFile.write(configuration);
       manager = new Orion(configuration);
     } else {
-      final TesseraConfiguration configuration =
-          new TesseraConfigurationBuilder()
-              .withVertx(vertx)
-              .withContainerNetwork(subnet.network())
-              .withIpAddress(subnet.getAddressAndIncrement())
-              .withFileSystemConfigurationFile(pathGenerator.uniqueFile())
-              // TODO fix bootnode configuration
-              .withBootnodeUrls(privacyManagerBootnodeUrls())
-              .withKeyPairs(keys)
-              .build();
       TesseraConfigurationFile.write(configuration);
       manager = new Tessera(configuration);
     }
@@ -436,7 +423,7 @@ public class Network implements Closeable {
   }
 
   private void everyMember(Consumer<NetworkMember> action) {
-    members.forEach(action);
+    members.parallelStream().forEach(action);
   }
 
   private Genesis createGenesis(

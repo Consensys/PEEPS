@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 ConsenSys AG.
+ * Copyright 2019 ConsenSys AG.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -23,7 +23,8 @@ import java.util.Optional;
 import io.vertx.core.Vertx;
 import org.testcontainers.containers.Network;
 
-public class TesseraConfiguration {
+public class TransactionManagerConfiguration {
+
   private final List<PrivacyPrivateKeyResource> privKeys;
   private final List<PrivacyPublicKeyResource> pubKeys;
   private final List<String> bootnodeUrls;
@@ -34,7 +35,7 @@ public class TesseraConfiguration {
   private final SubnetAddress ipAddress;
   private final Vertx vertx;
 
-  public TesseraConfiguration(
+  public TransactionManagerConfiguration(
       final List<PrivacyPrivateKeyResource> privKeys,
       final List<PrivacyPublicKeyResource> pubKeys,
       final List<String> bootnodeUrls,
