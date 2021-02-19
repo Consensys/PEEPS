@@ -14,27 +14,32 @@ package tech.pegasys.peeps.privacy;
 
 import static java.util.Map.entry;
 
+import tech.pegasys.peeps.privacy.model.PrivacyPrivateKeyResource;
+import tech.pegasys.peeps.privacy.model.PrivacyPublicKeyResource;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Streams;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class TesseraConfigurationFile {
 
   private static final Logger LOG = LogManager.getLogger();
-  // TODO JF configure working dir in Tessera?
   private static final String CONTAINER_WORKING_DIRECTORY_PREFIX = "/opt/tessera/";
   private static final int HTTP_RPC_PORT = 8888;
   private static final int THIRD_PARTY_RPC_PORT = 8890;
   private static final int PEER_TO_PEER_PORT = 8080;
+  private static final ObjectMapper MAPPER = new ObjectMapper();
 
   public static void write(TransactionManagerConfiguration config) {
     final Map<String, Object> content = new HashMap<>();
@@ -65,51 +70,27 @@ public class TesseraConfigurationFile {
                 entry("serverAddress", "http://localhost:" + PEER_TO_PEER_PORT),
                 entry("communicationType", "REST"))));
 
-    // TODO JF this should be configurable
     content.put("mode", "orion");
     content.put("alwaysSendTo", List.of());
+    content.put("peer", List.of());
 
-    // TODO JF configure bootnodes
-    // TODO JF bootnodes as empty list of optional? why both?
-    final List<Map<String, String>> peers = new ArrayList<>();
-    final List<String> bootnodeUrls =
-        config.getBootnodeUrls().isEmpty() ? List.of() : config.getBootnodeUrls().get();
-    if (bootnodeUrls.isEmpty()) {
-      peers.add(Map.of("url", "http://127.0.0.1:" + PEER_TO_PEER_PORT));
-    } else {
-      config.getBootnodeUrls().get().forEach(bootnodeUrl -> peers.add(Map.of("url", bootnodeUrl)));
-    }
-
-    content.put("peer", peers);
-
-    // TODO JF where do we get this from?
-
-    // TODO JF return a single list of private/public key data to avoid iterating lists separately
-    final List<Map<String, String>> keyData = new ArrayList<>();
-    for (int i = 0; i < config.getPrivateKeys().size(); i++) {
-      keyData.add(
-          // TODO JF create location using Path
-          Map.ofEntries(
-              entry(
-                  "privateKeyPath",
-                  CONTAINER_WORKING_DIRECTORY_PREFIX + "/" + config.getPrivateKeys().get(i).get()),
-              entry(
-                  "publicKeyPath",
-                  CONTAINER_WORKING_DIRECTORY_PREFIX + "/" + config.getPublicKeys().get(i).get())));
-    }
-
+    final List<Map<String, String>> keyData =
+        Streams.zip(
+                config.getPrivateKeys().stream(),
+                config.getPublicKeys().stream(),
+                TesseraConfigurationFile::createKeyDataEntry)
+            .collect(Collectors.toList());
     content.put("keys", Map.of("passwords", List.of(), "keyData", keyData));
+
     LOG.info(
         "Creating Tessera config file\n\tLocation: {} \n\tContents: {}",
         config.getFileSystemConfigurationFile(),
         content.toString());
 
     try {
-      final String configContent = new ObjectMapper().writeValueAsString(content);
-      LOG.info("Tessera configuration file contents = {}", configContent);
       Files.write(
           config.getFileSystemConfigurationFile(),
-          configContent.getBytes(StandardCharsets.UTF_8),
+          MAPPER.writeValueAsString(content).getBytes(StandardCharsets.UTF_8),
           StandardOpenOption.CREATE);
     } catch (final IOException e) {
       final String message =
@@ -119,5 +100,16 @@ public class TesseraConfigurationFile {
       LOG.error(message);
       throw new IllegalStateException(message);
     }
+  }
+
+  private static Map<String, String> createKeyDataEntry(
+      final PrivacyPrivateKeyResource privateKey, final PrivacyPublicKeyResource publicKey) {
+    return Map.ofEntries(
+        entry(
+            "privateKeyPath",
+            Path.of(CONTAINER_WORKING_DIRECTORY_PREFIX, privateKey.get()).toString()),
+        entry(
+            "publicKeyPath",
+            Path.of(CONTAINER_WORKING_DIRECTORY_PREFIX, publicKey.get()).toString()));
   }
 }
