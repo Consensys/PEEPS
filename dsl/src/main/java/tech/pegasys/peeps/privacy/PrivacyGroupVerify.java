@@ -21,9 +21,9 @@ import java.util.Set;
 
 public class PrivacyGroupVerify {
 
-  private final Set<Orion> group;
+  private final Set<TransactionManager> group;
 
-  public PrivacyGroupVerify(final Set<Orion> group) {
+  public PrivacyGroupVerify(final Set<TransactionManager> group) {
     // TODO check args
     this.group = group;
   }
@@ -36,7 +36,7 @@ public class PrivacyGroupVerify {
 
     final String firstPayload = group.iterator().next().getPayload(key);
 
-    for (final Orion privacyManager : group) {
+    for (final TransactionManager privacyManager : group) {
       final String payload = privacyManager.getPayload(key);
       assertThat(payload).isNotNull();
       assertThat(payload).isEqualTo(firstPayload);

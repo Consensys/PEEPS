@@ -27,7 +27,7 @@ import java.util.List;
 import io.vertx.core.Vertx;
 import org.testcontainers.containers.Network;
 
-public class OrionConfigurationBuilder {
+public class TesseraConfigurationBuilder {
 
   private List<PrivacyPrivateKeyResource> privKeys;
   private List<PrivacyPublicKeyResource> pubKeys;
@@ -39,7 +39,7 @@ public class OrionConfigurationBuilder {
   private SubnetAddress ipAddress;
   private Vertx vertx;
 
-  public OrionConfigurationBuilder withKeyPairs(final List<PrivacyKeyPair> keyPairs) {
+  public TesseraConfigurationBuilder withKeyPairs(final List<PrivacyKeyPair> keyPairs) {
     this.pubKeys = new ArrayList<>();
     this.privKeys = new ArrayList<>();
 
@@ -51,33 +51,33 @@ public class OrionConfigurationBuilder {
     return this;
   }
 
-  public OrionConfigurationBuilder withBootnodeUrls(final List<String> bootnodeUrls) {
+  public TesseraConfigurationBuilder withBootnodeUrls(final List<String> bootnodeUrls) {
     this.bootnodeUrls = bootnodeUrls;
     return this;
   }
 
-  public OrionConfigurationBuilder withContainerNetwork(final Network containerNetwork) {
+  public TesseraConfigurationBuilder withContainerNetwork(final Network containerNetwork) {
     this.containerNetwork = containerNetwork;
     return this;
   }
 
-  public OrionConfigurationBuilder withIpAddress(final SubnetAddress networkIpAddress) {
+  public TesseraConfigurationBuilder withIpAddress(final SubnetAddress networkIpAddress) {
     this.ipAddress = networkIpAddress;
     return this;
   }
 
-  public OrionConfigurationBuilder withFileSystemConfigurationFile(
+  public TesseraConfigurationBuilder withFileSystemConfigurationFile(
       final Path fileSystemConfigFile) {
     this.fileSystemConfigFile = fileSystemConfigFile;
     return this;
   }
 
-  public OrionConfigurationBuilder withVertx(final Vertx vertx) {
+  public TesseraConfigurationBuilder withVertx(final Vertx vertx) {
     this.vertx = vertx;
     return this;
   }
 
-  public OrionConfiguration build() {
+  public TesseraConfiguration build() {
     checkNotNull(privKeys, "Private keys are mandatory");
     checkArgument(privKeys.size() > 0, "At least one private key is required");
     checkNotNull(pubKeys, "Public keys are mandatory");
@@ -87,7 +87,7 @@ public class OrionConfigurationBuilder {
     checkNotNull(vertx, "A Vertx instance is mandatory");
     checkNotNull(ipAddress, "Container IP Address is mandatory");
 
-    return new OrionConfiguration(
+    return new TesseraConfiguration(
         privKeys, pubKeys, bootnodeUrls, ipAddress, containerNetwork, vertx, fileSystemConfigFile);
   }
 }

@@ -16,11 +16,11 @@ import static tech.pegasys.peeps.util.Await.awaitData;
 
 import tech.pegasys.peeps.privacy.model.OrionKey;
 
-public class OrionRpcExpectingData {
+public class TransactionManagerRpcExpectingData {
 
-  private final OrionRpc rpc;
+  private final TransactionManagerRpc rpc;
 
-  public OrionRpcExpectingData(final OrionRpc rpc) {
+  public TransactionManagerRpcExpectingData(final TransactionManagerRpc rpc) {
     this.rpc = rpc;
   }
 

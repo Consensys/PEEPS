@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 ConsenSys AG.
+ * Copyright 2021 ConsenSys AG.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -23,7 +23,10 @@ import tech.pegasys.peeps.privacy.rpc.TransactionManagerRpcExpectingData;
 import tech.pegasys.peeps.util.ClasspathResources;
 import tech.pegasys.peeps.util.DockerLogs;
 
+import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -34,56 +37,65 @@ import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.images.PullPolicy;
 import org.testcontainers.utility.MountableFile;
 
-public class Orion implements TransactionManager {
-
+public class Tessera implements TransactionManager {
   private static final Logger LOG = LogManager.getLogger();
 
-  private static final String CONTAINER_WORKING_DIRECTORY_PREFIX = "/opt/orion/";
-  private static final String CONTAINER_CONFIG_FILE = "/orion.conf";
+  private static final String CONTAINER_WORKING_DIRECTORY_PREFIX = "/opt/tessera/";
+  private static final String CONTAINER_CONFIG_FILE = "/tessera.conf";
   private static final String AM_I_ALIVE_ENDPOINT = "/upcheck";
 
-  // TODO there should be the 'latest' version
-  private static final String ORION_IMAGE = "consensys/quorum-orion:develop";
+  private static final String TESSERA_IMAGE = "quorumengineering/tessera:latest";
 
   private static final int CONTAINER_PEER_TO_PEER_PORT = 8080;
   private static final int CONTAINER_HTTP_RPC_PORT = 8888;
   private static final int ALIVE_STATUS_CODE = 200;
 
-  private final GenericContainer<?> orion;
-  private final TransactionManagerRpc transactionManagerRpc;
+  private final GenericContainer<?> tessera;
+  private final TransactionManagerRpc tesseraRpc;
   private final TransactionManagerRpcExpectingData rpc;
 
   // TODO stronger typing than String
-  private final String orionNetworkAddress;
+  private final String tesseraNetworkAddress;
   private final String networkRpcAddress;
 
   // TODO typing for key?
   private final String id;
 
-  public Orion(final OrionConfiguration config) {
+  public Tessera(final TesseraConfiguration config) {
 
-    final GenericContainer<?> container = new GenericContainer<>(ORION_IMAGE);
+    final GenericContainer<?> container =
+        new GenericContainer<>(TESSERA_IMAGE)
+            .withReuse(false)
+            .withImagePullPolicy(PullPolicy.ageBased(Duration.ofHours(1)));
     addContainerNetwork(config, container);
     addContainerIpAddress(config, container);
     addPrivateKeys(config, container);
     addPublicKeys(config, container);
     addConfigurationFile(config, container);
+    container.addExposedPort(CONTAINER_PEER_TO_PEER_PORT);
+    container.addExposedPort(CONTAINER_HTTP_RPC_PORT);
 
-    this.orion = container.withCommand(CONTAINER_CONFIG_FILE).waitingFor(liveliness());
+    final List<String> commandLineOptions = new ArrayList<>();
+    commandLineOptions.add("-configfile");
+    commandLineOptions.add(CONTAINER_CONFIG_FILE);
 
-    this.orionNetworkAddress =
+    this.tessera =
+        container.withCommand(commandLineOptions.toArray(new String[0])).waitingFor(liveliness());
+
+    this.tesseraNetworkAddress =
         String.format("http://%s:%s", config.getIpAddress().get(), CONTAINER_PEER_TO_PEER_PORT);
 
     this.networkRpcAddress =
         String.format("http://%s:%s", config.getIpAddress().get(), CONTAINER_HTTP_RPC_PORT);
 
     // TODO just using the first key, selecting the identity could be an option for
-    // multi-key Orion
+    // multi-key Tessera
     this.id = ClasspathResources.read(config.getPublicKeys().get(0).get());
-    this.transactionManagerRpc = new TransactionManagerRpc(config.getVertx(), id, dockerLogs());
-    this.rpc = new TransactionManagerRpcExpectingData(transactionManagerRpc);
+    this.tesseraRpc = new TransactionManagerRpc(config.getVertx(), id, dockerLogs());
+    this.rpc = new TransactionManagerRpcExpectingData(tesseraRpc);
   }
 
   @Override
@@ -94,39 +106,48 @@ public class Orion implements TransactionManager {
   @Override
   public void start() {
     try {
-      orion.start();
+      tessera.start();
 
-      transactionManagerRpc.bind(
-          orion.getContainerId(),
-          orion.getContainerIpAddress(),
-          orion.getMappedPort(CONTAINER_HTTP_RPC_PORT));
+      tesseraRpc.bind(
+          tessera.getContainerId(),
+          tessera.getContainerIpAddress(),
+          tessera.getMappedPort(CONTAINER_HTTP_RPC_PORT));
+
+      System.out.println("tessera.getContainerId() = " + tessera.getContainerId());
+      LOG.info(
+          "Tessera info id:{}, ip:{}, mappedPort:{}",
+          tessera.getContainerId(),
+          tessera.getContainerIpAddress(),
+          tessera.getMappedPort(CONTAINER_HTTP_RPC_PORT));
+
+      tessera.followOutput(outputFrame -> LOG.info(outputFrame.getUtf8String()));
 
       // TODO validate the node has the expected state, e.g. consensus, genesis,
       // networkId,
       // protocol(s), ports, listen address
 
-      logOrionDetails();
+      logTesseraDetails();
       logPortMappings();
       logContainerNetworkDetails();
     } catch (final ContainerLaunchException e) {
-      LOG.error(orion.getLogs());
+      LOG.error(tessera.getLogs());
       throw e;
     }
   }
 
   @Override
   public void stop() {
-    if (orion != null) {
-      orion.stop();
+    if (tessera != null) {
+      tessera.stop();
     }
-    if (transactionManagerRpc != null) {
-      transactionManagerRpc.close();
+    if (tesseraRpc != null) {
+      tesseraRpc.close();
     }
   }
 
   @Override
   public String getPeerNetworkAddress() {
-    return orionNetworkAddress;
+    return tesseraNetworkAddress;
   }
 
   @Override
@@ -154,6 +175,7 @@ public class Orion implements TransactionManager {
     return Set.of(this::getLogs);
   }
 
+  // TODO use upcheck
   private void awaitConnectivity(final TransactionManager peer) {
     final String message = generateUniquePayload();
 
@@ -170,7 +192,7 @@ public class Orion implements TransactionManager {
   }
 
   private void addPrivateKeys(
-      final OrionConfiguration config, final GenericContainer<?> container) {
+      final TesseraConfiguration config, final GenericContainer<?> container) {
     for (final PrivacyPrivateKeyResource key : config.getPrivateKeys()) {
       final String location = key.get();
       container.withClasspathResourceMapping(
@@ -178,7 +200,8 @@ public class Orion implements TransactionManager {
     }
   }
 
-  private void addPublicKeys(final OrionConfiguration config, final GenericContainer<?> container) {
+  private void addPublicKeys(
+      final TesseraConfiguration config, final GenericContainer<?> container) {
     for (final PrivacyPublicKeyResource key : config.getPublicKeys()) {
       final String location = key.get();
       container.withClasspathResourceMapping(
@@ -187,37 +210,37 @@ public class Orion implements TransactionManager {
   }
 
   public String getLogs() {
-    return DockerLogs.format("Orion", orion);
+    return DockerLogs.format("Tessera", tessera);
   }
 
   private String containerWorkingDirectory(final String relativePath) {
     return CONTAINER_WORKING_DIRECTORY_PREFIX + relativePath;
   }
 
-  private void logOrionDetails() {
-    LOG.info("Orion Container: {}, ID: {}", orion.getContainerId(), id);
+  private void logTesseraDetails() {
+    LOG.info("Tessera Container: {}, ID: {}", tessera.getContainerId(), id);
   }
 
   private void logContainerNetworkDetails() {
-    if (orion.getNetwork() == null) {
-      LOG.info("Orion Container: {}, has no network", orion.getContainerId());
+    if (tessera.getNetwork() == null) {
+      LOG.info("Tessera Container: {}, has no network", tessera.getContainerId());
     } else {
       LOG.info(
-          "Orion Container: {}, IP address: {}, Network: {}",
-          orion.getContainerId(),
-          orion.getContainerIpAddress(),
-          orion.getNetwork().getId());
+          "Tessera Container: {}, IP address: {}, Network: {}",
+          tessera.getContainerId(),
+          tessera.getContainerIpAddress(),
+          tessera.getNetwork().getId());
     }
   }
 
   private void logPortMappings() {
     LOG.info(
-        "Orion Container: {}, HTTP RPC port mapping: {} -> {}, p2p port mapping: {} -> {}",
-        orion.getContainerId(),
+        "Tessera Container: {}, HTTP RPC port mapping: {} -> {}, p2p port mapping: {} -> {}",
+        tessera.getContainerId(),
         CONTAINER_HTTP_RPC_PORT,
-        orion.getMappedPort(CONTAINER_HTTP_RPC_PORT),
+        tessera.getMappedPort(CONTAINER_HTTP_RPC_PORT),
         CONTAINER_PEER_TO_PEER_PORT,
-        orion.getMappedPort(CONTAINER_PEER_TO_PEER_PORT));
+        tessera.getMappedPort(CONTAINER_PEER_TO_PEER_PORT));
   }
 
   private HttpWaitStrategy liveliness() {
@@ -227,18 +250,18 @@ public class Orion implements TransactionManager {
   }
 
   private void addContainerNetwork(
-      final OrionConfiguration config, final GenericContainer<?> container) {
+      final TesseraConfiguration config, final GenericContainer<?> container) {
     container.withNetwork(config.getContainerNetwork());
   }
 
   private void addContainerIpAddress(
-      final OrionConfiguration config, final GenericContainer<?> container) {
+      final TesseraConfiguration config, final GenericContainer<?> container) {
     container.withCreateContainerCmdModifier(
         modifier -> modifier.withIpv4Address(config.getIpAddress().get()));
   }
 
   private void addConfigurationFile(
-      final OrionConfiguration config, final GenericContainer<?> container) {
+      final TesseraConfiguration config, final GenericContainer<?> container) {
     container.withCopyFileToContainer(
         MountableFile.forHostPath(config.getFileSystemConfigurationFile()), CONTAINER_CONFIG_FILE);
   }

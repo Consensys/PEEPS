@@ -56,6 +56,12 @@ import tech.pegasys.peeps.privacy.OrionConfiguration;
 import tech.pegasys.peeps.privacy.OrionConfigurationBuilder;
 import tech.pegasys.peeps.privacy.OrionConfigurationFile;
 import tech.pegasys.peeps.privacy.PrivacyGroupVerify;
+import tech.pegasys.peeps.privacy.Tessera;
+import tech.pegasys.peeps.privacy.TesseraConfiguration;
+import tech.pegasys.peeps.privacy.TesseraConfigurationBuilder;
+import tech.pegasys.peeps.privacy.TesseraConfigurationFile;
+import tech.pegasys.peeps.privacy.TransactionManager;
+import tech.pegasys.peeps.privacy.TransactionManagerType;
 import tech.pegasys.peeps.privacy.model.PrivacyGroup;
 import tech.pegasys.peeps.privacy.model.PrivacyKeyPair;
 import tech.pegasys.peeps.privacy.model.PrivacyManagerIdentifier;
@@ -84,7 +90,7 @@ import org.apache.tuweni.eth.Address;
 
 public class Network implements Closeable {
 
-  private final Map<PrivacyManagerIdentifier, Orion> privacyManagers;
+  private final Map<PrivacyManagerIdentifier, TransactionManager> privacyManagers;
   private final Map<SignerIdentifier, EthSigner> signers;
   private final Map<NodeIdentifier, Web3Provider> nodes;
   private final List<NetworkMember> members;
@@ -218,22 +224,38 @@ public class Network implements Closeable {
     return addNode(web3Provider);
   }
 
-  public Orion addPrivacyManager(
-      final PrivacyManagerIdentifier identity, final PrivacyKeyPair... keys) {
-    final OrionConfiguration configuration =
-        new OrionConfigurationBuilder()
-            .withVertx(vertx)
-            .withContainerNetwork(subnet.network())
-            .withIpAddress(subnet.getAddressAndIncrement())
-            .withFileSystemConfigurationFile(pathGenerator.uniqueFile())
-            .withBootnodeUrls(privacyManagerBootnodeUrls())
-            .withKeyPairs(keys)
-            .build();
-
-    // TODO encapsulate?
-    OrionConfigurationFile.write(configuration);
-
-    final Orion manager = new Orion(configuration);
+  public TransactionManager addPrivacyManager(
+      final PrivacyManagerIdentifier identity,
+      final List<PrivacyKeyPair> keys,
+      final TransactionManagerType transactionManagerType) {
+    final TransactionManager manager;
+    if (transactionManagerType.equals(TransactionManagerType.ORION)) {
+      // TODO JF create common configuration for transaction manager
+      final OrionConfiguration configuration =
+          new OrionConfigurationBuilder()
+              .withVertx(vertx)
+              .withContainerNetwork(subnet.network())
+              .withIpAddress(subnet.getAddressAndIncrement())
+              .withFileSystemConfigurationFile(pathGenerator.uniqueFile())
+              .withBootnodeUrls(privacyManagerBootnodeUrls())
+              .withKeyPairs(keys)
+              .build();
+      OrionConfigurationFile.write(configuration);
+      manager = new Orion(configuration);
+    } else {
+      final TesseraConfiguration configuration =
+          new TesseraConfigurationBuilder()
+              .withVertx(vertx)
+              .withContainerNetwork(subnet.network())
+              .withIpAddress(subnet.getAddressAndIncrement())
+              .withFileSystemConfigurationFile(pathGenerator.uniqueFile())
+              // TODO fix bootnode configuration
+              .withBootnodeUrls(privacyManagerBootnodeUrls())
+              .withKeyPairs(keys)
+              .build();
+      TesseraConfigurationFile.write(configuration);
+      manager = new Tessera(configuration);
+    }
 
     privacyManagers.put(identity, manager);
     members.add(manager);
@@ -414,7 +436,7 @@ public class Network implements Closeable {
   }
 
   private void everyMember(Consumer<NetworkMember> action) {
-    members.parallelStream().forEach(action);
+    members.forEach(action);
   }
 
   private Genesis createGenesis(

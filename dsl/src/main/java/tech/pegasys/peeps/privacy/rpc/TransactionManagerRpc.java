@@ -27,14 +27,15 @@ import io.vertx.core.Vertx;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class OrionRpc extends RpcClient {
+public class TransactionManagerRpc extends RpcClient {
 
   private static final Logger LOG = LogManager.getLogger();
   private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(4);
 
   private final String pubKey;
 
-  public OrionRpc(final Vertx vertx, final String pubKey, final Set<Supplier<String>> dockerLogs) {
+  public TransactionManagerRpc(
+      final Vertx vertx, final String pubKey, final Set<Supplier<String>> dockerLogs) {
     super(vertx, DEFAULT_TIMEOUT, LOG, dockerLogs);
     this.pubKey = pubKey;
   }
