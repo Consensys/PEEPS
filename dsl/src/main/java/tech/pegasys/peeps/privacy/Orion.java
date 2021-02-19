@@ -31,4 +31,9 @@ public class Orion extends TransactionManager {
     addConfigurationFile(config, CONTAINER_CONFIG_FILE, container);
     container.withCommand(CONTAINER_CONFIG_FILE).waitingFor(liveliness());
   }
+
+  @Override
+  public String getNodeName() {
+    return "Orion";
+  }
 }

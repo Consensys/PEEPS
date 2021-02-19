@@ -81,6 +81,9 @@ public abstract class TransactionManager implements NetworkMember {
     try {
       container.start();
 
+      container.followOutput(
+          outputFrame -> LOG.info("{}: {}", getNodeName(), outputFrame.getUtf8String()));
+
       transactionManagerRpc.bind(
           container.getContainerId(),
           container.getContainerIpAddress(),
@@ -108,6 +111,8 @@ public abstract class TransactionManager implements NetworkMember {
       transactionManagerRpc.close();
     }
   }
+
+  public abstract String getNodeName();
 
   public String getPeerNetworkAddress() {
     return networkP2PAddress;

@@ -48,4 +48,9 @@ public class Tessera extends TransactionManager {
 
     container.withCommand(commandLineOptions.toArray(new String[0])).waitingFor(liveliness());
   }
+
+  @Override
+  public String getNodeName() {
+    return "Tessera";
+  }
 }
