@@ -12,7 +12,6 @@
  */
 package tech.pegasys.peeps.node.genesis.clique;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonGetter;
 
 public class CliqueConfig {

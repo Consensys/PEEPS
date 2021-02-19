@@ -21,9 +21,9 @@ import static tech.pegasys.peeps.util.Await.await;
 import tech.pegasys.peeps.network.subnet.Subnet;
 import tech.pegasys.peeps.node.Account;
 import tech.pegasys.peeps.node.Besu;
+import tech.pegasys.peeps.node.EthereumAddressProvider;
 import tech.pegasys.peeps.node.GoQuorum;
 import tech.pegasys.peeps.node.NodeVerify;
-import tech.pegasys.peeps.node.EthereumAddressProvider;
 import tech.pegasys.peeps.node.Web3Provider;
 import tech.pegasys.peeps.node.Web3ProviderConfigurationBuilder;
 import tech.pegasys.peeps.node.Web3ProviderType;
@@ -165,10 +165,14 @@ public class Network implements Closeable {
   }
 
   public Web3Provider addNode(
-      final String nodeIdentifier, final KeyPair nodeKeys, final Web3ProviderType nodeType, final
-  SignerConfiguration wallet) {
+      final String nodeIdentifier,
+      final KeyPair nodeKeys,
+      final Web3ProviderType nodeType,
+      final SignerConfiguration wallet) {
     return addNode(
-        new Web3ProviderConfigurationBuilder().withIdentity(nodeIdentifier).withNodeKeys(nodeKeys)
+        new Web3ProviderConfigurationBuilder()
+            .withIdentity(nodeIdentifier)
+            .withNodeKeys(nodeKeys)
             .withWallet(wallet),
         nodeType);
   }
@@ -376,17 +380,16 @@ public class Network implements Closeable {
   }
 
   private String bootnodeEnodeAddresses() {
-    return nodes
-        .parallelStream()
-        .map(Web3Provider::enodeAddress)
-        .collect(Collectors.joining(","));
+    return nodes.parallelStream().map(Web3Provider::enodeAddress).collect(Collectors.joining(","));
   }
 
   private void everyMember(Consumer<NetworkMember> action) {
     // start the first node (which has NO bootnodes).
-    final NetworkMember bootNode = members.get(0); // TODO(tmm): Assumes this IS a Ethereum node
-    action.accept(bootNode);
-    members.parallelStream().filter(m -> !m.equals(bootNode)).forEach(action);
+    if (members.size() >= 1) {
+      final NetworkMember bootNode = members.get(0); // TODO(tmm): Assumes this IS a Ethereum node
+      action.accept(bootNode);
+      members.parallelStream().filter(m -> !m.equals(bootNode)).forEach(action);
+    }
   }
 
   private Genesis createGenesis(

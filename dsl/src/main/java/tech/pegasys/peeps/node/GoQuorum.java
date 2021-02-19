@@ -12,11 +12,6 @@
  */
 package tech.pegasys.peeps.node;
 
-import org.testcontainers.containers.BindMode;
-import tech.pegasys.peeps.node.rpc.NodeRpcMandatoryResponse;
-import tech.pegasys.peeps.signer.rpc.SignerRpc;
-import tech.pegasys.peeps.signer.rpc.SignerRpcClient;
-import tech.pegasys.peeps.signer.rpc.SignerRpcMandatoryResponse;
 import tech.pegasys.peeps.util.DockerLogs;
 
 import java.io.IOException;
@@ -30,6 +25,7 @@ import java.util.List;
 import com.google.common.collect.Lists;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
 import org.testcontainers.containers.wait.strategy.Wait;
@@ -69,9 +65,17 @@ public class GoQuorum extends Web3Provider {
         MountableFile.forHostPath(config.getGenesisFile()), CONTAINER_GENESIS_FILE);
     final List<String> entryPoint = Lists.newArrayList("/bin/sh", "-c");
     final String initCmd =
-        "mkdir -p '" + DATA_DIR + "/geth' && "
-            + "mkdir -p '" + DATA_DIR + "/keystore' && "
-            + "geth --datadir \"" + DATA_DIR + "\" init " + CONTAINER_GENESIS_FILE + " && "
+        "mkdir -p '"
+            + DATA_DIR
+            + "/geth' && "
+            + "mkdir -p '"
+            + DATA_DIR
+            + "/keystore' && "
+            + "geth --datadir \""
+            + DATA_DIR
+            + "\" init "
+            + CONTAINER_GENESIS_FILE
+            + " && "
             + " echo '##### GoQuorum INITIALISED #####' && ";
 
     addNodePrivateKey(config, commandLineOptions, container);
@@ -158,7 +162,11 @@ public class GoQuorum extends Web3Provider {
       Files.setPosixFilePermissions(tempFile, PosixFilePermissions.fromString("rwxrwxrwx"));
       Files.write(
           tempFile,
-          config.getNodeKeys().secretKey().bytes().toUnprefixedHexString()
+          config
+              .getNodeKeys()
+              .secretKey()
+              .bytes()
+              .toUnprefixedHexString()
               .getBytes(StandardCharsets.UTF_8));
     } catch (final IOException e) {
       throw new RuntimeException("Unable to create node key file", e);
@@ -173,18 +181,25 @@ public class GoQuorum extends Web3Provider {
       final Web3ProviderConfiguration config,
       final List<String> commandLineOptions,
       final GenericContainer<?> container) {
-    config.getWallet().ifPresent(wallet -> {
-          container
-              .withClasspathResourceMapping(wallet.resources().getKey().get(), DATA_DIR + "/keystore/",
+    config
+        .getWallet()
+        .ifPresent(
+            wallet -> {
+              container.withClasspathResourceMapping(
+                  wallet.resources().getKey().get(), DATA_DIR + "/keystore/", BindMode.READ_ONLY);
+              container.withClasspathResourceMapping(
+                  wallet.resources().getPassword().get(),
+                  CONTAINER_PASSWORD_FILE,
                   BindMode.READ_ONLY);
-          container.withClasspathResourceMapping(wallet.resources().getPassword().get(),
-              CONTAINER_PASSWORD_FILE,
-              BindMode.READ_ONLY);
-          commandLineOptions.addAll(List.of("--unlock", wallet.address().toHexString(), "--password",
-              CONTAINER_PASSWORD_FILE));
-          commandLineOptions.addAll(List.of("--miner.etherbase", wallet.address().toHexString()));
-        }
-    );
+              commandLineOptions.addAll(
+                  List.of(
+                      "--unlock",
+                      wallet.address().toHexString(),
+                      "--password",
+                      CONTAINER_PASSWORD_FILE));
+              commandLineOptions.addAll(
+                  List.of("--miner.etherbase", wallet.address().toHexString()));
+            });
   }
 
   //  private void addPrivacy(

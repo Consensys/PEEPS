@@ -12,8 +12,8 @@
  */
 package tech.pegasys.peeps.node;
 
-import java.util.List;
 import tech.pegasys.peeps.network.subnet.SubnetAddress;
+import tech.pegasys.peeps.signer.SignerConfiguration;
 
 import java.nio.file.Path;
 import java.util.Optional;
@@ -21,8 +21,6 @@ import java.util.Optional;
 import io.vertx.core.Vertx;
 import org.apache.tuweni.crypto.SECP256K1.KeyPair;
 import org.testcontainers.containers.Network;
-import tech.pegasys.peeps.signer.SignerConfiguration;
-import tech.pegasys.peeps.signer.model.WalletFileResources;
 
 public class Web3ProviderConfiguration {
 

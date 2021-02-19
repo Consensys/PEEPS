@@ -22,6 +22,7 @@ import java.security.Security;
 import java.util.List;
 
 import org.apache.tuweni.bytes.Bytes;
+import org.apache.tuweni.eth.Address;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
@@ -52,7 +53,12 @@ class GenesisExtraDataIbftLegacyTest {
     final Web3Provider[] mockProviders = new Web3Provider[validatorPublicKeys.size()];
     for (int i = 0; i < validatorPublicKeys.size(); i++) {
       mockProviders[i] = mock(Web3Provider.class);
-      when(mockProviders[i].getAddress()).thenReturn(validatorPublicKeys.get(i));
+      when(mockProviders[i].getAddress())
+          .thenReturn(
+              Address.fromBytes(
+                  org.apache.tuweni.crypto.Hash.keccak256(
+                          Bytes.fromHexString(validatorPublicKeys.get(i)))
+                      .slice(12, 20)));
     }
 
     final Bytes extraDataBytes = GenesisExtraDataIbftLegacy.encode(mockProviders);

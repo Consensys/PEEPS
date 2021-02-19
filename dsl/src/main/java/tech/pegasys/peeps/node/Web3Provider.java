@@ -16,9 +16,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static org.assertj.core.api.Assertions.assertThat;
 import static tech.pegasys.peeps.util.Await.await;
 
-import java.time.Duration;
-import org.apache.tuweni.bytes.Bytes;
-import org.apache.tuweni.eth.Address;
 import tech.pegasys.peeps.network.NetworkMember;
 import tech.pegasys.peeps.network.subnet.SubnetAddress;
 import tech.pegasys.peeps.node.model.EnodeHelpers;
@@ -27,7 +24,11 @@ import tech.pegasys.peeps.node.model.TransactionReceipt;
 import tech.pegasys.peeps.node.rpc.admin.NodeInfo;
 import tech.pegasys.peeps.node.verification.AccountValue;
 import tech.pegasys.peeps.node.verification.NodeValueTransition;
+import tech.pegasys.peeps.signer.rpc.SignerRpc;
+import tech.pegasys.peeps.signer.rpc.SignerRpcClient;
+import tech.pegasys.peeps.signer.rpc.SignerRpcMandatoryResponse;
 
+import java.time.Duration;
 import java.util.Collection;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -36,10 +37,9 @@ import java.util.stream.Stream;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.tuweni.bytes.Bytes;
+import org.apache.tuweni.eth.Address;
 import org.testcontainers.containers.GenericContainer;
-import tech.pegasys.peeps.signer.rpc.SignerRpc;
-import tech.pegasys.peeps.signer.rpc.SignerRpcClient;
-import tech.pegasys.peeps.signer.rpc.SignerRpcMandatoryResponse;
 
 public abstract class Web3Provider implements NetworkMember, EthereumAddressProvider {
 
@@ -62,7 +62,6 @@ public abstract class Web3Provider implements NetworkMember, EthereumAddressProv
   private String nodeId;
   private String enodeId;
 
-
   public Web3Provider(final Web3ProviderConfiguration config, final GenericContainer<?> container) {
     this.container = container;
     this.nodeRpc = new SignerRpcClient(config.getVertx(), Duration.ofSeconds(10), dockerLogs());
@@ -84,8 +83,12 @@ public abstract class Web3Provider implements NetworkMember, EthereumAddressProv
     try {
 
       container.start();
-      LOG.info("Starting {} : {},  {} ", identity, container.getDockerImageName(),
-          container.getContainerId(), container.getContainerInfo().getImageId());
+      LOG.info(
+          "Starting {} : {},  {} ",
+          identity,
+          container.getDockerImageName(),
+          container.getContainerId(),
+          container.getContainerInfo().getImageId());
 
       container.followOutput(
           outputFrame -> LOG.info("{}: {}", identity, outputFrame.getUtf8String()));

@@ -12,11 +12,6 @@
  */
 package tech.pegasys.peeps.consensus;
 
-
-import org.apache.tuweni.crypto.SECP256K1.KeyPair;
-import org.apache.tuweni.eth.Address;
-import org.apache.tuweni.units.ethereum.Wei;
-import org.junit.jupiter.api.Test;
 import tech.pegasys.peeps.FixedSignerConfigs;
 import tech.pegasys.peeps.NetworkTest;
 import tech.pegasys.peeps.network.ConsensusMechanism;
@@ -29,25 +24,45 @@ import tech.pegasys.peeps.node.verification.ValueReceived;
 import tech.pegasys.peeps.node.verification.ValueSent;
 import tech.pegasys.peeps.signer.SignerConfiguration;
 
-public class
+import org.apache.tuweni.crypto.SECP256K1.KeyPair;
+import org.apache.tuweni.eth.Address;
+import org.apache.tuweni.units.ethereum.Wei;
+import org.junit.jupiter.api.Test;
 
-IbftConsensusTest extends NetworkTest {
+public class IbftConsensusTest extends NetworkTest {
 
   private Web3Provider alphaNode;
   private final SignerConfiguration signer = FixedSignerConfigs.ALPHA;
 
   final KeyPair fromPrivKeyHexString(final String input) {
-//    return KeyPair.fromSecretKey(SecretKey.fromBytes(Bytes32.fromHexString(input)));
+    //    return KeyPair.fromSecretKey(SecretKey.fromBytes(Bytes32.fromHexString(input)));
     return KeyPair.random();
   }
 
   @Override
   protected void setUpNetwork(final Network network) {
-    alphaNode = network.addNode("alpha", fromPrivKeyHexString("131f7f9bfb56c19a3026fd5d9b0f5c0173d53ba7f4ec51e51f4466f5abfa4b06"), Web3ProviderType.GOQUORUM);
-    final Web3Provider betaNode = network.addNode("beta", fromPrivKeyHexString("55ec42a1da04bd05d0ee2c17fe6fb782531478ba8815f9c5f5ef7f90af5edc59"), Web3ProviderType.GOQUORUM);
-    final Web3Provider gammaNode = network.addNode("gamma", fromPrivKeyHexString("9a4b0678a40507b381e1db3d52847217092d08f839b183932cf4feefb06edceb"), Web3ProviderType.GOQUORUM);
- //   final Web3Provider epsilonNode = network.addNode("epsilon", fromPrivKeyHexString("97bcfadc9f952bc5b60001608e342b702651096ce590bcf2856374925a808d9a"), Web3ProviderType.GOQUORUM);
-    //network.addNode("besu-1", KeyPair.random(), Web3ProviderType.BESU);
+    alphaNode =
+        network.addNode(
+            "alpha",
+            fromPrivKeyHexString(
+                "131f7f9bfb56c19a3026fd5d9b0f5c0173d53ba7f4ec51e51f4466f5abfa4b06"),
+            Web3ProviderType.GOQUORUM);
+    final Web3Provider betaNode =
+        network.addNode(
+            "beta",
+            fromPrivKeyHexString(
+                "55ec42a1da04bd05d0ee2c17fe6fb782531478ba8815f9c5f5ef7f90af5edc59"),
+            Web3ProviderType.GOQUORUM);
+    final Web3Provider gammaNode =
+        network.addNode(
+            "gamma",
+            fromPrivKeyHexString(
+                "9a4b0678a40507b381e1db3d52847217092d08f839b183932cf4feefb06edceb"),
+            Web3ProviderType.GOQUORUM);
+    //   final Web3Provider epsilonNode = network.addNode("epsilon",
+    // fromPrivKeyHexString("97bcfadc9f952bc5b60001608e342b702651096ce590bcf2856374925a808d9a"),
+    // Web3ProviderType.GOQUORUM);
+    // network.addNode("besu-1", KeyPair.random(), Web3ProviderType.BESU);
     network.set(ConsensusMechanism.IBFT, alphaNode, betaNode, gammaNode);
     network.addSigner(signer.id(), signer.resources(), alphaNode);
   }

@@ -14,17 +14,14 @@ package tech.pegasys.peeps.node;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.List;
-import org.apache.commons.compress.utils.Lists;
 import tech.pegasys.peeps.network.subnet.SubnetAddress;
 import tech.pegasys.peeps.node.genesis.BesuGenesisFile;
 import tech.pegasys.peeps.privacy.Orion;
+import tech.pegasys.peeps.signer.SignerConfiguration;
 
 import io.vertx.core.Vertx;
 import org.apache.tuweni.crypto.SECP256K1.KeyPair;
 import org.testcontainers.containers.Network;
-import tech.pegasys.peeps.signer.SignerConfiguration;
-import tech.pegasys.peeps.signer.model.WalletFileResources;
 
 public class Web3ProviderConfigurationBuilder {
 

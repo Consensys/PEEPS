@@ -104,7 +104,6 @@ public class NetworkTest {
     network.start();
     network.close();
 
-    verify(node).identity();
     verify(node).awaitConnectivity(anyCollection());
     verify(node).start();
     verify(node).stop();
@@ -112,13 +111,12 @@ public class NetworkTest {
   }
 
   @Test
-  public void stopThenClosenMustStopNodeOnlyOnce() {
+  public void stopThenCloseMustStopNodeOnlyOnce() {
     network.addNode(node);
     network.start();
     network.stop();
     network.close();
 
-    verify(node).identity();
     verify(node).awaitConnectivity(anyCollection());
     verify(node).start();
     verify(node).stop();

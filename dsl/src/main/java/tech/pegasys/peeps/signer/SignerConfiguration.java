@@ -12,12 +12,13 @@
  */
 package tech.pegasys.peeps.signer;
 
-import org.apache.tuweni.eth.Address;
 import tech.pegasys.peeps.node.EthereumAddressProvider;
 import tech.pegasys.peeps.signer.model.SignerIdentifier;
 import tech.pegasys.peeps.signer.model.SignerKeyFileResource;
 import tech.pegasys.peeps.signer.model.SignerPasswordFileResource;
 import tech.pegasys.peeps.signer.model.WalletFileResources;
+
+import org.apache.tuweni.eth.Address;
 
 public class SignerConfiguration implements EthereumAddressProvider {
 
@@ -25,8 +26,11 @@ public class SignerConfiguration implements EthereumAddressProvider {
   private final SignerIdentifier id;
   private final WalletFileResources resources;
 
-  public SignerConfiguration(final String name,
-      final String keyResource, final String passwordResource, final Address address) {
+  public SignerConfiguration(
+      final String name,
+      final String keyResource,
+      final String passwordResource,
+      final Address address) {
     this.address = address;
 
     this.resources =

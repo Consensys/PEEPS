@@ -14,9 +14,6 @@ package tech.pegasys.peeps.node;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import tech.pegasys.peeps.node.rpc.NodeRpc;
-import tech.pegasys.peeps.node.rpc.NodeRpcClient;
-import tech.pegasys.peeps.node.rpc.NodeRpcMandatoryResponse;
 import tech.pegasys.peeps.util.DockerLogs;
 
 import java.io.IOException;
@@ -24,7 +21,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermissions;
-import java.time.Duration;
 import java.util.List;
 
 import com.google.common.collect.Lists;
@@ -54,9 +50,7 @@ public class Besu extends Web3Provider {
 
   public Besu(final Web3ProviderConfiguration config) {
     super(
-        config,
-        new GenericContainer<>(BESU_IMAGE)
-            .withImagePullPolicy(PullPolicy.defaultPolicy()));
+        config, new GenericContainer<>(BESU_IMAGE).withImagePullPolicy(PullPolicy.defaultPolicy()));
 
     final List<String> commandLineOptions = standardCommandLineOptions();
 
