@@ -21,7 +21,6 @@ import org.testcontainers.images.PullPolicy;
 
 public class Tessera extends PrivateTransactionManager {
   private static final String CONTAINER_WORKING_DIRECTORY_PREFIX = "/opt/tessera/";
-  private static final String CONTAINER_CONFIG_FILE = "/tessera.conf";
 
   private static final String TESSERA_IMAGE = "quorumengineering/tessera:latest";
 
@@ -38,7 +37,7 @@ public class Tessera extends PrivateTransactionManager {
     addContainerIpAddress(config, container);
     addPrivateKeys(config, CONTAINER_WORKING_DIRECTORY_PREFIX, container);
     addPublicKeys(config, CONTAINER_WORKING_DIRECTORY_PREFIX, container);
-    addConfigurationFile(config, CONTAINER_CONFIG_FILE, container);
+    addConfigurationFile(config, container);
     container.addExposedPort(CONTAINER_PEER_TO_PEER_PORT);
     container.addExposedPort(CONTAINER_HTTP_RPC_PORT);
 

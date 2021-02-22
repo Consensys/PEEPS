@@ -45,6 +45,7 @@ public abstract class PrivateTransactionManager implements NetworkMember {
   private static final int CONTAINER_HTTP_RPC_PORT = 8888;
   private static final int ALIVE_STATUS_CODE = 200;
   private static final String AM_I_ALIVE_ENDPOINT = "/upcheck";
+  protected static final String CONTAINER_CONFIG_FILE = "/etc/transaction_manager.conf";
 
   protected final GenericContainer<?> container;
   private final TransactionManagerRpc transactionManagerRpc;
@@ -224,10 +225,8 @@ public abstract class PrivateTransactionManager implements NetworkMember {
   }
 
   protected void addConfigurationFile(
-      final PrivateTransactionManagerConfiguration config,
-      final String configFilename,
-      final GenericContainer<?> container) {
+      final PrivateTransactionManagerConfiguration config, final GenericContainer<?> container) {
     container.withCopyFileToContainer(
-        MountableFile.forHostPath(config.getFileSystemConfigurationFile()), configFilename);
+        MountableFile.forHostPath(config.getFileSystemConfigurationFile()), CONTAINER_CONFIG_FILE);
   }
 }
