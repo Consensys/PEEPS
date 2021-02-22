@@ -29,6 +29,10 @@ import tech.pegasys.peeps.node.rpc.admin.NodeInfo;
 import tech.pegasys.peeps.node.verification.AccountValue;
 import tech.pegasys.peeps.node.verification.NodeValueTransition;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.Collection;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -37,6 +41,7 @@ import java.util.stream.Stream;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.tuweni.bytes.Bytes;
 import org.testcontainers.containers.GenericContainer;
 
 public abstract class Web3Provider implements NetworkMember {
@@ -232,5 +237,17 @@ public abstract class Web3Provider implements NetworkMember {
   protected void addContainerIpAddress(
       final SubnetAddress ipAddress, final GenericContainer<?> container) {
     container.withCreateContainerCmdModifier(modifier -> modifier.withIpv4Address(ipAddress.get()));
+  }
+
+  protected Path createMountableTempFile(final Bytes content) {
+    final Path tempFile;
+    try {
+      tempFile = Files.createTempFile("nodekey", ".priv");
+      Files.setPosixFilePermissions(tempFile, PosixFilePermissions.fromString("rwxrwxrwx"));
+      Files.write(tempFile, content.toArray());
+    } catch (final IOException e) {
+      throw new RuntimeException("Unable to create node key file", e);
+    }
+    return tempFile;
   }
 }

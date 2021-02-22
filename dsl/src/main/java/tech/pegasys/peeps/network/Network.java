@@ -151,14 +151,14 @@ public class Network implements Closeable {
 
   public Web3Provider addNode(final String nodeIdentifier, final KeyPair nodeKeys) {
     return addNode(
-        new Web3ProviderConfigurationBuilder().withIdentity(nodeIdentifier).withNodeKeys(nodeKeys),
+        new Web3ProviderConfigurationBuilder().withIdentity(nodeIdentifier).withNodeKey(nodeKeys),
         Web3ProviderType.BESU);
   }
 
   public Web3Provider addNode(
       final String nodeIdentifier, final KeyPair nodeKeys, final Web3ProviderType providerType) {
     return addNode(
-        new Web3ProviderConfigurationBuilder().withIdentity(nodeIdentifier).withNodeKeys(nodeKeys),
+        new Web3ProviderConfigurationBuilder().withIdentity(nodeIdentifier).withNodeKey(nodeKeys),
         providerType);
   }
 
@@ -175,7 +175,7 @@ public class Network implements Closeable {
     return addNode(
         new Web3ProviderConfigurationBuilder()
             .withIdentity(identity)
-            .withNodeKeys(nodeKeys)
+            .withNodeKey(nodeKeys)
             .withPrivacyUrl(privacyManagers.get(privacyManager))
             .withPrivacyManagerPublicKey(privacyAddressResource.get()),
         Web3ProviderType.BESU);

@@ -95,7 +95,7 @@ public class Web3ProviderConfigurationBuilder {
     return this;
   }
 
-  public Web3ProviderConfigurationBuilder withNodeKeys(final KeyPair nodeKeys) {
+  public Web3ProviderConfigurationBuilder withNodeKey(final KeyPair nodeKeys) {
     this.nodeKeys = nodeKeys;
     return this;
   }
