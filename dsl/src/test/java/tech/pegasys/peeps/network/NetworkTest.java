@@ -15,13 +15,11 @@ package tech.pegasys.peeps.network;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyCollection;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import tech.pegasys.peeps.network.subnet.Subnet;
 import tech.pegasys.peeps.node.Besu;
-import tech.pegasys.peeps.node.model.NodeIdentifier;
 
 import java.nio.file.Path;
 
