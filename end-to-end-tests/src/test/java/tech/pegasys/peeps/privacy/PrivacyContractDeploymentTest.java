@@ -14,7 +14,6 @@ package tech.pegasys.peeps.privacy;
 
 import static tech.pegasys.peeps.privacy.PrivateTransactionManagerType.ORION;
 
-import java.util.List;
 import tech.pegasys.peeps.NetworkTest;
 import tech.pegasys.peeps.PrivacyManagerConfiguration;
 import tech.pegasys.peeps.SignerConfiguration;
@@ -23,6 +22,8 @@ import tech.pegasys.peeps.network.Network;
 import tech.pegasys.peeps.node.Web3Provider;
 import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.privacy.model.PrivacyGroup;
+
+import java.util.List;
 
 import org.apache.tuweni.crypto.SECP256K1.KeyPair;
 import org.junit.jupiter.api.Test;
