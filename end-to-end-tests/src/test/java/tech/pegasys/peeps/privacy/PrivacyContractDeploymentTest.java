@@ -12,6 +12,9 @@
  */
 package tech.pegasys.peeps.privacy;
 
+import static tech.pegasys.peeps.privacy.PrivateTransactionManagerType.ORION;
+
+import java.util.List;
 import tech.pegasys.peeps.NetworkTest;
 import tech.pegasys.peeps.PrivacyManagerConfiguration;
 import tech.pegasys.peeps.SignerConfiguration;
@@ -33,8 +36,10 @@ public class PrivacyContractDeploymentTest extends NetworkTest {
 
   @Override
   protected void setUpNetwork(final Network network) {
-    network.addPrivacyManager(privacyManagerAlpha.id(), privacyManagerAlpha.keyPair());
-    network.addPrivacyManager(privacyManagerBeta.id(), privacyManagerBeta.keyPair());
+    network.addPrivacyManager(
+        privacyManagerAlpha.id(), List.of(privacyManagerAlpha.keyPair()), ORION);
+    network.addPrivacyManager(
+        privacyManagerBeta.id(), List.of(privacyManagerBeta.keyPair()), ORION);
     alphaNode =
         network.addNode(
             "alpha",
