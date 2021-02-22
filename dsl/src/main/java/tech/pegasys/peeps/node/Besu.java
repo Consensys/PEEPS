@@ -16,6 +16,11 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import tech.pegasys.peeps.util.DockerLogs;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.time.Duration;
 import java.util.List;
 

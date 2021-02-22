@@ -21,7 +21,6 @@ import tech.pegasys.peeps.network.NetworkMember;
 import tech.pegasys.peeps.network.subnet.SubnetAddress;
 import tech.pegasys.peeps.node.model.EnodeHelpers;
 import tech.pegasys.peeps.node.model.Hash;
-import tech.pegasys.peeps.node.model.NodeIdentifier;
 import tech.pegasys.peeps.node.model.TransactionReceipt;
 import tech.pegasys.peeps.node.rpc.NodeRpc;
 import tech.pegasys.peeps.node.rpc.NodeRpcClient;
@@ -29,7 +28,6 @@ import tech.pegasys.peeps.node.rpc.NodeRpcMandatoryResponse;
 import tech.pegasys.peeps.node.rpc.admin.NodeInfo;
 import tech.pegasys.peeps.node.verification.AccountValue;
 import tech.pegasys.peeps.node.verification.NodeValueTransition;
-import tech.pegasys.peeps.util.ClasspathResources;
 
 import java.util.Collection;
 import java.util.Set;
@@ -53,7 +51,7 @@ public abstract class Web3Provider implements NetworkMember {
   protected final NodeRpc rpc;
   protected GenericContainer<?> container;
   private final SubnetAddress ipAddress;
-  private final NodeIdentifier identity;
+  private final String identity;
   private final String enodeAddress;
   private final String pubKey;
 
@@ -67,7 +65,7 @@ public abstract class Web3Provider implements NetworkMember {
     this.ipAddress = config.getIpAddress();
 
     this.identity = config.getIdentity();
-    this.pubKey = nodePublicKey(config);
+    this.pubKey = removeAnyHexPrefix(config.getNodeKeys().publicKey().toHexString());
     this.enodeAddress = enodeAddress(config);
   }
 
@@ -205,10 +203,6 @@ public abstract class Web3Provider implements NetworkMember {
   private String enodeAddress(final Web3ProviderConfiguration config) {
     return String.format(
         "enode://%s@%s:%d", pubKey, config.getIpAddress().get(), CONTAINER_P2P_PORT);
-  }
-
-  private String nodePublicKey(final Web3ProviderConfiguration config) {
-    return removeAnyHexPrefix(ClasspathResources.read(config.getNodeKeyPublicKeyResource().get()));
   }
 
   private void logPortMappings() {

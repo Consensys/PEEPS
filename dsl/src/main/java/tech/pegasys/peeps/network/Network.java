@@ -44,12 +44,9 @@ import tech.pegasys.peeps.node.genesis.ibft2.GenesisConfigIbft2;
 import tech.pegasys.peeps.node.genesis.ibft2.GenesisExtraDataIbft2;
 import tech.pegasys.peeps.node.model.GenesisAddress;
 import tech.pegasys.peeps.node.model.Hash;
-import tech.pegasys.peeps.node.model.NodeIdentifier;
-import tech.pegasys.peeps.node.model.NodeKey;
 import tech.pegasys.peeps.node.model.PrivacyTransactionReceipt;
 import tech.pegasys.peeps.node.model.Transaction;
 import tech.pegasys.peeps.node.model.TransactionReceipt;
-import tech.pegasys.peeps.node.rpc.NodeRpc;
 import tech.pegasys.peeps.node.verification.AccountValue;
 import tech.pegasys.peeps.privacy.Orion;
 import tech.pegasys.peeps.privacy.OrionConfiguration;
@@ -159,13 +156,9 @@ public class Network implements Closeable {
   }
 
   public Web3Provider addNode(
-      final String nodeIdentifier,
-      final KeyPair nodeKeys,
-      final Web3ProviderType providerType) {
+      final String nodeIdentifier, final KeyPair nodeKeys, final Web3ProviderType providerType) {
     return addNode(
-        new Web3ProviderConfigurationBuilder()
-            .withIdentity(frameworkIdentity)
-            .withNodeKey(ethereumIdentity),
+        new Web3ProviderConfigurationBuilder().withIdentity(nodeIdentifier).withNodeKeys(nodeKeys),
         providerType);
   }
 
@@ -349,12 +342,6 @@ public class Network implements Closeable {
     return new SignerRpcSenderKnown(signers.get(id).rpc(), sender);
   }
 
-  public NodeRpc rpc(final NodeIdentifier id) {
-    checkNodeExistsFor(id);
-
-    return nodes.get(id).rpc();
-  }
-
   public PrivacyGroupVerify privacyGroup(final PrivacyGroup group) {
     return new PrivacyGroupVerify(
         group
@@ -371,20 +358,8 @@ public class Network implements Closeable {
     return web3Provider;
   }
 
-  private void checkNodeExistsFor(final NodeIdentifier id) {
-    checkNotNull(id, "Node Identifier is mandatory");
-    checkState(
-        nodes.containsKey(id),
-        "Node Identifier: {}, does not match any available: {}",
-        id,
-        nodes.keySet());
-  }
-
   private String bootnodeEnodeAddresses() {
-    return nodes
-        .parallelStream()
-        .map(node -> node.enodeAddress())
-        .collect(Collectors.joining(","));
+    return nodes.parallelStream().map(node -> node.enodeAddress()).collect(Collectors.joining(","));
   }
 
   private void everyMember(Consumer<NetworkMember> action) {

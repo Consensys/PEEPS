@@ -18,8 +18,7 @@ import tech.pegasys.peeps.network.NetworkVerify;
 import tech.pegasys.peeps.network.subnet.Subnet;
 import tech.pegasys.peeps.node.NodeVerify;
 import tech.pegasys.peeps.node.Web3Provider;
-import tech.pegasys.peeps.signer.SignerConfiguration;
-import tech.pegasys.peeps.signer.rpc.SignerRpc;
+import tech.pegasys.peeps.node.rpc.NodeRpc;
 import tech.pegasys.peeps.signer.rpc.SignerRpcSenderKnown;
 
 import java.nio.file.Path;
