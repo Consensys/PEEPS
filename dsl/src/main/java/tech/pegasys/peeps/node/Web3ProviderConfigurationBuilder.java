@@ -16,7 +16,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import tech.pegasys.peeps.network.subnet.SubnetAddress;
 import tech.pegasys.peeps.node.genesis.BesuGenesisFile;
-import tech.pegasys.peeps.privacy.Orion;
+import tech.pegasys.peeps.privacy.PrivateTransactionManager;
 
 import io.vertx.core.Vertx;
 import org.apache.tuweni.crypto.SECP256K1.KeyPair;
@@ -84,8 +84,9 @@ public class Web3ProviderConfigurationBuilder {
     return this;
   }
 
-  public Web3ProviderConfigurationBuilder withPrivacyUrl(final Orion privacyTransactionManager) {
-    this.privacyTransactionManagerUrl = privacyTransactionManager.getNetworkRpcAddress();
+  public Web3ProviderConfigurationBuilder withPrivacyUrl(
+      final PrivateTransactionManager privacyPrivateTransactionManager) {
+    this.privacyTransactionManagerUrl = privacyPrivateTransactionManager.getNetworkRpcAddress();
     return this;
   }
 
