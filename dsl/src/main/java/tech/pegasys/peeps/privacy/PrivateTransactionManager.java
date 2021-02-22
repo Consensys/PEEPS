@@ -50,11 +50,9 @@ public abstract class PrivateTransactionManager implements NetworkMember {
   private final TransactionManagerRpc transactionManagerRpc;
   private final TransactionManagerRpcExpectingData rpc;
 
-  // TODO stronger typing than String
   private final String networkP2PAddress;
   private final String networkRpcAddress;
 
-  // TODO typing for key?
   protected final String id;
 
   public PrivateTransactionManager(
