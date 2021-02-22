@@ -36,8 +36,9 @@ public class GoQuorumCliqueConsensusTest extends NetworkTest {
 
   @Override
   protected void setUpNetwork(final Network network) {
-    alphaNode = network
-        .addNode("alpha", KeyPair.random(), Web3ProviderType.GOQUORUM, FixedSignerConfigs.ALPHA);
+    alphaNode =
+        network.addNode(
+            "alpha", KeyPair.random(), Web3ProviderType.GOQUORUM, FixedSignerConfigs.ALPHA);
     final Web3Provider besuNode = network.addNode("beta", KeyPair.random());
     network.set(ConsensusMechanism.CLIQUE, besuNode);
   }

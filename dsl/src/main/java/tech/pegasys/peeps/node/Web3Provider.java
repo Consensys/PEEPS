@@ -25,7 +25,6 @@ import tech.pegasys.peeps.node.model.TransactionReceipt;
 import tech.pegasys.peeps.node.rpc.admin.NodeInfo;
 import tech.pegasys.peeps.node.verification.AccountValue;
 import tech.pegasys.peeps.node.verification.NodeValueTransition;
-import tech.pegasys.peeps.signer.rpc.SignerRpc;
 import tech.pegasys.peeps.signer.rpc.SignerRpcClient;
 import tech.pegasys.peeps.signer.rpc.SignerRpcMandatoryResponse;
 

@@ -180,7 +180,6 @@ public class Network implements Closeable {
         nodeType);
   }
 
-
   public Web3Provider addNode(
       final String identity,
       final KeyPair nodeKeys,
