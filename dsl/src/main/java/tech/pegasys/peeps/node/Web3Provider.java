@@ -17,21 +17,23 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static tech.pegasys.peeps.util.Await.await;
 import static tech.pegasys.peeps.util.HexFormatter.removeAnyHexPrefix;
 
-import java.time.Duration;
 import tech.pegasys.peeps.network.NetworkMember;
 import tech.pegasys.peeps.network.subnet.SubnetAddress;
 import tech.pegasys.peeps.node.model.EnodeHelpers;
 import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.model.TransactionReceipt;
-import tech.pegasys.peeps.node.rpc.NodeRpcMandatoryResponse;
 import tech.pegasys.peeps.node.rpc.admin.NodeInfo;
 import tech.pegasys.peeps.node.verification.AccountValue;
 import tech.pegasys.peeps.node.verification.NodeValueTransition;
+import tech.pegasys.peeps.signer.rpc.SignerRpc;
+import tech.pegasys.peeps.signer.rpc.SignerRpcClient;
+import tech.pegasys.peeps.signer.rpc.SignerRpcMandatoryResponse;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermissions;
+import java.time.Duration;
 import java.util.Collection;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -42,9 +44,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.tuweni.bytes.Bytes;
 import org.testcontainers.containers.GenericContainer;
-import tech.pegasys.peeps.signer.rpc.SignerRpc;
-import tech.pegasys.peeps.signer.rpc.SignerRpcClient;
-import tech.pegasys.peeps.signer.rpc.SignerRpcMandatoryResponse;
 
 public abstract class Web3Provider implements NetworkMember {
 
@@ -192,11 +191,7 @@ public abstract class Web3Provider implements NetworkMember {
 
   public abstract String getLogs();
 
-  public SignerRpcClient rpc() {
-    return signerRpcClient;
-  }
-
-  public SignerRpc theOtherRpc() {
+  public SignerRpcMandatoryResponse rpc() {
     return signerRpcResponse;
   }
 

@@ -10,13 +10,14 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package tech.pegasys.peeps;
+package tech.pegasys.peeps.signer;
 
-import org.apache.tuweni.eth.Address;
 import tech.pegasys.peeps.signer.model.SignerIdentifier;
 import tech.pegasys.peeps.signer.model.SignerKeyFileResource;
 import tech.pegasys.peeps.signer.model.SignerPasswordFileResource;
 import tech.pegasys.peeps.signer.model.WalletFileResources;
+
+import org.apache.tuweni.eth.Address;
 
 public class SignerConfiguration {
 
@@ -24,8 +25,11 @@ public class SignerConfiguration {
   private final SignerIdentifier id;
   private final WalletFileResources resources;
 
-  SignerConfiguration(
-      final String keyResource, final String passwordResource, final Address address) {
+  public SignerConfiguration(
+      final String name,
+      final String keyResource,
+      final String passwordResource,
+      final Address address) {
     this.address = address;
 
     this.resources =
@@ -42,7 +46,7 @@ public class SignerConfiguration {
           }
         };
 
-    this.id = new SignerIdentifier(name());
+    this.id = new SignerIdentifier(name);
   }
 
   public SignerIdentifier id() {

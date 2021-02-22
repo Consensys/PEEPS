@@ -63,6 +63,7 @@ import tech.pegasys.peeps.privacy.model.PrivacyManagerIdentifier;
 import tech.pegasys.peeps.privacy.model.PrivacyPublicKeyResource;
 import tech.pegasys.peeps.signer.EthSigner;
 import tech.pegasys.peeps.signer.EthSignerConfigurationBuilder;
+import tech.pegasys.peeps.signer.SignerConfiguration;
 import tech.pegasys.peeps.signer.model.SignerIdentifier;
 import tech.pegasys.peeps.signer.model.WalletFileResources;
 import tech.pegasys.peeps.signer.rpc.SignerRpcSenderKnown;
@@ -165,6 +166,20 @@ public class Network implements Closeable {
         new Web3ProviderConfigurationBuilder().withIdentity(nodeIdentifier).withNodeKey(nodeKeys),
         providerType);
   }
+
+  public Web3Provider addNode(
+      final String nodeIdentifier,
+      final KeyPair nodeKey,
+      final Web3ProviderType nodeType,
+      final SignerConfiguration wallet) {
+    return addNode(
+        new Web3ProviderConfigurationBuilder()
+            .withIdentity(nodeIdentifier)
+            .withNodeKey(nodeKey)
+            .withWallet(wallet),
+        nodeType);
+  }
+
 
   public Web3Provider addNode(
       final String identity,

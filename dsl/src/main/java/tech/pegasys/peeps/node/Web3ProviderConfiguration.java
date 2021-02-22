@@ -12,8 +12,8 @@
  */
 package tech.pegasys.peeps.node;
 
-import tech.pegasys.peeps.SignerConfiguration;
 import tech.pegasys.peeps.network.subnet.SubnetAddress;
+import tech.pegasys.peeps.signer.SignerConfiguration;
 
 import java.nio.file.Path;
 import java.util.Optional;
