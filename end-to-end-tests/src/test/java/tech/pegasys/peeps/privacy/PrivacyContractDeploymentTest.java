@@ -12,7 +12,7 @@
  */
 package tech.pegasys.peeps.privacy;
 
-import static tech.pegasys.peeps.privacy.TransactionManagerType.ORION;
+import static tech.pegasys.peeps.privacy.PrivateTransactionManagerType.ORION;
 
 import tech.pegasys.peeps.NetworkTest;
 import tech.pegasys.peeps.NodeConfiguration;

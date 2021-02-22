@@ -27,7 +27,7 @@ import java.util.List;
 import io.vertx.core.Vertx;
 import org.testcontainers.containers.Network;
 
-public class TransactionManagerConfigurationBuilder {
+public class PrivateTransactionManagerConfigurationBuilder {
 
   private List<PrivacyPrivateKeyResource> privKeys;
   private List<PrivacyPublicKeyResource> pubKeys;
@@ -39,7 +39,8 @@ public class TransactionManagerConfigurationBuilder {
   private SubnetAddress ipAddress;
   private Vertx vertx;
 
-  public TransactionManagerConfigurationBuilder withKeyPairs(final List<PrivacyKeyPair> keyPairs) {
+  public PrivateTransactionManagerConfigurationBuilder withKeyPairs(
+      final List<PrivacyKeyPair> keyPairs) {
     this.pubKeys = new ArrayList<>();
     this.privKeys = new ArrayList<>();
 
@@ -51,35 +52,36 @@ public class TransactionManagerConfigurationBuilder {
     return this;
   }
 
-  public TransactionManagerConfigurationBuilder withBootnodeUrls(final List<String> bootnodeUrls) {
+  public PrivateTransactionManagerConfigurationBuilder withBootnodeUrls(
+      final List<String> bootnodeUrls) {
     this.bootnodeUrls = bootnodeUrls;
     return this;
   }
 
-  public TransactionManagerConfigurationBuilder withContainerNetwork(
+  public PrivateTransactionManagerConfigurationBuilder withContainerNetwork(
       final Network containerNetwork) {
     this.containerNetwork = containerNetwork;
     return this;
   }
 
-  public TransactionManagerConfigurationBuilder withIpAddress(
+  public PrivateTransactionManagerConfigurationBuilder withIpAddress(
       final SubnetAddress networkIpAddress) {
     this.ipAddress = networkIpAddress;
     return this;
   }
 
-  public TransactionManagerConfigurationBuilder withFileSystemConfigurationFile(
+  public PrivateTransactionManagerConfigurationBuilder withFileSystemConfigurationFile(
       final Path fileSystemConfigFile) {
     this.fileSystemConfigFile = fileSystemConfigFile;
     return this;
   }
 
-  public TransactionManagerConfigurationBuilder withVertx(final Vertx vertx) {
+  public PrivateTransactionManagerConfigurationBuilder withVertx(final Vertx vertx) {
     this.vertx = vertx;
     return this;
   }
 
-  public TransactionManagerConfiguration build() {
+  public PrivateTransactionManagerConfiguration build() {
     checkNotNull(privKeys, "Private keys are mandatory");
     checkArgument(privKeys.size() > 0, "At least one private key is required");
     checkNotNull(pubKeys, "Public keys are mandatory");
@@ -89,7 +91,7 @@ public class TransactionManagerConfigurationBuilder {
     checkNotNull(vertx, "A Vertx instance is mandatory");
     checkNotNull(ipAddress, "Container IP Address is mandatory");
 
-    return new TransactionManagerConfiguration(
+    return new PrivateTransactionManagerConfiguration(
         privKeys, pubKeys, bootnodeUrls, ipAddress, containerNetwork, vertx, fileSystemConfigFile);
   }
 }

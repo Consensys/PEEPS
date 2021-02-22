@@ -18,7 +18,7 @@ import tech.pegasys.peeps.network.subnet.SubnetAddress;
 import tech.pegasys.peeps.node.genesis.BesuGenesisFile;
 import tech.pegasys.peeps.node.model.NodeIdentifier;
 import tech.pegasys.peeps.node.model.NodeKey;
-import tech.pegasys.peeps.privacy.TransactionManager;
+import tech.pegasys.peeps.privacy.PrivateTransactionManager;
 
 import io.vertx.core.Vertx;
 import org.testcontainers.containers.Network;
@@ -86,8 +86,8 @@ public class Web3ProviderConfigurationBuilder {
   }
 
   public Web3ProviderConfigurationBuilder withPrivacyUrl(
-      final TransactionManager privacyTransactionManager) {
-    this.privacyTransactionManagerUrl = privacyTransactionManager.getNetworkRpcAddress();
+      final PrivateTransactionManager privacyPrivateTransactionManager) {
+    this.privacyTransactionManagerUrl = privacyPrivateTransactionManager.getNetworkRpcAddress();
     return this;
   }
 

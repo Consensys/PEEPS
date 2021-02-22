@@ -31,7 +31,7 @@ public class OrionConfigurationFile {
   private static final int HTTP_RPC_PORT = 8888;
   private static final int PEER_TO_PEER_PORT = 8080;
 
-  public static void write(TransactionManagerConfiguration config) {
+  public static void write(PrivateTransactionManagerConfiguration config) {
 
     final StringBuilder content = new StringBuilder();
     content.append(

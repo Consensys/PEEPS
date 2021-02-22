@@ -12,7 +12,7 @@
  */
 package tech.pegasys.peeps.privacy;
 
-import static tech.pegasys.peeps.privacy.TransactionManagerType.TESSERA;
+import static tech.pegasys.peeps.privacy.PrivateTransactionManagerType.TESSERA;
 
 import tech.pegasys.peeps.NetworkTest;
 import tech.pegasys.peeps.NodeConfiguration;

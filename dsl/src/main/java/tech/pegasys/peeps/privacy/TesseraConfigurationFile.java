@@ -41,7 +41,7 @@ public class TesseraConfigurationFile {
   private static final int PEER_TO_PEER_PORT = 8080;
   private static final ObjectMapper MAPPER = new ObjectMapper();
 
-  public static void write(TransactionManagerConfiguration config) {
+  public static void write(PrivateTransactionManagerConfiguration config) {
     final Map<String, Object> content = new HashMap<>();
     content.put("useWhiteList", false);
     content.put(

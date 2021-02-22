@@ -12,7 +12,7 @@
  */
 package tech.pegasys.peeps.privacy;
 
-public enum TransactionManagerType {
+public enum PrivateTransactionManagerType {
   ORION,
   TESSERA
 }

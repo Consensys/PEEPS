@@ -14,7 +14,7 @@ package tech.pegasys.peeps.privacy;
 
 import org.testcontainers.containers.GenericContainer;
 
-public class Orion extends TransactionManager {
+public class Orion extends PrivateTransactionManager {
 
   private static final String CONTAINER_WORKING_DIRECTORY_PREFIX = "/opt/orion/";
   private static final String CONTAINER_CONFIG_FILE = "/orion.conf";
@@ -22,7 +22,7 @@ public class Orion extends TransactionManager {
   // TODO there should be the 'latest' version
   private static final String ORION_IMAGE = "consensys/quorum-orion:develop";
 
-  public Orion(final TransactionManagerConfiguration config) {
+  public Orion(final PrivateTransactionManagerConfiguration config) {
     super(config, new GenericContainer<>(ORION_IMAGE));
     addContainerNetwork(config, container);
     addContainerIpAddress(config, container);

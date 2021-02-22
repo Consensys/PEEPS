@@ -38,7 +38,7 @@ import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.MountableFile;
 
-public abstract class TransactionManager implements NetworkMember {
+public abstract class PrivateTransactionManager implements NetworkMember {
   private static final Logger LOG = LogManager.getLogger();
 
   private static final int CONTAINER_PEER_TO_PEER_PORT = 8080;
@@ -57,8 +57,8 @@ public abstract class TransactionManager implements NetworkMember {
   // TODO typing for key?
   protected final String id;
 
-  public TransactionManager(
-      final TransactionManagerConfiguration config, final GenericContainer<?> container) {
+  public PrivateTransactionManager(
+      final PrivateTransactionManagerConfiguration config, final GenericContainer<?> container) {
     this.container = container;
     this.networkP2PAddress =
         String.format("http://%s:%s", config.getIpAddress().get(), CONTAINER_PEER_TO_PEER_PORT);
@@ -72,7 +72,7 @@ public abstract class TransactionManager implements NetworkMember {
     this.rpc = new TransactionManagerRpcExpectingData(transactionManagerRpc);
   }
 
-  public void awaitConnectivity(final Collection<TransactionManager> collection) {
+  public void awaitConnectivity(final Collection<PrivateTransactionManager> collection) {
     collection.parallelStream().forEach(this::awaitConnectivity);
   }
 
@@ -145,7 +145,7 @@ public abstract class TransactionManager implements NetworkMember {
         .forPort(CONTAINER_HTTP_RPC_PORT);
   }
 
-  private void awaitConnectivity(final TransactionManager peer) {
+  private void awaitConnectivity(final PrivateTransactionManager peer) {
     final String message = generateUniquePayload();
 
     final TransactionManagerKey key = rpc.send(peer.getId(), message);
@@ -163,7 +163,7 @@ public abstract class TransactionManager implements NetworkMember {
   }
 
   protected void addPrivateKeys(
-      final TransactionManagerConfiguration config,
+      final PrivateTransactionManagerConfiguration config,
       final String containerWorkingDir,
       final GenericContainer<?> container) {
     for (final PrivacyPrivateKeyResource key : config.getPrivateKeys()) {
@@ -174,7 +174,7 @@ public abstract class TransactionManager implements NetworkMember {
   }
 
   protected void addPublicKeys(
-      final TransactionManagerConfiguration config,
+      final PrivateTransactionManagerConfiguration config,
       final String containerWorkingDir,
       final GenericContainer<?> container) {
     for (final PrivacyPublicKeyResource key : config.getPublicKeys()) {
@@ -215,18 +215,18 @@ public abstract class TransactionManager implements NetworkMember {
   }
 
   protected void addContainerNetwork(
-      final TransactionManagerConfiguration config, final GenericContainer<?> container) {
+      final PrivateTransactionManagerConfiguration config, final GenericContainer<?> container) {
     container.withNetwork(config.getContainerNetwork());
   }
 
   protected void addContainerIpAddress(
-      final TransactionManagerConfiguration config, final GenericContainer<?> container) {
+      final PrivateTransactionManagerConfiguration config, final GenericContainer<?> container) {
     container.withCreateContainerCmdModifier(
         modifier -> modifier.withIpv4Address(config.getIpAddress().get()));
   }
 
   protected void addConfigurationFile(
-      final TransactionManagerConfiguration config,
+      final PrivateTransactionManagerConfiguration config,
       final String configFilename,
       final GenericContainer<?> container) {
     container.withCopyFileToContainer(
