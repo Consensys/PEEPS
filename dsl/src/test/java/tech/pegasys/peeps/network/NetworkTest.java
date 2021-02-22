@@ -36,7 +36,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 public class NetworkTest {
 
-  @Mock private NodeIdentifier nodeId;
   @Mock private Besu node;
   @Mock private Subnet subnet;
   @TempDir Path configurationDirectory;
@@ -47,8 +46,6 @@ public class NetworkTest {
   public void setUp() {
     Runtime.getRuntime().addShutdownHook(new Thread(this::tearDown));
     network = new Network(configurationDirectory, subnet);
-
-    lenient().when(node.identity()).thenReturn("alpha");
   }
 
   @AfterEach
