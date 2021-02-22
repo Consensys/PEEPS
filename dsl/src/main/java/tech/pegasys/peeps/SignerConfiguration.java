@@ -12,23 +12,13 @@
  */
 package tech.pegasys.peeps;
 
-import tech.pegasys.peeps.node.Account;
+import org.apache.tuweni.eth.Address;
 import tech.pegasys.peeps.signer.model.SignerIdentifier;
 import tech.pegasys.peeps.signer.model.SignerKeyFileResource;
 import tech.pegasys.peeps.signer.model.SignerPasswordFileResource;
 import tech.pegasys.peeps.signer.model.WalletFileResources;
 
-import org.apache.tuweni.eth.Address;
-
-public enum SignerConfiguration {
-  ALPHA(
-      "signer/account/funded/wallet_a.v3",
-      "signer/account/funded/wallet_a.pass",
-      Account.ALPHA.address()),
-  BETA(
-      "signer/account/funded/wallet_b.v3",
-      "signer/account/funded/wallet_b.pass",
-      Account.BETA.address());
+public class SignerConfiguration {
 
   private final Address address;
   private final SignerIdentifier id;

@@ -14,9 +14,11 @@ package tech.pegasys.peeps.node;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import tech.pegasys.peeps.SignerConfiguration;
 import tech.pegasys.peeps.network.subnet.SubnetAddress;
 import tech.pegasys.peeps.node.genesis.BesuGenesisFile;
 import tech.pegasys.peeps.privacy.PrivateTransactionManager;
+import tech.pegasys.peeps.privacy.Orion;
 
 import io.vertx.core.Vertx;
 import org.apache.tuweni.crypto.SECP256K1.KeyPair;
@@ -38,6 +40,7 @@ public class Web3ProviderConfigurationBuilder {
   private String cors;
   private String bootnodeEnodeAddress;
   private KeyPair nodeKeys;
+  private SignerConfiguration wallet;
 
   // TODO these into their own builder, not node related but test container related
   private Network containerNetwork;
@@ -84,9 +87,8 @@ public class Web3ProviderConfigurationBuilder {
     return this;
   }
 
-  public Web3ProviderConfigurationBuilder withPrivacyUrl(
-      final PrivateTransactionManager privacyPrivateTransactionManager) {
-    this.privacyTransactionManagerUrl = privacyPrivateTransactionManager.getNetworkRpcAddress();
+  public Web3ProviderConfigurationBuilder withPrivacyUrl(final Orion privacyTransactionManager) {
+    this.privacyTransactionManagerUrl = privacyTransactionManager.getNetworkRpcAddress();
     return this;
   }
 
@@ -98,6 +100,11 @@ public class Web3ProviderConfigurationBuilder {
 
   public Web3ProviderConfigurationBuilder withNodeKey(final KeyPair nodeKeys) {
     this.nodeKeys = nodeKeys;
+    return this;
+  }
+
+  public Web3ProviderConfigurationBuilder withWallet(final SignerConfiguration wallet) {
+    this.wallet = wallet;
     return this;
   }
 

@@ -12,6 +12,7 @@
  */
 package tech.pegasys.peeps.consensus;
 
+import tech.pegasys.peeps.FixedSignerConfigs;
 import tech.pegasys.peeps.NetworkTest;
 import tech.pegasys.peeps.SignerConfiguration;
 import tech.pegasys.peeps.network.ConsensusMechanism;
@@ -30,7 +31,7 @@ import org.junit.jupiter.api.Test;
 public class GoQuorumCliqueConsensusTest extends NetworkTest {
 
   private Web3Provider alphaNode;
-  private final SignerConfiguration signer = SignerConfiguration.ALPHA;
+  private final SignerConfiguration signer = FixedSignerConfigs.ALPHA;
 
   @Override
   protected void setUpNetwork(final Network network) {

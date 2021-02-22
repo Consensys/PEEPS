@@ -14,6 +14,7 @@ package tech.pegasys.peeps.privacy;
 
 import static tech.pegasys.peeps.privacy.PrivateTransactionManagerType.ORION;
 
+import tech.pegasys.peeps.FixedSignerConfigs;
 import tech.pegasys.peeps.NetworkTest;
 import tech.pegasys.peeps.PrivacyManagerConfiguration;
 import tech.pegasys.peeps.SignerConfiguration;
@@ -31,7 +32,7 @@ import org.junit.jupiter.api.Test;
 public class PrivacyContractDeploymentTest extends NetworkTest {
 
   private Web3Provider alphaNode;
-  private final SignerConfiguration signer = SignerConfiguration.ALPHA;
+  private final SignerConfiguration signer = FixedSignerConfigs.ALPHA;
   private final PrivacyManagerConfiguration privacyManagerAlpha = PrivacyManagerConfiguration.ALPHA;
   private final PrivacyManagerConfiguration privacyManagerBeta = PrivacyManagerConfiguration.BETA;
 
