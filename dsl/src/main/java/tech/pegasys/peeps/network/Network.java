@@ -80,13 +80,14 @@ import java.util.stream.Stream;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.vertx.core.Vertx;
+import org.apache.tuweni.crypto.SECP256K1.KeyPair;
 import org.apache.tuweni.eth.Address;
 
 public class Network implements Closeable {
 
   private final Map<PrivacyManagerIdentifier, Orion> privacyManagers;
   private final Map<SignerIdentifier, EthSigner> signers;
-  private final Map<NodeIdentifier, Web3Provider> nodes;
+  private final List<Web3Provider> nodes;
   private final List<NetworkMember> members;
 
   private final BesuGenesisFile genesisFile;
@@ -103,7 +104,7 @@ public class Network implements Closeable {
     this.privacyManagers = new HashMap<>();
     this.members = new ArrayList<>();
     this.signers = new HashMap<>();
-    this.nodes = new HashMap<>();
+    this.nodes = new ArrayList<>();
     this.pathGenerator = new PathGenerator(configurationDirectory);
     this.vertx = Vertx.vertx();
     this.subnet = subnet;
@@ -139,16 +140,6 @@ public class Network implements Closeable {
     set(consensus, (Besu) null);
   }
 
-  public void set(final ConsensusMechanism consensus, final NodeIdentifier... validators) {
-    // TODO check arg - validators must be in nodes (perform during steam mapping
-    set(
-        consensus,
-        Stream.of(validators)
-            .parallel()
-            .map(validator -> nodes.get(validator))
-            .toArray((Web3Provider[]::new)));
-  }
-
   // TODO validators hacky, dynamically figure out after the nodes are all added
   public void set(final ConsensusMechanism consensus, final Web3Provider... validators) {
     checkState(
@@ -161,18 +152,15 @@ public class Network implements Closeable {
             consensus, Account.of(Account.ALPHA, Account.BETA, Account.GAMMA), validators);
   }
 
-  public Web3Provider addNode(
-      final NodeIdentifier frameworkIdentity, final NodeKey ethereumIdentity) {
+  public Web3Provider addNode(final String nodeIdentifier, final KeyPair nodeKeys) {
     return addNode(
-        new Web3ProviderConfigurationBuilder()
-            .withIdentity(frameworkIdentity)
-            .withNodeKey(ethereumIdentity),
+        new Web3ProviderConfigurationBuilder().withIdentity(nodeIdentifier).withNodeKeys(nodeKeys),
         Web3ProviderType.BESU);
   }
 
   public Web3Provider addNode(
-      final NodeIdentifier frameworkIdentity,
-      final NodeKey ethereumIdentity,
+      final String nodeIdentifier,
+      final KeyPair nodeKeys,
       final Web3ProviderType providerType) {
     return addNode(
         new Web3ProviderConfigurationBuilder()
@@ -182,8 +170,8 @@ public class Network implements Closeable {
   }
 
   public Web3Provider addNode(
-      final NodeIdentifier identity,
-      final NodeKey ethereumIdentity,
+      final String identity,
+      final KeyPair nodeKeys,
       final PrivacyManagerIdentifier privacyManager,
       final PrivacyPublicKeyResource privacyAddressResource) {
     checkArgument(
@@ -194,7 +182,7 @@ public class Network implements Closeable {
     return addNode(
         new Web3ProviderConfigurationBuilder()
             .withIdentity(identity)
-            .withNodeKey(ethereumIdentity)
+            .withNodeKeys(nodeKeys)
             .withPrivacyUrl(privacyManagers.get(privacyManager))
             .withPrivacyManagerPublicKey(privacyAddressResource.get()),
         Web3ProviderType.BESU);
@@ -244,14 +232,6 @@ public class Network implements Closeable {
   public EthSigner addSigner(
       final SignerIdentifier wallet,
       final WalletFileResources resources,
-      final NodeIdentifier downstream) {
-    checkNodeExistsFor(downstream);
-    return addSigner(wallet, resources, nodes.get(downstream));
-  }
-
-  private EthSigner addSigner(
-      final SignerIdentifier wallet,
-      final WalletFileResources resources,
       final Web3Provider downstream) {
     final EthSigner signer =
         new EthSigner(
@@ -283,7 +263,6 @@ public class Network implements Closeable {
         () -> {
           final List<TransactionReceipt> receipts =
               nodes
-                  .values()
                   .parallelStream()
                   .map(node -> node.rpc().getTransactionReceipt(transaction))
                   .collect(Collectors.toList());
@@ -305,14 +284,14 @@ public class Network implements Closeable {
     checkState(
         nodes.size() > 1, "There must be two or more nodes to be able to verify on consensus");
 
-    final Web3Provider firstNode = nodes.values().iterator().next();
+    final Web3Provider firstNode = nodes.iterator().next();
     final Set<AccountValue> values =
         Stream.of(accounts)
             .parallel()
             .map(account -> new AccountValue(account, firstNode.rpc().getBalance(account)))
             .collect(Collectors.toSet());
 
-    nodes.values().parallelStream().forEach(node -> node.verifyValue(values));
+    nodes.parallelStream().forEach(node -> node.verifyValue(values));
   }
 
   public void verifyConsensusOnTransaction(final Hash transaction) {
@@ -321,7 +300,6 @@ public class Network implements Closeable {
 
     final Set<Transaction> transactions =
         nodes
-            .values()
             .parallelStream()
             .map(node -> node.rpc().getTransactionByHash(transaction))
             .collect(Collectors.toSet());
@@ -342,7 +320,6 @@ public class Network implements Closeable {
 
     final Set<PrivacyTransactionReceipt> transactions =
         nodes
-            .values()
             .parallelStream()
             .map(node -> node.rpc().getPrivacyTransactionReceipt(transaction))
             .collect(Collectors.toSet());
@@ -357,10 +334,8 @@ public class Network implements Closeable {
   }
 
   // TODO these Mediator method could be refactored elsewhere?
-  public NodeVerify verify(final NodeIdentifier id) {
-    checkNodeExistsFor(id);
-
-    return new NodeVerify(nodes.get(id));
+  public NodeVerify verify(final Web3Provider node) {
+    return new NodeVerify(node);
   }
 
   public SignerRpcSenderKnown rpc(final SignerIdentifier id, final Address sender) {
@@ -390,7 +365,7 @@ public class Network implements Closeable {
 
   @VisibleForTesting
   Web3Provider addNode(final Web3Provider web3Provider) {
-    nodes.put(web3Provider.identity(), web3Provider);
+    nodes.add(web3Provider);
     members.add(web3Provider);
 
     return web3Provider;
@@ -407,7 +382,6 @@ public class Network implements Closeable {
 
   private String bootnodeEnodeAddresses() {
     return nodes
-        .values()
         .parallelStream()
         .map(node -> node.enodeAddress())
         .collect(Collectors.joining(","));
@@ -450,7 +424,7 @@ public class Network implements Closeable {
   }
 
   private void awaitConnectivity() {
-    nodes.values().parallelStream().forEach(node -> node.awaitConnectivity(nodes.values()));
+    nodes.parallelStream().forEach(node -> node.awaitConnectivity(nodes));
 
     privacyManagers
         .values()

@@ -13,8 +13,6 @@
 package tech.pegasys.peeps.consensus;
 
 import tech.pegasys.peeps.NetworkTest;
-import tech.pegasys.peeps.NodeConfiguration;
-import tech.pegasys.peeps.SignerConfiguration;
 import tech.pegasys.peeps.network.ConsensusMechanism;
 import tech.pegasys.peeps.network.Network;
 import tech.pegasys.peeps.node.Account;
@@ -29,17 +27,14 @@ import org.junit.jupiter.api.Test;
 
 public class GoQuorumCliqueConsensusTest extends NetworkTest {
 
-  private final NodeConfiguration node = NodeConfiguration.ALPHA;
+  private Web3Provider alphaNode;
   private final SignerConfiguration signer = SignerConfiguration.ALPHA;
 
   @Override
   protected void setUpNetwork(final Network network) {
-    network.addNode(node.id(), node.keys(), Web3ProviderType.GOQUORUM);
-    network.addNode(NodeConfiguration.BETA.id(), NodeConfiguration.BETA.keys());
-
-    network.set(ConsensusMechanism.CLIQUE, NodeConfiguration.BETA.id());
-
-    network.addSigner(signer.id(), signer.resources(), node.id());
+    alphaNode = network.addNode("alpha", KeyPair.random(), Web3ProviderType.GOQUORUM, signer);
+    network.addNode("beta", KeyPair.random());
+    network.set(ConsensusMechanism.CLIQUE, signer);
   }
 
   @Test
@@ -50,14 +45,14 @@ public class GoQuorumCliqueConsensusTest extends NetworkTest {
 
     verify().consensusOnValueAt(sender, receiver);
 
-    final Wei senderStartBalance = execute(node).getBalance(sender);
-    final Wei receiverStartBalance = execute(node).getBalance(receiver);
+    final Wei senderStartBalance = execute(alphaNode).getBalance(sender);
+    final Wei receiverStartBalance = execute(alphaNode).getBalance(receiver);
 
     final Hash receipt = execute(signer).transferTo(receiver, transferAmount);
 
     await().consensusOnTransactionReceipt(receipt);
 
-    verifyOn(node)
+    verifyOn(alphaNode)
         .transistion(
             new ValueSent(sender, senderStartBalance, receipt),
             new ValueReceived(receiver, receiverStartBalance, transferAmount));

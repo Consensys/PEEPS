@@ -133,10 +133,19 @@ public class Besu extends Web3Provider {
       final List<String> commandLineOptions,
       final GenericContainer<?> container) {
 
-    container.withClasspathResourceMapping(
-        config.getNodeKeyPrivateKeyResource().get(),
-        CONTAINER_NODE_PRIVATE_KEY_FILE,
-        BindMode.READ_ONLY);
+    final Path tempFile;
+    try {
+      tempFile = Files.createTempFile("nodekey", ".priv");
+      Files.setPosixFilePermissions(tempFile, PosixFilePermissions.fromString("rwxrwxrwx"));
+      Files.write(
+          tempFile,
+          config.getNodeKeys().secretKey().bytes().toHexString().getBytes(StandardCharsets.UTF_8));
+    } catch (final IOException e) {
+      throw new RuntimeException("Unable to create node key file", e);
+    }
+
+    container.withCopyFileToContainer(
+        MountableFile.forHostPath(tempFile), CONTAINER_NODE_PRIVATE_KEY_FILE);
     commandLineOptions.addAll(
         Lists.newArrayList("--node-private-key-file", CONTAINER_NODE_PRIVATE_KEY_FILE));
   }

@@ -77,7 +77,7 @@ public abstract class Web3Provider implements NetworkMember {
       container.start();
 
       container.followOutput(
-          outputFrame -> LOG.info("{}: {}", getNodeName(), outputFrame.getUtf8String()));
+          outputFrame -> LOG.info("{}: {}", identity, outputFrame.getUtf8String()));
 
       nodeRpc.bind(
           container.getContainerId(),
@@ -133,7 +133,7 @@ public abstract class Web3Provider implements NetworkMember {
     return pubKey;
   }
 
-  public NodeIdentifier identity() {
+  public String identity() {
     return identity;
   }
 

@@ -97,8 +97,6 @@ public class GoQuorum extends Web3Provider {
         "--nousb",
         "--verbosity",
         "5",
-        "--rpccorsdomain",
-        "\"*\"",
         "--syncmode",
         "full",
         //        "--mine",
@@ -107,11 +105,13 @@ public class GoQuorum extends Web3Provider {
         "--rpc",
         "--rpcaddr",
         "\"0.0.0.0\"",
-        "--rpcport",
+        "--http.port",
         "8545",
-        "--rpcapi",
-        "admin,debug,web3,eth,txpool,personal,clique,miner,net",
+        "--http.api",
+        "admin,debug,web3,eth,txpool,personal,clique,miner,net,istanbul",
         "--ws",
+        "--gasprice",
+        "0",
         "--debug");
   }
 
@@ -138,17 +138,33 @@ public class GoQuorum extends Web3Provider {
       final Web3ProviderConfiguration config, final List<String> commandLineOptions) {
     config
         .getCors()
-        .ifPresent(cors -> commandLineOptions.addAll(Lists.newArrayList("--rpccorsdomain", cors)));
+        .ifPresent(
+            cors -> commandLineOptions.addAll(Lists.newArrayList("--http.corsdomain", cors)));
   }
 
   private void addNodePrivateKey(
       final Web3ProviderConfiguration config,
       final List<String> commandLineOptions,
       final GenericContainer<?> container) {
-    container.withClasspathResourceMapping(
-        config.getNodeKeyPrivateKeyResource().get(),
-        CONTAINER_NODE_PRIVATE_KEY_FILE,
-        BindMode.READ_ONLY);
+    // NOTE: This is 90% the same as Besu's setup (except for cmdline at the end).
+    final Path tempFile;
+    try {
+      tempFile = Files.createTempFile("nodekey", ".priv");
+      Files.setPosixFilePermissions(tempFile, PosixFilePermissions.fromString("rwxrwxrwx"));
+      Files.write(
+          tempFile,
+          config
+              .getNodeKeys()
+              .secretKey()
+              .bytes()
+              .toUnprefixedHexString()
+              .getBytes(StandardCharsets.UTF_8));
+    } catch (final IOException e) {
+      throw new RuntimeException("Unable to create node key file", e);
+    }
+
+    container.withCopyFileToContainer(
+        MountableFile.forHostPath(tempFile), CONTAINER_NODE_PRIVATE_KEY_FILE);
     commandLineOptions.addAll(Lists.newArrayList("--nodekey", CONTAINER_NODE_PRIVATE_KEY_FILE));
   }
 
