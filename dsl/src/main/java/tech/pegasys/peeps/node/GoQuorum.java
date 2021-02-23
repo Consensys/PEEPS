@@ -45,8 +45,7 @@ public class GoQuorum extends Web3Provider {
     super(
         config,
         new GenericContainer<>(IMAGE_NAME)
-            .withImagePullPolicy(PullPolicy.ageBased(Duration.ofHours(1)))
-            .withReuse(false));
+            .withImagePullPolicy(PullPolicy.ageBased(Duration.ofHours(1))));
 
     final List<String> commandLineOptions = standardCommandLineOptions();
 

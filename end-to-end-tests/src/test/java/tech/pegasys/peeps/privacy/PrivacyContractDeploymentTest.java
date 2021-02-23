@@ -53,7 +53,7 @@ public class PrivacyContractDeploymentTest extends NetworkTest {
         KeyPair.random(),
         privacyManagerBeta.id(),
         privacyManagerBeta.keyPair().getPublicKey());
-    network.addSigner(signer.id(), signer.resources(), alphaNode);
+    network.addSigner(signer.name(), signer.resources(), alphaNode);
   }
 
   @Test

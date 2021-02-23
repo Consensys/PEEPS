@@ -12,7 +12,6 @@
  */
 package tech.pegasys.peeps.signer;
 
-import tech.pegasys.peeps.signer.model.SignerIdentifier;
 import tech.pegasys.peeps.signer.model.SignerKeyFileResource;
 import tech.pegasys.peeps.signer.model.SignerPasswordFileResource;
 import tech.pegasys.peeps.signer.model.WalletFileResources;
@@ -22,7 +21,7 @@ import org.apache.tuweni.eth.Address;
 public class SignerConfiguration {
 
   private final Address address;
-  private final SignerIdentifier id;
+  private final String name;
   private final WalletFileResources resources;
 
   public SignerConfiguration(
@@ -46,11 +45,11 @@ public class SignerConfiguration {
           }
         };
 
-    this.id = new SignerIdentifier(name);
+    this.name = name;
   }
 
-  public SignerIdentifier id() {
-    return id;
+  public String name() {
+    return name;
   }
 
   public Address address() {

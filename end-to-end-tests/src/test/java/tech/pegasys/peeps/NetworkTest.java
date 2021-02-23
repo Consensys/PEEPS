@@ -76,8 +76,8 @@ public abstract class NetworkTest {
     return network.verify(node);
   }
 
-  protected SignerRpcSenderKnown execute(final SignerConfiguration id) {
-    return network.rpc(id.id(), id.address());
+  protected SignerRpcSenderKnown execute(final SignerConfiguration signerConfig) {
+    return network.rpc(signerConfig.name(), signerConfig.address());
   }
 
   protected SignerRpcMandatoryResponse execute(final Web3Provider web3Provider) {

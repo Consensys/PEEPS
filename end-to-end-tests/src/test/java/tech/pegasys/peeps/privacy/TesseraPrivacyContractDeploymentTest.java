@@ -44,7 +44,7 @@ public class TesseraPrivacyContractDeploymentTest extends NetworkTest {
             KeyPair.random(),
             privacyManagerAlpha.id(),
             privacyManagerAlpha.keyPair().getPublicKey());
-    network.addSigner(signer.id(), signer.resources(), nodeAlpha);
+    network.addSigner(signer.name(), signer.resources(), nodeAlpha);
   }
 
   @Test

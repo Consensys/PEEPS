@@ -38,7 +38,7 @@ public class CliqueConsensusTest extends NetworkTest {
     alphaNode = network.addNode("alpha", KeyPair.random());
     final Web3Provider besuNode = network.addNode("beta", KeyPair.random());
     network.set(ConsensusMechanism.CLIQUE, besuNode);
-    network.addSigner(signer.id(), signer.resources(), besuNode);
+    network.addSigner(signer.name(), signer.resources(), besuNode);
   }
 
   @Test

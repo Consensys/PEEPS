@@ -38,7 +38,7 @@ public class EthHashConsensusTest extends NetworkTest {
     alphaNode = network.addNode("alpha", KeyPair.random());
     network.addNode("beta", KeyPair.random());
     network.set(ConsensusMechanism.ETH_HASH);
-    network.addSigner(signer.id(), signer.resources(), alphaNode);
+    network.addSigner(signer.name(), signer.resources(), alphaNode);
   }
 
   @Test
