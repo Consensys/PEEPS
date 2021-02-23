@@ -12,9 +12,10 @@
  */
 package tech.pegasys.peeps.node.genesis.qbft;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
 import tech.pegasys.peeps.node.genesis.GenesisConfig;
 import tech.pegasys.peeps.node.genesis.bft.BftConfig;
+
+import com.fasterxml.jackson.annotation.JsonGetter;
 
 public class GenesisConfigQbft extends GenesisConfig {
 
