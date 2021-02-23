@@ -38,8 +38,9 @@ public class GoQuorum extends Web3Provider {
   private static final String IMAGE_NAME = "quorumengineering/quorum:latest";
   private static final String CONTAINER_GENESIS_FILE = "/etc/genesis.json";
   private static final String CONTAINER_NODE_PRIVATE_KEY_FILE = "/etc/keys/node.priv";
-  private static final String CONTAINER_PASSWORD_FILE = "/etc/password";
   private static final String DATA_DIR = "/eth";
+  private static final String KEYSTORE_DIR = "/eth/keystore/";
+  private static final String CONTAINER_PASSWORD_FILE = KEYSTORE_DIR + "password";
 
   public GoQuorum(final Web3ProviderConfiguration config) {
     super(
@@ -66,8 +67,8 @@ public class GoQuorum extends Web3Provider {
             + DATA_DIR
             + "/geth' && "
             + "mkdir -p '"
-            + DATA_DIR
-            + "/keystore' && "
+            + KEYSTORE_DIR
+            + "' && "
             + "geth --datadir \""
             + DATA_DIR
             + "\" init "
@@ -176,7 +177,7 @@ public class GoQuorum extends Web3Provider {
         .ifPresent(
             wallet -> {
               container.withClasspathResourceMapping(
-                  wallet.resources().getKey().get(), DATA_DIR + "/keystore/", BindMode.READ_ONLY);
+                  wallet.resources().getKey().get(), KEYSTORE_DIR, BindMode.READ_ONLY);
               container.withClasspathResourceMapping(
                   wallet.resources().getPassword().get(),
                   CONTAINER_PASSWORD_FILE,
