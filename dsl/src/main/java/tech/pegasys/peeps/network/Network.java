@@ -26,23 +26,26 @@ import tech.pegasys.peeps.node.NodeVerify;
 import tech.pegasys.peeps.node.Web3Provider;
 import tech.pegasys.peeps.node.Web3ProviderConfigurationBuilder;
 import tech.pegasys.peeps.node.Web3ProviderType;
-import tech.pegasys.peeps.node.genesis.BesuGenesisFile;
 import tech.pegasys.peeps.node.genesis.Genesis;
 import tech.pegasys.peeps.node.genesis.GenesisAccount;
 import tech.pegasys.peeps.node.genesis.GenesisConfig;
 import tech.pegasys.peeps.node.genesis.GenesisExtraData;
+import tech.pegasys.peeps.node.genesis.GenesisFile;
 import tech.pegasys.peeps.node.genesis.bft.BftConfig;
 import tech.pegasys.peeps.node.genesis.clique.CliqueConfig;
 import tech.pegasys.peeps.node.genesis.clique.GenesisConfigClique;
 import tech.pegasys.peeps.node.genesis.clique.GenesisExtraDataClique;
 import tech.pegasys.peeps.node.genesis.ethhash.EthHashConfig;
 import tech.pegasys.peeps.node.genesis.ethhash.GenesisConfigEthHash;
-import tech.pegasys.peeps.node.genesis.ibft.GenesisConfigIbftLegacy;
+import tech.pegasys.peeps.node.genesis.ibft.BesuConfigIbft;
+import tech.pegasys.peeps.node.genesis.ibft.BesuLegacyIbftOptions;
 import tech.pegasys.peeps.node.genesis.ibft.GenesisExtraDataIbftLegacy;
-import tech.pegasys.peeps.node.genesis.ibft.IbftLegacyConfig;
+import tech.pegasys.peeps.node.genesis.ibft.GoQuorumIbftConfig;
+import tech.pegasys.peeps.node.genesis.ibft.GoQuorumIbftOptions;
 import tech.pegasys.peeps.node.genesis.ibft2.GenesisConfigIbft2;
 import tech.pegasys.peeps.node.genesis.ibft2.GenesisExtraDataIbft2;
 import tech.pegasys.peeps.node.genesis.qbft.GenesisConfigQbft;
+import tech.pegasys.peeps.node.genesis.qbft.GenesisExtraDataQbft;
 import tech.pegasys.peeps.node.model.GenesisAddress;
 import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.model.PrivacyTransactionReceipt;
@@ -92,13 +95,13 @@ public class Network implements Closeable {
   private final List<Web3Provider> nodes;
   private final List<NetworkMember> members;
 
-  private final BesuGenesisFile genesisFile;
+  private final Map<Web3ProviderType, GenesisFile> genesisFiles;
   private final PathGenerator pathGenerator;
   private final Subnet subnet;
   private final Vertx vertx;
 
   private NetworkState state;
-  private Genesis genesis;
+  private Map<Web3ProviderType, Genesis> genesisMap = new HashMap<>();
 
   public Network(final Path configurationDirectory, final Subnet subnet) {
     checkArgument(configurationDirectory != null, "Path to configuration directory is mandatory");
@@ -110,7 +113,13 @@ public class Network implements Closeable {
     this.pathGenerator = new PathGenerator(configurationDirectory);
     this.vertx = Vertx.vertx();
     this.subnet = subnet;
-    this.genesisFile = new BesuGenesisFile(pathGenerator.uniqueFile());
+    this.genesisFiles =
+        Map.of(
+            Web3ProviderType.BESU,
+            new GenesisFile(pathGenerator.uniqueFile()),
+            Web3ProviderType.GOQUORUM,
+            new GenesisFile(pathGenerator.uniqueFile()));
+
     this.state = new NetworkState();
 
     set(ConsensusMechanism.ETH_HASH);
@@ -118,7 +127,10 @@ public class Network implements Closeable {
 
   public void start() {
     state.start();
-    genesisFile.ensureExists(genesis);
+    genesisFiles.forEach(
+        (k, v) -> {
+          v.ensureExists(genesisMap.get(k));
+        });
     everyMember(NetworkMember::start);
     awaitConnectivity();
   }
@@ -149,9 +161,9 @@ public class Network implements Closeable {
         "Cannot set consensus mechanism while the Network is already started");
     checkState(signers.isEmpty(), "Cannot change consensus mechanism after creating signers");
 
-    this.genesis =
+    this.genesisMap.putAll(
         createGenesis(
-            consensus, Account.of(Account.ALPHA, Account.BETA, Account.GAMMA), validators);
+            consensus, Account.of(Account.ALPHA, Account.BETA, Account.GAMMA), validators));
   }
 
   public Web3Provider addNode(final String nodeIdentifier, final KeyPair nodeKeys) {
@@ -206,7 +218,7 @@ public class Network implements Closeable {
         .withVertx(vertx)
         .withContainerNetwork(subnet.network())
         .withIpAddress(subnet.getAddressAndIncrement())
-        .withGenesisFile(genesisFile)
+        .withGenesisFile(genesisFiles.get(providerType))
         .withBootnodeEnodeAddress(bootnodeEnodeAddresses());
     if (providerType.equals(Web3ProviderType.BESU)) {
       web3Provider = new Besu(config.build());
@@ -254,7 +266,11 @@ public class Network implements Closeable {
                 .withContainerNetwork(subnet.network())
                 .withIpAddress(subnet.getAddressAndIncrement())
                 .withDownstream(downstream)
-                .withChainId(genesis.getConfig().getChainId())
+                .withChainId(
+                    genesisMap
+                        .get(Web3ProviderType.BESU)
+                        .getConfig()
+                        .getChainId()) // yeah, this is a bit of a hack.
                 .witWallet(resources)
                 .build());
 
@@ -387,40 +403,57 @@ public class Network implements Closeable {
     members.parallelStream().forEach(action);
   }
 
-  private Genesis createGenesis(
+  private Map<Web3ProviderType, Genesis> createGenesis(
       final ConsensusMechanism consensus,
       final Map<GenesisAddress, GenesisAccount> genesisAccounts,
       final Web3Provider... validators) {
     final long chainId = Math.round(Math.random() * Long.MAX_VALUE);
 
-    final GenesisConfig genesisConfig;
-    final GenesisExtraData extraData;
+    final Map<Web3ProviderType, Genesis> result = new HashMap<>();
 
-    switch (consensus) {
-      case CLIQUE:
-        genesisConfig = new GenesisConfigClique(chainId, new CliqueConfig());
-        extraData = new GenesisExtraDataClique(validators);
-        break;
-      case IBFT2:
-        genesisConfig = new GenesisConfigIbft2(chainId, new BftConfig());
-        extraData = new GenesisExtraDataIbft2(validators);
-        break;
-      case IBFT:
-        genesisConfig = new GenesisConfigIbftLegacy(chainId, new IbftLegacyConfig());
-        extraData = new GenesisExtraDataIbftLegacy(validators);
-        break;
-      case QBFT:
-        genesisConfig = new GenesisConfigQbft(chainId, new BftConfig());
-        extraData = new GenesisExtraDataIbft2(validators);
-        break;
-      case ETH_HASH:
-      default:
-        extraData = null;
-        genesisConfig = new GenesisConfigEthHash(chainId, new EthHashConfig());
-        break;
-    }
+    Stream.of(Web3ProviderType.values())
+        .forEach(
+            e -> {
+              final GenesisConfig genesisConfig;
+              final GenesisExtraData extraData;
 
-    return new Genesis(genesisConfig, genesisAccounts, extraData);
+              switch (consensus) {
+                case CLIQUE:
+                  genesisConfig = new GenesisConfigClique(chainId, new CliqueConfig());
+                  extraData = new GenesisExtraDataClique(validators);
+                  break;
+                case IBFT2:
+                  genesisConfig = new GenesisConfigIbft2(chainId, new BftConfig());
+                  extraData = new GenesisExtraDataIbft2(validators);
+                  break;
+                case IBFT:
+                  if (e.equals(Web3ProviderType.BESU)) {
+                    genesisConfig = new BesuConfigIbft(chainId, new BesuLegacyIbftOptions());
+                  } else {
+                    genesisConfig = new GoQuorumIbftConfig(chainId, new GoQuorumIbftOptions());
+                  }
+                  extraData = new GenesisExtraDataIbftLegacy(validators);
+                  break;
+                case QBFT:
+                  if (e.equals(Web3ProviderType.BESU)) {
+                    genesisConfig = new GenesisConfigQbft(chainId, new BftConfig());
+                  } else {
+                    genesisConfig =
+                        new GoQuorumIbftConfig(chainId, GoQuorumIbftOptions.createQbft());
+                  }
+                  extraData = new GenesisExtraDataQbft(validators);
+                  break;
+                case ETH_HASH:
+                default:
+                  extraData = null;
+                  genesisConfig = new GenesisConfigEthHash(chainId, new EthHashConfig());
+                  break;
+              }
+
+              result.put(e, new Genesis(genesisConfig, genesisAccounts, extraData));
+            });
+
+    return result;
   }
 
   private void awaitConnectivity() {

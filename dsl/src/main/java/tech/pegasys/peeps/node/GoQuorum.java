@@ -59,6 +59,8 @@ public class GoQuorum extends Web3Provider {
     commandLineOptions.addAll(List.of("--networkid", "15"));
     commandLineOptions.addAll(List.of("--identity", config.getIdentity()));
 
+    // Note: this copy occurs on container start (not now, as the genesis file is empty at this
+    // stage)
     container.withCopyFileToContainer(
         MountableFile.forHostPath(config.getGenesisFile()), CONTAINER_GENESIS_FILE);
     final List<String> entryPoint = Lists.newArrayList("/bin/sh", "-c");

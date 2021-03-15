@@ -12,26 +12,40 @@
  */
 package tech.pegasys.peeps.node.genesis.ibft;
 
+import java.util.Optional;
+
 import com.fasterxml.jackson.annotation.JsonGetter;
 
-public class IbftLegacyConfig {
+public class GoQuorumIbftOptions {
 
   private final int blockPeriodSeconds;
   private final int epochLength;
   private final int requestTimeoutSeconds;
+  private final Optional<Integer> qbftBlock;
+  private Optional<Integer> ceil2nBy3Block;
 
-  public IbftLegacyConfig() {
-    this(2, 30000, 10);
+  public GoQuorumIbftOptions() {
+    this(2, 30000, 10, Optional.empty(), Optional.empty());
   }
 
-  public IbftLegacyConfig(
-      final int blockPeriodSeconds, final int epochLength, final int requestTimeoutSeconds) {
+  public static GoQuorumIbftOptions createQbft() {
+    return new GoQuorumIbftOptions(2, 30000, 10, Optional.of(0), Optional.empty());
+  }
+
+  public GoQuorumIbftOptions(
+      final int blockPeriodSeconds,
+      final int epochLength,
+      final int requestTimeoutSeconds,
+      final Optional<Integer> qbftBlock,
+      final Optional<Integer> ceil2nBy3Block) {
     this.blockPeriodSeconds = blockPeriodSeconds;
     this.epochLength = epochLength;
     this.requestTimeoutSeconds = requestTimeoutSeconds;
+    this.qbftBlock = qbftBlock;
+    this.ceil2nBy3Block = ceil2nBy3Block;
   }
 
-  @JsonGetter("blockperiodseconds")
+  @JsonGetter("epoch")
   public int getBlockPeriodSeconds() {
     return blockPeriodSeconds;
   }
@@ -44,5 +58,15 @@ public class IbftLegacyConfig {
   @JsonGetter("requesttimeoutseconds")
   public int getRequestTimeoutSeconds() {
     return requestTimeoutSeconds;
+  }
+
+  @JsonGetter("qibftblock")
+  public Optional<Integer> getQbftBlock() {
+    return qbftBlock;
+  }
+
+  @JsonGetter("ceil2nby3block")
+  public Optional<Integer> getCeil2nBy3Block() {
+    return ceil2nBy3Block;
   }
 }
