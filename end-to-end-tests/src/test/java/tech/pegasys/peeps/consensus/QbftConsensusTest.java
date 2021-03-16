@@ -12,7 +12,6 @@
  */
 package tech.pegasys.peeps.consensus;
 
-import org.junit.jupiter.api.Test;
 import tech.pegasys.peeps.FixedSignerConfigs;
 import tech.pegasys.peeps.NetworkTest;
 import tech.pegasys.peeps.network.ConsensusMechanism;
@@ -27,6 +26,7 @@ import tech.pegasys.peeps.signer.SignerConfiguration;
 import org.apache.tuweni.crypto.SECP256K1.KeyPair;
 import org.apache.tuweni.eth.Address;
 import org.apache.tuweni.units.ethereum.Wei;
+import org.junit.jupiter.api.Test;
 
 public class QbftConsensusTest extends NetworkTest {
 
