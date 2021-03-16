@@ -131,7 +131,7 @@ public class Network implements Closeable {
         (k, v) -> {
           v.ensureExists(genesisMap.get(k));
         });
-    //need to start first node, so that bootnodes etc. work
+    // need to start first node, so that bootnodes etc. work
     members.get(0).start();
     members.subList(1, members.size()).stream().parallel().forEach(NetworkMember::start);
     awaitConnectivity();
