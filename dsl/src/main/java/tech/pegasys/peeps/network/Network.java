@@ -131,7 +131,9 @@ public class Network implements Closeable {
         (k, v) -> {
           v.ensureExists(genesisMap.get(k));
         });
-    everyMember(NetworkMember::start);
+    //need to start first node, so that bootnodes etc. work
+    members.get(0).start();
+    members.subList(1, members.size()).stream().parallel().forEach(NetworkMember::start);
     awaitConnectivity();
   }
 
@@ -399,7 +401,7 @@ public class Network implements Closeable {
     return nodes.parallelStream().map(node -> node.enodeAddress()).collect(Collectors.joining(","));
   }
 
-  private void everyMember(Consumer<NetworkMember> action) {
+  private void everyMember(final Consumer<NetworkMember> action) {
     members.parallelStream().forEach(action);
   }
 
