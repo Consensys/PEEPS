@@ -12,6 +12,8 @@
  */
 package tech.pegasys.peeps.node.genesis.ibft;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonGetter;

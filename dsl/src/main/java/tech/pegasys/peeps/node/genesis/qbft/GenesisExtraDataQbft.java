@@ -12,17 +12,19 @@
  */
 package tech.pegasys.peeps.node.genesis.qbft;
 
+import tech.pegasys.peeps.node.Web3Provider;
+import tech.pegasys.peeps.node.genesis.GenesisExtraData;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 import org.apache.tuweni.bytes.Bytes;
 import org.apache.tuweni.crypto.Hash;
 import org.apache.tuweni.crypto.SECP256K1.Signature;
 import org.apache.tuweni.eth.Address;
 import org.apache.tuweni.rlp.RLP;
-import tech.pegasys.peeps.node.Web3Provider;
-import tech.pegasys.peeps.node.genesis.GenesisExtraData;
 
 public class GenesisExtraDataQbft extends GenesisExtraData {
 
