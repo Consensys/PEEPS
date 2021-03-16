@@ -12,20 +12,17 @@
  */
 package tech.pegasys.peeps.node.genesis.qbft;
 
-import tech.pegasys.peeps.node.Web3Provider;
-import tech.pegasys.peeps.node.genesis.GenesisExtraData;
-
-import java.math.BigInteger;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import org.apache.tuweni.bytes.Bytes;
 import org.apache.tuweni.crypto.Hash;
 import org.apache.tuweni.crypto.SECP256K1.Signature;
 import org.apache.tuweni.eth.Address;
 import org.apache.tuweni.rlp.RLP;
+import tech.pegasys.peeps.node.Web3Provider;
+import tech.pegasys.peeps.node.genesis.GenesisExtraData;
 
 public class GenesisExtraDataQbft extends GenesisExtraData {
 
@@ -48,6 +45,7 @@ public class GenesisExtraDataQbft extends GenesisExtraData {
 
   private static Bytes encode(final List<Address> validators) {
     final byte[] vanityData = new byte[32];
+    final byte[] round = new byte[4];
     final byte[] votes = new byte[0];
     final List<Signature> seals = Collections.emptyList();
 
@@ -59,7 +57,7 @@ public class GenesisExtraDataQbft extends GenesisExtraData {
                 listWriter.writeList(
                     validators, (rlp, validator) -> rlp.writeValue(validator.toBytes()));
                 listWriter.writeByteArray(votes);
-                listWriter.writeBigInteger(BigInteger.ZERO);
+                listWriter.writeByteArray(round);
                 listWriter.writeList(seals, (rlp, committer) -> rlp.writeValue(committer.bytes()));
               });
         });
