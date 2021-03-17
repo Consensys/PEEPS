@@ -45,17 +45,17 @@ public class GoQuorumIbftOptions {
     this.ceil2nBy3Block = ceil2nBy3Block;
   }
 
-  @JsonGetter("epoch")
+  @JsonGetter("blockperiod")
   public int getBlockPeriodSeconds() {
     return blockPeriodSeconds;
   }
 
-  @JsonGetter("epochlength")
+  @JsonGetter("epoch")
   public int getEpochLength() {
     return epochLength;
   }
 
-  @JsonGetter("requesttimeoutseconds")
+  @JsonGetter("requesttimeout")
   public int getRequestTimeoutSeconds() {
     return requestTimeoutSeconds;
   }

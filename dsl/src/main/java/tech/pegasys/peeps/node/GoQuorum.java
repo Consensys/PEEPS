@@ -35,7 +35,7 @@ public class GoQuorum extends Web3Provider {
   private static final Logger LOG = LogManager.getLogger();
 
   //  private static final String IMAGE_NAME = "hyperledger/besu:latest";
-  private static final String IMAGE_NAME = "quorumengineering/quorum:latest";
+  private static final String IMAGE_NAME = "quorumengineering/quorum";
   private static final String CONTAINER_GENESIS_FILE = "/etc/genesis.json";
   private static final String CONTAINER_NODE_PRIVATE_KEY_FILE = "/etc/keys/node.priv";
   private static final String DATA_DIR = "/eth";
