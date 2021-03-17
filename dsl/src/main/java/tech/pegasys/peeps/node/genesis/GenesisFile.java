@@ -37,7 +37,8 @@ public class GenesisFile {
 
   private final Path genesisFile;
   private static final ObjectMapper objectMapper =
-      new ObjectMapper().registerModule(new Jdk8Module())
+      new ObjectMapper()
+          .registerModule(new Jdk8Module())
           .setSerializationInclusion(Include.NON_ABSENT);
 
   public GenesisFile(final Path genesisFile) {
