@@ -431,7 +431,7 @@ public class Network implements Closeable {
                   extraData = new GenesisExtraDataIbft2(validators);
                   break;
                 case IBFT:
-                  if (e.equals(Web3ProviderType.BESU)) {
+                  if (e == Web3ProviderType.BESU) {
                     genesisConfig = new BesuConfigIbft(chainId, new BesuLegacyIbftOptions());
                   } else {
                     genesisConfig = new GoQuorumIbftConfig(chainId, new GoQuorumIbftOptions());
@@ -439,7 +439,7 @@ public class Network implements Closeable {
                   extraData = new GenesisExtraDataIbftLegacy(validators);
                   break;
                 case QBFT:
-                  if (e.equals(Web3ProviderType.BESU)) {
+                  if (e == Web3ProviderType.BESU) {
                     genesisConfig = new GenesisConfigQbft(chainId, new BftConfig());
                   } else {
                     genesisConfig =

@@ -36,13 +36,12 @@ public class GenesisFile {
   private static final Logger LOG = LogManager.getLogger();
 
   private final Path genesisFile;
-  private final ObjectMapper objectMapper;
+  private static final ObjectMapper objectMapper =
+      new ObjectMapper().registerModule(new Jdk8Module())
+          .setSerializationInclusion(Include.NON_ABSENT);
 
   public GenesisFile(final Path genesisFile) {
-
     this.genesisFile = genesisFile;
-    objectMapper = new ObjectMapper().registerModule(new Jdk8Module());
-    objectMapper.setSerializationInclusion(Include.NON_ABSENT);
   }
 
   public void ensureExists(final Genesis genesis) {
@@ -67,7 +66,7 @@ public class GenesisFile {
           String.format(
               "Problem decoding an existing config file from the file system: %s, %s",
               genesisFile, e.getLocalizedMessage()));
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new IllegalStateException(
           String.format(
               "Problem reading an existing config file in the file system: %s, %s",
@@ -84,7 +83,7 @@ public class GenesisFile {
     final String encodedGenesis;
     try {
       encodedGenesis = objectMapper.writeValueAsString(genesis);
-    } catch (JsonProcessingException e) {
+    } catch (final JsonProcessingException e) {
       throw new RuntimeException("Failed to encode genesis data", e);
     }
     LOG.info("Creating genesis file\n\tLocation: {} \n\tContents: {}", genesisFile, encodedGenesis);
