@@ -18,7 +18,6 @@ import tech.pegasys.peeps.network.ConsensusMechanism;
 import tech.pegasys.peeps.network.Network;
 import tech.pegasys.peeps.node.Account;
 import tech.pegasys.peeps.node.Web3Provider;
-import tech.pegasys.peeps.node.Web3ProviderType;
 import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.verification.ValueReceived;
 import tech.pegasys.peeps.node.verification.ValueSent;
@@ -37,9 +36,8 @@ public class IbftConsensusTest extends NetworkTest {
   @Override
   protected void setUpNetwork(final Network network) {
     alphaNode = network.addNode("alpha", KeyPair.random());
-    final Web3Provider betaNode =
-        network.addNode("beta", KeyPair.random(), Web3ProviderType.GOQUORUM);
-    network.set(ConsensusMechanism.IBFT, betaNode);
+    final Web3Provider betaNode = network.addNode("beta", KeyPair.random());
+    network.set(ConsensusMechanism.IBFT, alphaNode);
     network.addSigner(signer.name(), signer.resources(), alphaNode);
   }
 
