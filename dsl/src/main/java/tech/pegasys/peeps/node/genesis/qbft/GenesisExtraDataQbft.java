@@ -15,16 +15,13 @@ package tech.pegasys.peeps.node.genesis.qbft;
 import tech.pegasys.peeps.node.Web3Provider;
 import tech.pegasys.peeps.node.genesis.GenesisExtraData;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.tuweni.bytes.Bytes;
-import org.apache.tuweni.crypto.Hash;
-import org.apache.tuweni.crypto.SECP256K1.Signature;
-import org.apache.tuweni.eth.Address;
-import org.apache.tuweni.rlp.RLP;
+import org.hyperledger.besu.consensus.qbft.QbftExtraDataCodec;
+import org.hyperledger.besu.ethereum.core.Address;
 
 public class GenesisExtraDataQbft extends GenesisExtraData {
 
@@ -32,36 +29,14 @@ public class GenesisExtraDataQbft extends GenesisExtraData {
     super(encode(validators));
   }
 
-  public static Bytes encode(final Web3Provider... validators) {
-
-    return encode(
+  static Bytes encode(final Web3Provider... validators) {
+    final List<Address> addresses =
         Stream.of(validators)
             .parallel()
-            .map(
-                validator ->
-                    Address.fromBytes(
-                        Hash.keccak256(Bytes.fromHexString(validator.nodePublicKey()))
-                            .slice(12, 20)))
-            .collect(Collectors.toList()));
-  }
+            .map(GenesisExtraData::extractAddress)
+            .collect(Collectors.toList());
 
-  private static Bytes encode(final List<Address> validators) {
-    final byte[] vanityData = new byte[32];
-    final byte[] round = new byte[4];
-    final byte[] votes = new byte[0];
-    final List<Signature> seals = Collections.emptyList();
-
-    return RLP.encode(
-        writer -> {
-          writer.writeList(
-              listWriter -> {
-                listWriter.writeByteArray(vanityData);
-                listWriter.writeList(
-                    validators, (rlp, validator) -> rlp.writeValue(validator.toBytes()));
-                listWriter.writeByteArray(votes);
-                listWriter.writeByteArray(round);
-                listWriter.writeList(seals, (rlp, committer) -> rlp.writeValue(committer.bytes()));
-              });
-        });
+    // delegate to Besu QBFT ExtraData implementation
+    return QbftExtraDataCodec.encodeFromAddresses(addresses);
   }
 }

@@ -69,5 +69,13 @@ dependencyManagement {
     dependency 'io.vertx:vertx-web-client:3.9.5'
 
     dependency 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.12.2'
+
+    // QBFT ExtraData
+    dependencySet(group: 'org.hyperledger.besu.internal', version: '21.1.3') {
+      entry 'qbft'
+      entry 'core'
+      entry 'crypto'
+      entry 'common'
+    }
   }
 }
