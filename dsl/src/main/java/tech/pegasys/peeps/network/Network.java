@@ -101,7 +101,7 @@ public class Network implements Closeable {
   private final Vertx vertx;
 
   private NetworkState state;
-  private Map<Web3ProviderType, Genesis> genesisMap = new HashMap<>();
+  private final Map<Web3ProviderType, Genesis> genesisConfigurations = new HashMap<>();
 
   public Network(final Path configurationDirectory, final Subnet subnet) {
     checkArgument(configurationDirectory != null, "Path to configuration directory is mandatory");
@@ -127,12 +127,10 @@ public class Network implements Closeable {
 
   public void start() {
     state.start();
-    genesisFiles.forEach(
-        (k, v) -> {
-          v.ensureExists(genesisMap.get(k));
-        });
+    genesisFiles.forEach((k, v) -> v.ensureExists(genesisConfigurations.get(k)));
     if (members.size() != 0) {
-      // need to start first node, so that bootnodes etc. work
+      // assume that first node is to act as bootnode, so start it fully before other nodes.
+      // TODO: NetworkMember should have a flag to identify the bootnode(s)
       members.get(0).start();
       members.subList(1, members.size()).stream().parallel().forEach(NetworkMember::start);
     }
@@ -165,7 +163,7 @@ public class Network implements Closeable {
         "Cannot set consensus mechanism while the Network is already started");
     checkState(signers.isEmpty(), "Cannot change consensus mechanism after creating signers");
 
-    this.genesisMap.putAll(
+    this.genesisConfigurations.putAll(
         createGenesis(
             consensus, Account.of(Account.ALPHA, Account.BETA, Account.GAMMA), validators));
   }
@@ -271,7 +269,7 @@ public class Network implements Closeable {
                 .withIpAddress(subnet.getAddressAndIncrement())
                 .withDownstream(downstream)
                 .withChainId(
-                    genesisMap
+                    genesisConfigurations
                         .get(Web3ProviderType.BESU)
                         .getConfig()
                         .getChainId()) // yeah, this is a bit of a hack.
