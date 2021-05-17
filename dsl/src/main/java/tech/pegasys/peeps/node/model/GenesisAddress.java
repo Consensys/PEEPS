@@ -63,8 +63,7 @@ public class GenesisAddress {
     if (getClass() != obj.getClass()) return false;
     GenesisAddress other = (GenesisAddress) obj;
     if (hex == null) {
-      if (other.hex != null) return false;
-    } else if (!hex.equals(other.hex)) return false;
-    return true;
+      return other.hex == null;
+    } else return hex.equals(other.hex);
   }
 }
