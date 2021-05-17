@@ -16,7 +16,6 @@ import tech.pegasys.peeps.util.DockerLogs;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.time.Duration;
 import java.util.List;
 
 import com.google.common.collect.Lists;
@@ -27,15 +26,13 @@ import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
 import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.images.PullPolicy;
 import org.testcontainers.utility.MountableFile;
 
 public class GoQuorum extends Web3Provider {
 
   private static final Logger LOG = LogManager.getLogger();
 
-  //  private static final String IMAGE_NAME = "hyperledger/besu:latest";
-  private static final String IMAGE_NAME = "quorumengineering/quorum";
+  private static final String IMAGE_NAME = "localquorum:1.0";
   private static final String CONTAINER_GENESIS_FILE = "/etc/genesis.json";
   private static final String CONTAINER_NODE_PRIVATE_KEY_FILE = "/etc/keys/node.priv";
   private static final String DATA_DIR = "/eth";
@@ -43,10 +40,7 @@ public class GoQuorum extends Web3Provider {
   private static final String CONTAINER_PASSWORD_FILE = KEYSTORE_DIR + "password";
 
   public GoQuorum(final Web3ProviderConfiguration config) {
-    super(
-        config,
-        new GenericContainer<>(IMAGE_NAME)
-            .withImagePullPolicy(PullPolicy.ageBased(Duration.ofHours(1))));
+    super(config, new GenericContainer<>(IMAGE_NAME));
 
     final List<String> commandLineOptions = standardCommandLineOptions();
 
@@ -121,7 +115,11 @@ public class GoQuorum extends Web3Provider {
         "--ws",
         "--gasprice",
         "0",
-        "--debug");
+        "--debug",
+        "--istanbul.blockperiod",
+        "2",
+        "--istanbul.requesttimeout",
+        "10000");
   }
 
   private void addBootnodeAddress(

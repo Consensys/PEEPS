@@ -10,7 +10,7 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package tech.pegasys.peeps.consensus;
+package tech.pegasys.peeps.consensus.qbft;
 
 import tech.pegasys.peeps.FixedSignerConfigs;
 import tech.pegasys.peeps.NetworkTest;
@@ -18,6 +18,7 @@ import tech.pegasys.peeps.network.ConsensusMechanism;
 import tech.pegasys.peeps.network.Network;
 import tech.pegasys.peeps.node.Account;
 import tech.pegasys.peeps.node.Web3Provider;
+import tech.pegasys.peeps.node.Web3ProviderType;
 import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.verification.ValueReceived;
 import tech.pegasys.peeps.node.verification.ValueSent;
@@ -28,35 +29,36 @@ import org.apache.tuweni.eth.Address;
 import org.apache.tuweni.units.ethereum.Wei;
 import org.junit.jupiter.api.Test;
 
-public class QbftConsensusTest extends NetworkTest {
+public class GoQuorumAndBesuQbftConsensusTest extends NetworkTest {
 
-  private Web3Provider alphaNode;
+  private Web3Provider quorumNode;
   private final SignerConfiguration signer = FixedSignerConfigs.ALPHA;
 
   @Override
   protected void setUpNetwork(final Network network) {
-    alphaNode = network.addNode("alpha", KeyPair.random());
-    network.addNode("beta", KeyPair.random());
-    network.set(ConsensusMechanism.QBFT, alphaNode);
-    network.addSigner(signer.name(), signer.resources(), alphaNode);
+    final Web3Provider besuNode = network.addNode("besu", KeyPair.random());
+    quorumNode =
+        network.addNode(
+            "quorum", KeyPair.random(), Web3ProviderType.GOQUORUM, FixedSignerConfigs.ALPHA);
+    network.set(ConsensusMechanism.QBFT, besuNode, quorumNode);
   }
 
   @Test
   public void consensusAfterMiningMustHappen() {
-    final Address sender = signer.address();
+        final Address sender = signer.address();
     final Address receiver = Account.BETA.address();
     final Wei transferAmount = Wei.valueOf(5000L);
 
     verify().consensusOnValueAt(sender, receiver);
 
-    final Wei senderStartBalance = execute(alphaNode).getBalance(sender);
-    final Wei receiverStartBalance = execute(alphaNode).getBalance(receiver);
+    final Wei senderStartBalance = execute(quorumNode).getBalance(sender);
+    final Wei receiverStartBalance = execute(quorumNode).getBalance(receiver);
 
-    final Hash receipt = execute(signer).transferTo(receiver, transferAmount);
+    final Hash receipt = execute(quorumNode).transfer(signer.address(), receiver, transferAmount);
 
     await().consensusOnTransactionReceipt(receipt);
 
-    verifyOn(alphaNode)
+    verifyOn(quorumNode)
         .transistion(
             new ValueSent(sender, senderStartBalance, receipt),
             new ValueReceived(receiver, receiverStartBalance, transferAmount));
