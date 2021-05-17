@@ -383,7 +383,10 @@ public class Network implements Closeable {
 
   public PrivacyGroupVerify privacyGroup(final PrivacyGroup group) {
     return new PrivacyGroupVerify(
-        group.parallelStream().map(privacyManagers::get).collect(Collectors.toSet()));
+        group
+            .parallelStream()
+            .map(manager -> privacyManagers.get(manager))
+            .collect(Collectors.toSet()));
   }
 
   @VisibleForTesting
@@ -395,7 +398,7 @@ public class Network implements Closeable {
   }
 
   private String bootnodeEnodeAddresses() {
-    return nodes.parallelStream().map(Web3Provider::enodeAddress).collect(Collectors.joining(","));
+    return nodes.parallelStream().map(node -> node.enodeAddress()).collect(Collectors.joining(","));
   }
 
   private void everyMember(final Consumer<NetworkMember> action) {
@@ -464,7 +467,7 @@ public class Network implements Closeable {
         .distinct()
         .forEach(privacyManger -> privacyManger.awaitConnectivity(privacyManagers.values()));
 
-    signers.values().parallelStream().forEach(EthSigner::awaitConnectivityToDownstream);
+    signers.values().parallelStream().forEach(signer -> signer.awaitConnectivityToDownstream());
   }
 
   private List<String> privacyManagerBootnodeUrls() {
@@ -472,7 +475,7 @@ public class Network implements Closeable {
         .values()
         .parallelStream()
         .distinct()
-        .map(PrivateTransactionManager::getPeerNetworkAddress)
+        .map(manager -> manager.getPeerNetworkAddress())
         .collect(Collectors.toList());
   }
 }
