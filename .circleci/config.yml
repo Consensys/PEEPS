@@ -101,7 +101,7 @@ jobs:
       - run:
           name: Docker login
           command: |
-            docker login docker.consensys.net -u $DOCKER_USER -p $DOCKER_PASSWORD
+            docker login docker.consensys.net -u $CLOUDSMITH_USER -p $CLOUDSMITH_API_KEY
       - run:
           name: End to End Tests
           no_output_timeout: 20m
@@ -120,3 +120,5 @@ workflows:
       - endToEndTests:
           requires:
             - build
+          context:
+            - cloudsmith-protocols
