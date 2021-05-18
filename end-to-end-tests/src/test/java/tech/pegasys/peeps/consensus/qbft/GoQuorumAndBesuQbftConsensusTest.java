@@ -45,7 +45,7 @@ public class GoQuorumAndBesuQbftConsensusTest extends NetworkTest {
 
   @Test
   public void consensusAfterMiningMustHappen() {
-        final Address sender = signer.address();
+    final Address sender = signer.address();
     final Address receiver = Account.BETA.address();
     final Wei transferAmount = Wei.valueOf(5000L);
 
@@ -59,7 +59,7 @@ public class GoQuorumAndBesuQbftConsensusTest extends NetworkTest {
     await().consensusOnTransactionReceipt(receipt);
 
     verifyOn(quorumNode)
-        .transistion(
+        .transition(
             new ValueSent(sender, senderStartBalance, receipt),
             new ValueReceived(receiver, receiverStartBalance, transferAmount));
 

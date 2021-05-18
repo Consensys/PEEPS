@@ -32,7 +32,8 @@ public class GoQuorum extends Web3Provider {
 
   private static final Logger LOG = LogManager.getLogger();
 
-  private static final String IMAGE_NAME = "localquorum:1.0";
+  private static final String IMAGE_NAME =
+      "docker.consensys.net/go-quorum-qbft-docker/qbft-quorum:latest";
   private static final String CONTAINER_GENESIS_FILE = "/etc/genesis.json";
   private static final String CONTAINER_NODE_PRIVATE_KEY_FILE = "/etc/keys/node.priv";
   private static final String DATA_DIR = "/eth";
