@@ -59,7 +59,7 @@ public class GoQuorumAndBesuCliqueConsensusTest extends NetworkTest {
     await().consensusOnTransactionReceipt(receipt);
 
     verifyOn(alphaNode)
-        .transistion(
+        .transition(
             new ValueSent(sender, senderStartBalance, receipt),
             new ValueReceived(receiver, receiverStartBalance, transferAmount));
 
