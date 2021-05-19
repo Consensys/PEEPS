@@ -108,6 +108,7 @@ public class GoQuorum extends Web3Provider {
 
   private List<String> standardCommandLineOptions(
       final int blockPeriodSeconds, final int requestTimeoutSeconds) {
+    final int requestTimeMilliseconds = requestTimeoutSeconds * 1000;
     return Lists.newArrayList(
         "--nousb",
         "--allow-insecure-unlock",
@@ -130,7 +131,7 @@ public class GoQuorum extends Web3Provider {
         "--istanbul.blockperiod",
         Integer.toString(blockPeriodSeconds),
         "--istanbul.requesttimeout",
-        Integer.toString(requestTimeoutSeconds * 1000));
+        Integer.toString(requestTimeMilliseconds));
   }
 
   private void addBootnodeAddress(
