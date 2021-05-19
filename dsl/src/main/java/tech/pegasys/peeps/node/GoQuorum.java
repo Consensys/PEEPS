@@ -12,6 +12,7 @@
  */
 package tech.pegasys.peeps.node;
 
+import tech.pegasys.peeps.node.genesis.bft.BftConfig;
 import tech.pegasys.peeps.util.DockerLogs;
 
 import java.nio.charset.StandardCharsets;
@@ -41,7 +42,7 @@ public class GoQuorum extends Web3Provider {
   private static final String CONTAINER_PASSWORD_FILE = KEYSTORE_DIR + "password";
 
   public GoQuorum(final Web3ProviderConfiguration config) {
-    this(config, 2, 10);
+    this(config, BftConfig.DEFAULT_BLOCK_PERIOD_SECONDS, BftConfig.DEFAULT_REQUEST_TIMEOUT_SECONDS);
   }
 
   public GoQuorum(
