@@ -41,9 +41,17 @@ public class GoQuorum extends Web3Provider {
   private static final String CONTAINER_PASSWORD_FILE = KEYSTORE_DIR + "password";
 
   public GoQuorum(final Web3ProviderConfiguration config) {
+    this(config, 2, 10);
+  }
+
+  public GoQuorum(
+      final Web3ProviderConfiguration config,
+      final int blockPeriodSeconds,
+      final int requestTimeoutSeconds) {
     super(config, new GenericContainer<>(IMAGE_NAME));
 
-    final List<String> commandLineOptions = standardCommandLineOptions();
+    final List<String> commandLineOptions =
+        standardCommandLineOptions(blockPeriodSeconds, requestTimeoutSeconds);
 
     addCorsOrigins(config, commandLineOptions);
     addBootnodeAddress(config, commandLineOptions);
@@ -97,7 +105,8 @@ public class GoQuorum extends Web3Provider {
     return Wait.forLogMessage(".*endpoint=0.0.0.0:8545.*", 1);
   }
 
-  private List<String> standardCommandLineOptions() {
+  private List<String> standardCommandLineOptions(
+      final int blockPeriodSeconds, final int requestTimeoutSeconds) {
     return Lists.newArrayList(
         "--nousb",
         "--allow-insecure-unlock",
@@ -118,9 +127,9 @@ public class GoQuorum extends Web3Provider {
         "0",
         "--debug",
         "--istanbul.blockperiod",
-        "2",
+        Integer.toString(blockPeriodSeconds),
         "--istanbul.requesttimeout",
-        "10000");
+        Integer.toString(requestTimeoutSeconds * 1000));
   }
 
   private void addBootnodeAddress(
