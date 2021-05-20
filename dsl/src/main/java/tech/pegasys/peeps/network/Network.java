@@ -365,6 +365,23 @@ public class Network implements Closeable {
     }
   }
 
+  public void verifyConsensusOnBlockNumberIsAtLeast(final long blockNumber) {
+    checkState(
+        nodes.size() > 1, "There must be two or more nodes to be able to verify on consensus");
+
+    await(
+        () ->
+            assertThat(
+                    nodes
+                        .parallelStream()
+                        .map(node -> node.rpc().getBlockNumber())
+                        .allMatch(block -> block >= blockNumber))
+                .isTrue(),
+        60,
+        "Failed to achieve consensus on block number being at least %s",
+        blockNumber);
+  }
+
   // TODO these Mediator method could be refactored elsewhere?
   public NodeVerify verify(final Web3Provider node) {
     return new NodeVerify(node);
