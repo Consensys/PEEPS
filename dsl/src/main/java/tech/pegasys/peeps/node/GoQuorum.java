@@ -12,11 +12,11 @@
  */
 package tech.pegasys.peeps.node;
 
+import tech.pegasys.peeps.node.genesis.bft.BftConfig;
 import tech.pegasys.peeps.util.DockerLogs;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.time.Duration;
 import java.util.List;
 
 import com.google.common.collect.Lists;
@@ -27,34 +27,39 @@ import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
 import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.images.PullPolicy;
 import org.testcontainers.utility.MountableFile;
 
 public class GoQuorum extends Web3Provider {
 
   private static final Logger LOG = LogManager.getLogger();
 
-  //  private static final String IMAGE_NAME = "hyperledger/besu:latest";
-  private static final String IMAGE_NAME = "quorumengineering/quorum";
+  private static final String IMAGE_NAME =
+      "docker.consensys.net/go-quorum-qbft-docker/qbft-quorum:latest";
   private static final String CONTAINER_GENESIS_FILE = "/etc/genesis.json";
+  private static final String CONTAINER_STATIC_NODES_FILE = "/eth/geth/static-nodes.json";
   private static final String CONTAINER_NODE_PRIVATE_KEY_FILE = "/etc/keys/node.priv";
   private static final String DATA_DIR = "/eth";
   private static final String KEYSTORE_DIR = "/eth/keystore/";
   private static final String CONTAINER_PASSWORD_FILE = KEYSTORE_DIR + "password";
 
   public GoQuorum(final Web3ProviderConfiguration config) {
-    super(
-        config,
-        new GenericContainer<>(IMAGE_NAME)
-            .withImagePullPolicy(PullPolicy.ageBased(Duration.ofHours(1))));
+    this(config, BftConfig.DEFAULT_BLOCK_PERIOD_SECONDS, BftConfig.DEFAULT_REQUEST_TIMEOUT_SECONDS);
+  }
 
-    final List<String> commandLineOptions = standardCommandLineOptions();
+  public GoQuorum(
+      final Web3ProviderConfiguration config,
+      final int blockPeriodSeconds,
+      final int requestTimeoutSeconds) {
+    super(config, new GenericContainer<>(IMAGE_NAME));
+
+    final List<String> commandLineOptions =
+        standardCommandLineOptions(blockPeriodSeconds, requestTimeoutSeconds);
 
     addCorsOrigins(config, commandLineOptions);
-    addBootnodeAddress(config, commandLineOptions);
     addContainerNetwork(config, container);
     addContainerIpAddress(ipAddress(), container);
     addWallets(config, commandLineOptions, container);
+    addStaticNodesFile(config, container);
     commandLineOptions.addAll(List.of("--datadir", "\"" + DATA_DIR + "\""));
     commandLineOptions.addAll(List.of("--networkid", "15"));
     commandLineOptions.addAll(List.of("--identity", config.getIdentity()));
@@ -102,7 +107,9 @@ public class GoQuorum extends Web3Provider {
     return Wait.forLogMessage(".*endpoint=0.0.0.0:8545.*", 1);
   }
 
-  private List<String> standardCommandLineOptions() {
+  private List<String> standardCommandLineOptions(
+      final int blockPeriodSeconds, final int requestTimeoutSeconds) {
+    final int requestTimeMilliseconds = requestTimeoutSeconds * 1000;
     return Lists.newArrayList(
         "--nousb",
         "--allow-insecure-unlock",
@@ -121,21 +128,11 @@ public class GoQuorum extends Web3Provider {
         "--ws",
         "--gasprice",
         "0",
-        "--debug");
-  }
-
-  private void addBootnodeAddress(
-      final Web3ProviderConfiguration config, final List<String> commandLineOptions) {
-    config
-        .getBootnodeEnodeAddress()
-        .ifPresent(
-            enode -> {
-              if (!enode.isEmpty()) {
-                commandLineOptions.addAll(Lists.newArrayList("--bootnodes", enode));
-              } else {
-                commandLineOptions.addAll(Lists.newArrayList("--bootnodes", "\"\""));
-              }
-            });
+        "--debug",
+        "--istanbul.blockperiod",
+        Integer.toString(blockPeriodSeconds),
+        "--istanbul.requesttimeout",
+        Integer.toString(requestTimeMilliseconds));
   }
 
   private void addContainerNetwork(
@@ -193,6 +190,12 @@ public class GoQuorum extends Web3Provider {
               commandLineOptions.addAll(
                   List.of("--miner.etherbase", wallet.address().toHexString()));
             });
+  }
+
+  private void addStaticNodesFile(
+      final Web3ProviderConfiguration config, final GenericContainer<?> container) {
+    container.withCopyFileToContainer(
+        MountableFile.forHostPath(config.getStaticNodesFile()), CONTAINER_STATIC_NODES_FILE);
   }
 
   //  private void addPrivacy(
