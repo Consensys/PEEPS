@@ -48,15 +48,17 @@ public class StaticNodesFile {
 
   private void write(final Web3Provider web3Provider, final List<Web3Provider> web3Providers) {
     final List<String> enodeAddresses =
-        web3Providers.stream().map(Web3Provider::enodeAddress).collect(Collectors.toList());
-    enodeAddresses.remove(web3Provider.enodeAddress());
+        web3Providers.stream()
+            .map(Web3Provider::enodeAddress)
+            .filter(enodeAddress -> !enodeAddress.equals(web3Provider.enodeAddress()))
+            .collect(Collectors.toList());
     try {
       objectMapper.writeValue(staticNodesFile.toFile(), enodeAddresses);
       LOG.info(
           "Creating static nodes file\n\tLocation: {} \n\tContents: {}",
           staticNodesFile,
           enodeAddresses);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new IllegalStateException("Failed creating static nodes file " + staticNodesFile);
     }
   }
