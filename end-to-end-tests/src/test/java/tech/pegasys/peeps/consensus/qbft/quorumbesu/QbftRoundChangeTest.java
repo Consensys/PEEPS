@@ -50,7 +50,7 @@ public class QbftRoundChangeTest extends NetworkTest {
     quorumNode1.stop();
 
     // network should now be stalled and creating round changes
-    final List<Web3Provider> runningNodes = List.of(this.besuNode2, quorumNode2);
+    final List<Web3Provider> runningNodes = List.of(besuNode2, quorumNode2);
     besuNode2.awaitConnectivity(runningNodes);
     quorumNode2.awaitConnectivity(runningNodes);
 
