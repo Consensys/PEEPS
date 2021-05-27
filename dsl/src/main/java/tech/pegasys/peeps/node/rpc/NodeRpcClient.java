@@ -27,34 +27,23 @@ import tech.pegasys.peeps.node.rpc.eth.GetTransactionByHashResponse;
 import tech.pegasys.peeps.node.rpc.eth.GetTransactionReceiptResponse;
 import tech.pegasys.peeps.node.rpc.priv.GetPrivateTransactionResponse;
 
-import java.time.Duration;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import io.vertx.core.Vertx;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apache.tuweni.eth.Address;
 import org.apache.tuweni.units.ethereum.Wei;
 
-public class NodeRpcClient extends JsonRpcClient {
+public class NodeRpcClient {
 
-  private static final Logger LOG = LogManager.getLogger();
-  private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(5);
+  protected final JsonRpcClient rpcClient;
+  private final QbftRpc qbftRpc;
 
-  public NodeRpcClient(
-      final Vertx vertx,
-      final Duration timeout,
-      final Logger log,
-      final Set<Supplier<String>> dockerLogs) {
-    super(vertx, timeout, log, dockerLogs);
-  }
-
-  public NodeRpcClient(final Vertx vertx, final Set<Supplier<String>> dockerLogs) {
-    this(vertx, DEFAULT_TIMEOUT, LOG, dockerLogs);
+  public NodeRpcClient(final JsonRpcClient rpcClient, final QbftRpc qbftRpc) {
+    this.rpcClient = rpcClient;
+    this.qbftRpc = qbftRpc;
   }
 
   public Set<String> getConnectedPeerEnodes() {
@@ -62,34 +51,46 @@ public class NodeRpcClient extends JsonRpcClient {
   }
 
   public NodeInfo nodeInfo() {
-    return post("admin_nodeInfo", NodeInfoResponse.class).getResult();
+    return rpcClient.post("admin_nodeInfo", NodeInfoResponse.class).getResult();
   }
 
   private ConnectedPeer[] connectedPeers() {
-    return post("admin_peers", ConnectedPeersResponse.class).getResult();
+    return rpcClient.post("admin_peers", ConnectedPeersResponse.class).getResult();
   }
 
   public Optional<PrivacyTransactionReceipt> getPrivacyTransactionReceipt(final Hash receipt) {
-    return post("priv_getTransactionReceipt", GetPrivateTransactionResponse.class, receipt)
+    return rpcClient
+        .post("priv_getTransactionReceipt", GetPrivateTransactionResponse.class, receipt)
         .getResult();
   }
 
   public Optional<TransactionReceipt> getTransactionReceipt(final Hash receipt) {
-    return post("eth_getTransactionReceipt", GetTransactionReceiptResponse.class, receipt)
+    return rpcClient
+        .post("eth_getTransactionReceipt", GetTransactionReceiptResponse.class, receipt)
         .getResult();
   }
 
   public Optional<Transaction> getTransactionByHash(final Hash transaction) {
-    return post("eth_getTransactionByHash", GetTransactionByHashResponse.class, transaction)
+    return rpcClient
+        .post("eth_getTransactionByHash", GetTransactionByHashResponse.class, transaction)
         .getResult();
   }
 
   public Wei getBalance(final Address account) {
-    return post("eth_getBalance", GetBalanceResponse.class, account.toHexString(), "latest")
+    return rpcClient
+        .post("eth_getBalance", GetBalanceResponse.class, account.toHexString(), "latest")
         .getResult();
   }
 
   public long getBlockNumber() {
-    return post("eth_blockNumber", GetBlockNumberResponse.class).getResult();
+    return rpcClient.post("eth_blockNumber", GetBlockNumberResponse.class).getResult();
+  }
+
+  public boolean qbftProposeValidatorVote(final Address validator, final boolean add) {
+    return qbftRpc.qbftProposeValidatorVote(validator, add);
+  }
+
+  public List<Address> qbftGetValidatorsByBlockNumber(final String blockNumber) {
+    return qbftRpc.qbftGetValidatorsByBlockBlockNumber(blockNumber);
   }
 }
