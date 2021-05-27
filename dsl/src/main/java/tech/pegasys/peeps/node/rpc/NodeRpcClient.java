@@ -17,6 +17,7 @@ import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.model.PrivacyTransactionReceipt;
 import tech.pegasys.peeps.node.model.Transaction;
 import tech.pegasys.peeps.node.model.TransactionReceipt;
+import tech.pegasys.peeps.node.rpc.QbftRpc.VoteType;
 import tech.pegasys.peeps.node.rpc.admin.ConnectedPeer;
 import tech.pegasys.peeps.node.rpc.admin.ConnectedPeersResponse;
 import tech.pegasys.peeps.node.rpc.admin.NodeInfo;
@@ -86,8 +87,8 @@ public class NodeRpcClient {
     return rpcClient.post("eth_blockNumber", GetBlockNumberResponse.class).getResult();
   }
 
-  public boolean qbftProposeValidatorVote(final Address validator, final boolean add) {
-    return qbftRpc.qbftProposeValidatorVote(validator, add);
+  public boolean qbftProposeValidatorVote(final Address validator, final VoteType vote) {
+    return qbftRpc.qbftProposeValidatorVote(validator, vote);
   }
 
   public List<Address> qbftGetValidatorsByBlockNumber(final String blockNumber) {

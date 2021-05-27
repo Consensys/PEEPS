@@ -74,9 +74,9 @@ public class NodeRpcMandatoryResponse implements NodeRpc {
   }
 
   @Override
-  public boolean qbftProposeValidatorVote(final Address validator, final boolean add) {
+  public boolean qbftProposeValidatorVote(final Address validator, final VoteType vote) {
     return awaitData(
-        () -> rpc.qbftProposeValidatorVote(validator, add), "Failed to cast qbft vote");
+        () -> rpc.qbftProposeValidatorVote(validator, vote), "Failed to cast qbft vote");
   }
 
   @Override

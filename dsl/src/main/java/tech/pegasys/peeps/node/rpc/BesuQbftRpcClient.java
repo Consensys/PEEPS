@@ -29,13 +29,13 @@ public class BesuQbftRpcClient implements QbftRpc {
   }
 
   @Override
-  public boolean qbftProposeValidatorVote(final Address validator, final boolean add) {
+  public boolean qbftProposeValidatorVote(final Address validator, final VoteType vote) {
     return rpcClient
         .post(
             "qbft_proposeValidatorVote",
             BesuQbftProposeValidatorVoteResponse.class,
             validator.toHexString(),
-            add)
+            vote == VoteType.ADD)
         .getResult();
   }
 

@@ -18,6 +18,7 @@ import tech.pegasys.peeps.NetworkTest;
 import tech.pegasys.peeps.network.Network;
 import tech.pegasys.peeps.node.Web3Provider;
 import tech.pegasys.peeps.node.Web3ProviderType;
+import tech.pegasys.peeps.node.rpc.QbftRpc.VoteType;
 
 import java.util.List;
 
@@ -41,8 +42,8 @@ public class QbftValidatorTest extends NetworkTest {
   public void validatorCanBeAdded() {
     verify().consensusOnBlockNumberIsAtLeast(1);
 
-    besuNode1.rpc().qbftProposeValidatorVote(besuNode2.address(), true);
-    quorumNode1.rpc().qbftProposeValidatorVote(besuNode2.address(), true);
+    besuNode1.rpc().qbftProposeValidatorVote(besuNode2.address(), VoteType.ADD);
+    quorumNode1.rpc().qbftProposeValidatorVote(besuNode2.address(), VoteType.ADD);
 
     verify()
         .consensusOnValidators(
@@ -53,8 +54,8 @@ public class QbftValidatorTest extends NetworkTest {
   void validatorCanBeRemoved() {
     verify().consensusOnBlockNumberIsAtLeast(1);
 
-    besuNode1.rpc().qbftProposeValidatorVote(besuNode1.address(), false);
-    quorumNode1.rpc().qbftProposeValidatorVote(besuNode1.address(), false);
+    besuNode1.rpc().qbftProposeValidatorVote(besuNode1.address(), VoteType.REMOVE);
+    quorumNode1.rpc().qbftProposeValidatorVote(besuNode1.address(), VoteType.REMOVE);
 
     verify().consensusOnValidators(List.of(quorumNode1.address()));
   }

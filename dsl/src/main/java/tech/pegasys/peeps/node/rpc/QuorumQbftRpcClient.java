@@ -29,8 +29,8 @@ public class QuorumQbftRpcClient implements QbftRpc {
   }
 
   @Override
-  public boolean qbftProposeValidatorVote(final Address validator, final boolean add) {
-    rpcClient.post("istanbul_propose", Map.class, validator.toHexString(), add);
+  public boolean qbftProposeValidatorVote(final Address validator, final VoteType vote) {
+    rpcClient.post("istanbul_propose", Map.class, validator.toHexString(), vote == VoteType.ADD);
     // returns a null value for the result so no need for capture this value
     return true;
   }

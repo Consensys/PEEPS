@@ -17,8 +17,12 @@ import java.util.List;
 import org.apache.tuweni.eth.Address;
 
 public interface QbftRpc {
+  enum VoteType {
+    ADD,
+    REMOVE
+  }
 
-  boolean qbftProposeValidatorVote(Address validator, boolean add);
+  boolean qbftProposeValidatorVote(Address validator, VoteType add);
 
   List<Address> qbftGetValidatorsByBlockBlockNumber(final String blockNumber);
 }
