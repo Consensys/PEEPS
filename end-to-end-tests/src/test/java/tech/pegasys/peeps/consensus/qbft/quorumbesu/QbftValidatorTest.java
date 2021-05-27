@@ -12,19 +12,16 @@
  */
 package tech.pegasys.peeps.consensus.qbft.quorumbesu;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static tech.pegasys.peeps.network.ConsensusMechanism.QBFT;
 
 import tech.pegasys.peeps.NetworkTest;
 import tech.pegasys.peeps.network.Network;
 import tech.pegasys.peeps.node.Web3Provider;
 import tech.pegasys.peeps.node.Web3ProviderType;
-import tech.pegasys.peeps.util.Await;
 
 import java.util.List;
 
 import org.apache.tuweni.crypto.SECP256K1.KeyPair;
-import org.apache.tuweni.eth.Address;
 import org.junit.jupiter.api.Test;
 
 public class QbftValidatorTest extends NetworkTest {
@@ -47,11 +44,9 @@ public class QbftValidatorTest extends NetworkTest {
     besuNode1.rpc().qbftProposeValidatorVote(besuNode2.address(), true);
     quorumNode1.rpc().qbftProposeValidatorVote(besuNode2.address(), true);
 
-    final List<Address> expectedValidators =
-        List.of(quorumNode1.address(), besuNode1.address(), besuNode2.address());
-    verifyHasValidators(besuNode1, expectedValidators);
-    verifyHasValidators(besuNode2, expectedValidators);
-    verifyHasValidators(quorumNode1, expectedValidators);
+    verify()
+        .consensusOnValidators(
+            List.of(quorumNode1.address(), besuNode1.address(), besuNode2.address()));
   }
 
   @Test
@@ -61,18 +56,6 @@ public class QbftValidatorTest extends NetworkTest {
     besuNode1.rpc().qbftProposeValidatorVote(besuNode1.address(), false);
     quorumNode1.rpc().qbftProposeValidatorVote(besuNode1.address(), false);
 
-    verifyHasValidators(quorumNode1, List.of(quorumNode1.address()));
-    verifyHasValidators(besuNode1, List.of(quorumNode1.address()));
-  }
-
-  private void verifyHasValidators(
-      final Web3Provider web3Provider, final List<Address> expectedValidators) {
-    Await.await(
-        () -> {
-          final List<Address> validators =
-              web3Provider.rpc().qbftGetValidatorsByBlockBlockNumber("latest");
-          assertThat(validators).containsExactlyInAnyOrderElementsOf(expectedValidators);
-        },
-        "Node does not have expected validators");
+    verify().consensusOnValidators(List.of(quorumNode1.address()));
   }
 }
