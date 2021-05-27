@@ -124,7 +124,7 @@ workflows:
                 - master
     jobs:
       - build
-          - endToEndTests:
+      - endToEndTests:
           requires:
             - build
           context:
