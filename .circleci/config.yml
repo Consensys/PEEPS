@@ -60,6 +60,8 @@ commands:
     description: "Notify Slack"
     steps:
       - slack/status:
+#          fail_only: true
+          only_for_branches: 'master'
 
 jobs:
   build:
