@@ -17,9 +17,9 @@ import com.fasterxml.jackson.annotation.JsonGetter;
 // NOTE: This is only for Besu (GoQuorum needs their own version
 public class BftConfig {
 
-  public static final int DEFAULT_BLOCK_PERIOD_SECONDS = 2;
+  public static final int DEFAULT_BLOCK_PERIOD_SECONDS = 1;
   public static final int DEFAULT_EPOCH_LENGTH = 30000;
-  public static final int DEFAULT_REQUEST_TIMEOUT_SECONDS = 5;
+  public static final int DEFAULT_REQUEST_TIMEOUT_SECONDS = 2;
 
   private final int blockPeriodSeconds;
   private final int epochLength;
