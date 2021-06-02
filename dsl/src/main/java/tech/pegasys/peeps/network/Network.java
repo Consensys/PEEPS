@@ -86,13 +86,10 @@ import java.util.stream.Stream;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.vertx.core.Vertx;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apache.tuweni.crypto.SECP256K1.KeyPair;
 import org.apache.tuweni.eth.Address;
 
 public class Network implements Closeable {
-  private static final Logger LOG = LogManager.getLogger();
 
   private final Map<PrivacyManagerIdentifier, PrivateTransactionManager> privacyManagers;
   private final Map<String, EthSigner> signers;
@@ -142,14 +139,12 @@ public class Network implements Closeable {
   }
 
   public void stop() {
-    LOG.debug("Starting network");
     state.stop();
     everyMember(NetworkMember::stop);
   }
 
   @Override
   public void close() {
-    LOG.debug("Stopping network");
     if (state.isStarted()) {
       everyMember(NetworkMember::stop);
     }
