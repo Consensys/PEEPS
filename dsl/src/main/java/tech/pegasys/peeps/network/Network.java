@@ -133,6 +133,10 @@ public class Network implements Closeable {
     genesisFiles.forEach((k, v) -> v.ensureExists(genesisConfigurations.get(k)));
     staticNodesFiles.forEach((k, v) -> v.ensureExists(k, nodes));
     if (members.size() != 0) {
+      // assume that first node is to act as bootnode, so start it fully before other nodes.
+      // TODO: NetworkMember should have a flag to identify the bootnode(s)
+      members.get(0).start();
+      members.subList(1, members.size()).stream().parallel().forEach(NetworkMember::start);
       members.stream().parallel().forEach(NetworkMember::start);
     }
     awaitConnectivity();

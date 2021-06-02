@@ -169,8 +169,9 @@ public abstract class Web3Provider implements NetworkMember {
           final Set<String> peerPubKeys = EnodeHelpers.extractPubKeysFromEnodes(peerEnodes);
           final Set<String> connectedPeerPubKeys =
               EnodeHelpers.extractPubKeysFromEnodes(signerRpcResponse.getConnectedPeerIds());
-          LOG.info(
-              "Connected peersPubKeys {} expected peersPubKeys {}",
+          LOG.debug(
+              "Connected {} peersPubKeys {} expected peersPubKeys {}",
+              identity,
               connectedPeerPubKeys,
               peerPubKeys);
           assertThat(connectedPeerPubKeys).containsExactlyInAnyOrderElementsOf(peerPubKeys);
