@@ -59,6 +59,7 @@ public class Besu extends Web3Provider {
 
     addPeerToPeerHost(config, commandLineOptions);
     addCorsOrigins(config, commandLineOptions);
+    addBootnodeAddress(config, commandLineOptions);
     addContainerNetwork(config, container);
     addContainerIpAddress(config.getIpAddress(), container);
     addNodePrivateKey(config, commandLineOptions, container);
@@ -113,6 +114,13 @@ public class Besu extends Web3Provider {
       final Web3ProviderConfiguration config, final List<String> commandLineOptions) {
     commandLineOptions.add("--p2p-host");
     commandLineOptions.add(config.getIpAddress().get());
+  }
+
+  private void addBootnodeAddress(
+      final Web3ProviderConfiguration config, final List<String> commandLineOptions) {
+    config
+        .getBootnodeEnodeAddress()
+        .ifPresent(enode -> commandLineOptions.addAll(Lists.newArrayList("--bootnodes", enode)));
   }
 
   private void addContainerNetwork(
