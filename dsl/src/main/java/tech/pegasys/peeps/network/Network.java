@@ -18,8 +18,6 @@ import static com.google.common.base.Preconditions.checkState;
 import static org.assertj.core.api.Assertions.assertThat;
 import static tech.pegasys.peeps.util.Await.await;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import tech.pegasys.peeps.network.subnet.Subnet;
 import tech.pegasys.peeps.node.Account;
 import tech.pegasys.peeps.node.Besu;
@@ -88,6 +86,8 @@ import java.util.stream.Stream;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.vertx.core.Vertx;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.tuweni.crypto.SECP256K1.KeyPair;
 import org.apache.tuweni.eth.Address;
 
