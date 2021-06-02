@@ -18,6 +18,8 @@ import static com.google.common.base.Preconditions.checkState;
 import static org.assertj.core.api.Assertions.assertThat;
 import static tech.pegasys.peeps.util.Await.await;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import tech.pegasys.peeps.network.subnet.Subnet;
 import tech.pegasys.peeps.node.Account;
 import tech.pegasys.peeps.node.Besu;
@@ -90,6 +92,7 @@ import org.apache.tuweni.crypto.SECP256K1.KeyPair;
 import org.apache.tuweni.eth.Address;
 
 public class Network implements Closeable {
+  private static final Logger LOG = LogManager.getLogger();
 
   private final Map<PrivacyManagerIdentifier, PrivateTransactionManager> privacyManagers;
   private final Map<String, EthSigner> signers;
@@ -139,12 +142,14 @@ public class Network implements Closeable {
   }
 
   public void stop() {
+    LOG.debug("Starting network");
     state.stop();
     everyMember(NetworkMember::stop);
   }
 
   @Override
   public void close() {
+    LOG.debug("Stopping network");
     if (state.isStarted()) {
       everyMember(NetworkMember::stop);
     }

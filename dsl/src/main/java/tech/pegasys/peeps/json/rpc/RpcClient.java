@@ -87,7 +87,7 @@ public abstract class RpcClient {
 
     } catch (final RuntimeException e) {
       dockerLogs.forEach(dockerLog -> log.error(dockerLog.get()));
-      log.error("Post request failed", e);
+      log.error("Post request failed for {} with body {} ", relativeUri, requestPojo, e);
       throw e;
     }
   }
