@@ -34,6 +34,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class JsonRpcRequest {
@@ -97,5 +98,15 @@ public class JsonRpcRequest {
   @Override
   public int hashCode() {
     return Objects.hash(id, method, Arrays.hashCode(params), version);
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this)
+        .add("id", id)
+        .add("method", method)
+        .add("params", params)
+        .add("version", version)
+        .toString();
   }
 }
