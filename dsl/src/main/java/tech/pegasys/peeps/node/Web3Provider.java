@@ -177,6 +177,7 @@ public abstract class Web3Provider implements NetworkMember {
               peerPubKeys);
           assertThat(connectedPeerPubKeys).containsExactlyInAnyOrderElementsOf(peerPubKeys);
         },
+        60,
         "Node %s failed to connect in time to peers: %s",
         identity,
         peerEnodes);
