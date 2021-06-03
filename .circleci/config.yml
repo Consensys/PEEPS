@@ -150,3 +150,48 @@ workflows:
             - build
           context:
             - cloudsmith-protocols
+      - endToEndTests:
+          requires:
+            - build
+          context:
+            - cloudsmith-protocols
+      - endToEndTests:
+          requires:
+            - build
+          context:
+            - cloudsmith-protocols
+      - endToEndTests:
+          requires:
+            - build
+          context:
+            - cloudsmith-protocols
+      - endToEndTests:
+          requires:
+            - build
+          context:
+            - cloudsmith-protocols
+      - endToEndTests:
+          requires:
+            - build
+          context:
+            - cloudsmith-protocols
+      - endToEndTests:
+          requires:
+            - build
+          context:
+            - cloudsmith-protocols
+      - endToEndTests:
+          requires:
+            - build
+          context:
+            - cloudsmith-protocols
+      - endToEndTests:
+          requires:
+            - build
+          context:
+            - cloudsmith-protocols
+      - endToEndTests:
+          requires:
+            - build
+          context:
+            - cloudsmith-protocols
