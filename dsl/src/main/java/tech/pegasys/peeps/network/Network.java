@@ -137,7 +137,6 @@ public class Network implements Closeable {
       // TODO: NetworkMember should have a flag to identify the bootnode(s)
       members.get(0).start();
       members.subList(1, members.size()).stream().parallel().forEach(NetworkMember::start);
-      members.stream().parallel().forEach(NetworkMember::start);
     }
     awaitConnectivity();
   }
