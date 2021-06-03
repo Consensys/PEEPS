@@ -164,12 +164,13 @@ public abstract class Web3Provider implements NetworkMember {
   }
 
   private void awaitPeerIdConnections(final Set<String> peerEnodes) {
+    LOG.info("Node {} awaiting peerIdConnections {}", identity, peerEnodes);
     await(
         () -> {
           final Set<String> peerPubKeys = EnodeHelpers.extractPubKeysFromEnodes(peerEnodes);
           final Set<String> connectedPeerPubKeys =
               EnodeHelpers.extractPubKeysFromEnodes(signerRpcResponse.getConnectedPeerIds());
-          LOG.debug(
+          LOG.info(
               "Connected {} peersPubKeys {} expected peersPubKeys {}",
               identity,
               connectedPeerPubKeys,
