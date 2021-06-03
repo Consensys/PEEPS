@@ -164,7 +164,11 @@ public abstract class Web3Provider implements NetworkMember {
   }
 
   private void awaitPeerIdConnections(final Set<String> peerEnodes) {
-    LOG.info("Node {} awaiting peerIdConnections {}", identity, peerEnodes);
+    LOG.info(
+        "Node {} awaiting peerIdConnections {} {}",
+        identity,
+        peerEnodes,
+        new Throwable().getStackTrace());
     await(
         () -> {
           final Set<String> peerPubKeys = EnodeHelpers.extractPubKeysFromEnodes(peerEnodes);
