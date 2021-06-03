@@ -153,5 +153,7 @@ workflows:
             - cloudsmith-protocols
       - endToEndTests:
           name: e2e2
+          requires:
+            - build
           context:
             - cloudsmith-protocols
