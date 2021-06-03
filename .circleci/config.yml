@@ -146,52 +146,12 @@ workflows:
     jobs:
       - build
       - endToEndTests:
+          name: e2e1
           requires:
             - build
           context:
             - cloudsmith-protocols
       - endToEndTests:
-          requires:
-            - build
-          context:
-            - cloudsmith-protocols
-      - endToEndTests:
-          requires:
-            - build
-          context:
-            - cloudsmith-protocols
-      - endToEndTests:
-          requires:
-            - build
-          context:
-            - cloudsmith-protocols
-      - endToEndTests:
-          requires:
-            - build
-          context:
-            - cloudsmith-protocols
-      - endToEndTests:
-          requires:
-            - build
-          context:
-            - cloudsmith-protocols
-      - endToEndTests:
-          requires:
-            - build
-          context:
-            - cloudsmith-protocols
-      - endToEndTests:
-          requires:
-            - build
-          context:
-            - cloudsmith-protocols
-      - endToEndTests:
-          requires:
-            - build
-          context:
-            - cloudsmith-protocols
-      - endToEndTests:
-          requires:
-            - build
+          name: e2e2
           context:
             - cloudsmith-protocols
