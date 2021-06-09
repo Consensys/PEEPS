@@ -138,6 +138,14 @@ workflows:
     jobs:
       - build
       - endToEndTests:
+          requires:
+            - build
+          context:
+            - cloudsmith-protocols
+  default:
+    jobs:
+      - build
+      - endToEndTests:
           name: e2e1
           requires:
             - build
@@ -193,14 +201,6 @@ workflows:
             - cloudsmith-protocols
       - endToEndTests:
           name: e2e10
-          requires:
-            - build
-          context:
-            - cloudsmith-protocols
-  default:
-    jobs:
-      - build
-      - endToEndTests:
           requires:
             - build
           context:
