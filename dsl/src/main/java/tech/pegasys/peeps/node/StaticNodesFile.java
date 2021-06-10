@@ -55,8 +55,7 @@ public class StaticNodesFile {
     try {
       objectMapper.writeValue(staticNodesFile.toFile(), enodeAddresses);
       LOG.info(
-          "Creating static nodes file for {}\n\tLocation: {} \n\tContents: {}",
-          web3Provider.identity(),
+          "Creating static nodes file\n\tLocation: {} \n\tContents: {}",
           staticNodesFile,
           enodeAddresses);
     } catch (final IOException e) {

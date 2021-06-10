@@ -57,7 +57,6 @@ public class GoQuorum extends Web3Provider {
     final List<String> commandLineOptions =
         standardCommandLineOptions(blockPeriodSeconds, requestTimeoutSeconds);
     addCorsOrigins(config, commandLineOptions);
-    addBootnodeAddress(config, commandLineOptions);
     addContainerNetwork(config, container);
     addContainerIpAddress(ipAddress(), container);
     addWallets(config, commandLineOptions, container);
@@ -136,26 +135,11 @@ public class GoQuorum extends Web3Provider {
         "--gasprice",
         "0",
         "--debug",
-        "--netrestrict",
-        "172.20.0.0/16",
+        "--nodiscover",
         "--istanbul.blockperiod",
         Integer.toString(blockPeriodSeconds),
         "--istanbul.requesttimeout",
         Integer.toString(requestTimeMilliseconds));
-  }
-
-  private void addBootnodeAddress(
-      final Web3ProviderConfiguration config, final List<String> commandLineOptions) {
-    config
-        .getBootnodeEnodeAddress()
-        .ifPresent(
-            enode -> {
-              if (!enode.isEmpty()) {
-                commandLineOptions.addAll(Lists.newArrayList("--bootnodes", enode));
-              } else {
-                commandLineOptions.addAll(Lists.newArrayList("--bootnodes", "\"\""));
-              }
-            });
   }
 
   private void addContainerNetwork(

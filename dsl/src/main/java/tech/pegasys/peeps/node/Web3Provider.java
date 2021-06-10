@@ -164,26 +164,19 @@ public abstract class Web3Provider implements NetworkMember {
   }
 
   private void awaitPeerIdConnections(final Set<String> peerEnodes) {
-    LOG.info(
-        "Node {} awaiting peerIdConnections {} {}",
-        identity,
-        peerEnodes,
-        new Throwable().getStackTrace());
     await(
         () -> {
           final Set<String> peerPubKeys = EnodeHelpers.extractPubKeysFromEnodes(peerEnodes);
           final Set<String> connectedPeerPubKeys =
               EnodeHelpers.extractPubKeysFromEnodes(signerRpcResponse.getConnectedPeerIds());
           LOG.info(
-              "Connected {} peersPubKeys {} expected peersPubKeys {}",
-              identity,
+              "Connected peersPubKeys {} expected peersPubKeys {}",
               connectedPeerPubKeys,
               peerPubKeys);
           assertThat(connectedPeerPubKeys).containsExactlyInAnyOrderElementsOf(peerPubKeys);
         },
         60,
-        "Node %s failed to connect in time to peers: %s",
-        identity,
+        "Failed to connect in time to peers: %s",
         peerEnodes);
   }
 
