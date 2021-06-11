@@ -20,7 +20,6 @@ import tech.pegasys.peeps.util.DockerLogs;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.time.Duration;
 import java.util.List;
 
 import com.google.common.collect.Lists;
@@ -31,7 +30,6 @@ import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.images.PullPolicy;
 import org.testcontainers.utility.MountableFile;
 
 public class Besu extends Web3Provider {
@@ -41,7 +39,8 @@ public class Besu extends Web3Provider {
   private static final String AM_I_ALIVE_ENDPOINT = "/liveness";
   private static final int ALIVE_STATUS_CODE = 200;
 
-  private static final String BESU_IMAGE = "hyperledger/besu:develop";
+  private static final String BESU_IMAGE =
+      "docker.consensys.net/go-quorum-qbft-docker/hyperledger/besu:21.7.0-QBFT-LOGGING";
   private static final String CONTAINER_GENESIS_FILE = "/etc/besu/genesis.json";
   private static final String CONTAINER_STATIC_NODES_FILE = "/opt/besu/static-nodes.json";
   private static final String CONTAINER_PRIVACY_PUBLIC_KEY_FILE =
@@ -51,10 +50,7 @@ public class Besu extends Web3Provider {
       "/etc/besu/keys/pmt_signing.priv";
 
   public Besu(final Web3ProviderConfiguration config) {
-    super(
-        config,
-        new GenericContainer<>(BESU_IMAGE)
-            .withImagePullPolicy(PullPolicy.ageBased(Duration.ofHours(1))));
+    super(config, new GenericContainer<>(BESU_IMAGE));
     final List<String> commandLineOptions = standardCommandLineOptions();
 
     addPeerToPeerHost(config, commandLineOptions);
@@ -93,7 +89,7 @@ public class Besu extends Web3Provider {
   private List<String> standardCommandLineOptions() {
     return Lists.newArrayList(
         "--logging",
-        "DEBUG",
+        "TRACE",
         "--miner-enabled",
         "--miner-coinbase",
         "1b23ba34ca45bb56aa67bc78be89ac00ca00da00",
