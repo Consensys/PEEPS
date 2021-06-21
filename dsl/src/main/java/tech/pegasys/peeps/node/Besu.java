@@ -42,7 +42,7 @@ public class Besu extends Web3Provider {
   private static final int ALIVE_STATUS_CODE = 200;
 
   private static final String BESU_IMAGE =
-      "docker.consensys.net/go-quorum-qbft-docker/hyperledger/besu:21.7.0-QBFT-LOGGING";
+      "docker.consensys.net/go-quorum-qbft-docker/hyperledger/besu:roundchange_fix";
   private static final String CONTAINER_GENESIS_FILE = "/etc/besu/genesis.json";
   private static final String CONTAINER_STATIC_NODES_FILE = "/opt/besu/static-nodes.json";
   private static final String CONTAINER_PRIVACY_PUBLIC_KEY_FILE =
