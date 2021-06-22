@@ -23,7 +23,6 @@ dependencies {
   testImplementation 'org.assertj:assertj-core'
   testImplementation 'org.junit.jupiter:junit-jupiter-api'
   testImplementation 'org.awaitility:awaitility'
-  testImplementation 'org.apache.logging.log4j:log4j-api'
 }
 
 test.enabled = false
