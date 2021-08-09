@@ -90,7 +90,7 @@ public class EthSigner implements NetworkMember {
       ethSigner.start();
 
       LOG.info(
-          "Started container {} with imageId {}",
+          "Started EthSigner container {} with imageId {}",
           ethSigner.getDockerImageName(),
           ethSigner.getContainerInfo().getImageId());
 
