@@ -79,7 +79,7 @@ jobs:
       - run:
           name: Build
           command: |
-            ./gradlew --no-daemon --parallel build --debug
+            ./gradlew --no-daemon --parallel build
       - run:
           name: Test
           no_output_timeout: 20m
