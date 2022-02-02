@@ -25,6 +25,7 @@ import tech.pegasys.peeps.node.verification.ValueSent;
 import tech.pegasys.peeps.signer.SignerConfiguration;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 
 import org.apache.tuweni.crypto.SECP256K1.KeyPair;
 import org.apache.tuweni.eth.Address;
@@ -42,7 +43,7 @@ public class IbftConsensusTest extends NetworkTest {
   @BeforeAll
   public static void disabledUntilGoQuorumComplete() {
     Assumptions.assumeTrue(
-        LocalDate.now().isAfter(TEST_DISABLE_EXPIRY),
+        LocalDate.now(ZoneId.of("UTC")).isAfter(TEST_DISABLE_EXPIRY),
         "Test temporarily disabled until " + TEST_DISABLE_EXPIRY + " for GoQuorum fix");
   }
 
