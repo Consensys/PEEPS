@@ -117,6 +117,24 @@ jobs:
           path: end-to-end-tests/build/reports
           destination: end-to-end-tests-reports
 
+
+  acceptanceTestsQuorum:
+    parallelism: 1
+    executor: machine_executor
+    steps:
+      - prepare
+      - attach_workspace:
+          at: ~/project
+      - run:
+          name: Quorum Acceptance Tests
+          no_output_timeout: 40m
+          command: ./gradlew --no-daemon acceptanceTestsQuorum
+      - store_artifacts:
+          path: build/quorum-at
+          destination: quorum-at-artifacts
+      - store_test_results:
+          path: build/quorum-at/openjdk-latest/reports/xml-report
+
 workflows:
   version: 2
   nightly:
@@ -134,6 +152,9 @@ workflows:
             - build
           context:
             - cloudsmith-protocols
+      - acceptanceTestsQuorum:
+          requires:
+            - build
   default:
     jobs:
       - build
