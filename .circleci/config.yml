@@ -120,7 +120,7 @@ jobs:
 
   acceptanceTestsQuorum:
     parallelism: 1
-    executor: machine_executor
+    executor: executor_machine
     steps:
       - prepare
       - attach_workspace:
