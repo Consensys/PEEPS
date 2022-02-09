@@ -163,3 +163,7 @@ workflows:
             - build
           context:
             - cloudsmith-protocols
+            - cloudsmith-protocols
+      - acceptanceTestsQuorum:
+          requires:
+            - build
