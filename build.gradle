@@ -255,7 +255,6 @@ task distZip(type: Zip) {
 }
 
 task acceptanceTestsQuorum {
-  dependsOn installDist
   /**
    * Tags Description
    *
