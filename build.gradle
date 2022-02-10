@@ -273,6 +273,7 @@ task acceptanceTestsQuorum {
 
   doLast {
     exec {
+      dev besuVersion = "develop"
       def variant = "openjdk-latest"
       def variantDirectory = "${buildDir}/quorum-at/${variant}"
       def dataDirectory = "${variantDirectory}/data"
@@ -280,7 +281,7 @@ task acceptanceTestsQuorum {
       new File(dataDirectory).mkdirs()
       new File(reportsDirectory).mkdirs()
 
-      def image = project.hasProperty('release.releaseVersion') ? "hyperledger/besu:" + project.property('release.releaseVersion') : "hyperledger/besu:${project.version}"
+      def image = "hyperledger/besu:${besuVersion}"
       def dockerEnv = "--env LOGGING_LEVEL_COM_QUORUM_GAUGE=DEBUG --env TF_VAR_besu_docker_image='{name=\"${image}-${variant}\",local=true}'"
       def dockerVolumes = "-v ${reportsDirectory}:/workspace/target/gauge/reports/ -v /var/run/docker.sock:/var/run/docker.sock -v ${dataDirectory}:${dataDirectory}"
       executable "sh"
