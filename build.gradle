@@ -273,7 +273,7 @@ task acceptanceTestsQuorum {
 
   doLast {
     exec {
-      dev besuVersion = "develop"
+      def besuVersion = "develop"
       def variant = "openjdk-latest"
       def variantDirectory = "${buildDir}/quorum-at/${variant}"
       def dataDirectory = "${variantDirectory}/data"
