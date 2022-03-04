@@ -57,23 +57,20 @@ public class QbftValidatorTest extends NetworkTest {
                 besuNode1.address(),
                 besuNode2.address(),
                 quorumNode1.address(),
-                quorumNode2.address()));
+                quorumNode2.address(),
+                additonalNode.address()));
   }
 
   @Test
   void validatorCanBeRemoved() {
     verify().consensusOnBlockNumberIsAtLeast(1);
 
-    besuNode1.rpc().qbftProposeValidatorVote(additonalNode.address(), VoteType.REMOVE);
-    quorumNode1.rpc().qbftProposeValidatorVote(additonalNode.address(), VoteType.REMOVE);
-    quorumNode2.rpc().qbftProposeValidatorVote(additonalNode.address(), VoteType.REMOVE);
+    besuNode1.rpc().qbftProposeValidatorVote(besuNode2.address(), VoteType.REMOVE);
+    quorumNode1.rpc().qbftProposeValidatorVote(besuNode2.address(), VoteType.REMOVE);
+    quorumNode2.rpc().qbftProposeValidatorVote(besuNode2.address(), VoteType.REMOVE);
 
     verify()
         .consensusOnValidators(
-            List.of(
-                besuNode1.address(),
-                besuNode2.address(),
-                quorumNode1.address(),
-                quorumNode2.address()));
+            List.of(besuNode1.address(), besuNode2.address(), quorumNode1.address()));
   }
 }
