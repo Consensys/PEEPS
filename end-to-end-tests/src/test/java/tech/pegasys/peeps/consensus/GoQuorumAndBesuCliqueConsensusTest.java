@@ -39,8 +39,11 @@ public class GoQuorumAndBesuCliqueConsensusTest extends NetworkTest {
     alphaNode =
         network.addNode(
             "alpha", KeyPair.random(), Web3ProviderType.GOQUORUM, FixedSignerConfigs.ALPHA);
-    final Web3Provider besuNode = network.addNode("beta", KeyPair.random());
-    network.set(ConsensusMechanism.CLIQUE, besuNode);
+
+    final Web3Provider betaNode = network.addNode("beta", KeyPair.random());
+    final Web3Provider charlieNode = network.addNode("charlie", KeyPair.random());
+
+    network.set(ConsensusMechanism.CLIQUE, alphaNode, betaNode, charlieNode);
   }
 
   @Test
@@ -56,7 +59,7 @@ public class GoQuorumAndBesuCliqueConsensusTest extends NetworkTest {
 
     final Hash receipt = execute(alphaNode).transfer(signer.address(), receiver, transferAmount);
 
-    await().consensusOnTransactionReceipt(receipt);
+    await().consensusOnTransactionReceipt(receipt, 60);
 
     verifyOn(alphaNode)
         .transition(
