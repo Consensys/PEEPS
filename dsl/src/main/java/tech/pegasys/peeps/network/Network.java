@@ -486,10 +486,10 @@ public class Network implements Closeable {
                   if (e == Web3ProviderType.BESU) {
                     genesisConfig = new GenesisConfigQbft(chainId, new BftConfig());
                   } else {
-                    genesisConfig =
-                            new GoQuorumQbftConfig(chainId, new BftConfig());
+                    genesisConfig = new GoQuorumQbftConfig(chainId, new BftConfig());
                   }
-                  genesisConfig.setSmartContractTransition(5000, "0x0000000000000000000000000000000000007777");
+                  genesisConfig.setSmartContractTransition(
+                      20, "0xb9a219631aed55ebc3d998f17c3840b7ec39c0cc");
                   extraData = new GenesisExtraDataQbft(validators);
                   break;
                 case ETH_HASH:

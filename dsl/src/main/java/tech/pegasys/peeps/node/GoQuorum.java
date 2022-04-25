@@ -192,11 +192,11 @@ public class GoQuorum extends Web3Provider {
               commandLineOptions.addAll(
                   List.of(
                       "--unlock",
-                      wallet.address().toHexString(),
+                      wallet.getCredentials().getAddress(),
                       "--password",
                       CONTAINER_PASSWORD_FILE));
               commandLineOptions.addAll(
-                  List.of("--miner.etherbase", wallet.address().toHexString()));
+                  List.of("--miner.etherbase", wallet.getCredentials().getAddress()));
             });
   }
 

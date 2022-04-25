@@ -92,7 +92,7 @@ public class Besu extends Web3Provider {
   private List<String> standardCommandLineOptions() {
     return Lists.newArrayList(
         "--logging",
-        "TRACE",
+        "INFO",
         "--miner-enabled",
         "--miner-coinbase",
         "1b23ba34ca45bb56aa67bc78be89ac00ca00da00",

@@ -24,7 +24,6 @@ public class BftConfig {
   private final int blockPeriodSeconds;
   private final int epochLength;
   private final int requestTimeoutSeconds;
-  private String validatorcontractaddress = null;
 
   public BftConfig() {
     this(DEFAULT_BLOCK_PERIOD_SECONDS, DEFAULT_EPOCH_LENGTH, DEFAULT_REQUEST_TIMEOUT_SECONDS);
@@ -35,12 +34,6 @@ public class BftConfig {
     this.blockPeriodSeconds = blockPeriodSeconds;
     this.epochLength = epochLength;
     this.requestTimeoutSeconds = requestTimeoutSeconds;
-  }
-
-  public BftConfig(
-          final int blockPeriodSeconds, final int epochLength, final int requestTimeoutSeconds, final String validatorcontractaddress) {
-    this(blockPeriodSeconds, epochLength, requestTimeoutSeconds);
-    this.validatorcontractaddress = validatorcontractaddress;
   }
 
   @JsonGetter("blockperiodseconds")
@@ -58,6 +51,4 @@ public class BftConfig {
     return requestTimeoutSeconds;
   }
 
-  @JsonGetter("validatorcontractaddress")
-  public String getValidatorContractaddress(){ return validatorcontractaddress; }
 }

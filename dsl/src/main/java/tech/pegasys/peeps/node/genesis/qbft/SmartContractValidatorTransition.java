@@ -12,20 +12,30 @@
  */
 package tech.pegasys.peeps.node.genesis.qbft;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonGetter;
 
-public class BesuTransitions {
-  private final List<Transition> transitions = new ArrayList<>();
+public class SmartContractValidatorTransition implements Transition {
+  private final int blockNumber;
+  private final String address;
 
-  @JsonGetter("qbft")
-  public List<Transition> getTransitions() {
-    return transitions;
+  public SmartContractValidatorTransition(final int blockNumber, final String address) {
+    this.blockNumber = blockNumber;
+    this.address = address;
   }
 
-  public void add(final Transition transition) {
-    this.transitions.add(transition);
+  @JsonGetter("block")
+  public int getBlockNumber() {
+    return blockNumber;
   }
+
+  @JsonGetter("validatorcontractaddress")
+  public String getAddress() {
+    return address;
+  }
+
+  @JsonGetter("validatorselectionmode")
+  public String getValidatorSelectionMode(){
+    return "contract";
+  }
+
 }

@@ -12,61 +12,113 @@
  */
 package tech.pegasys.peeps.consensus.qbft;
 
-import org.apache.tuweni.crypto.SECP256K1.KeyPair;
-import org.apache.tuweni.eth.Address;
-import org.apache.tuweni.units.ethereum.Wei;
-import org.junit.jupiter.api.Test;
+import static java.time.temporal.ChronoUnit.SECONDS;
+import static org.assertj.core.api.Assertions.assertThat;;
+
 import tech.pegasys.peeps.FixedSignerConfigs;
 import tech.pegasys.peeps.NetworkTest;
+import tech.pegasys.peeps.contract.ValidatorSmartContractAllowList;
 import tech.pegasys.peeps.network.ConsensusMechanism;
 import tech.pegasys.peeps.network.Network;
-import tech.pegasys.peeps.node.Account;
 import tech.pegasys.peeps.node.Web3Provider;
-import tech.pegasys.peeps.node.model.Hash;
-import tech.pegasys.peeps.node.verification.ValueReceived;
-import tech.pegasys.peeps.node.verification.ValueSent;
+import tech.pegasys.peeps.node.genesis.bft.BftConfig;
 import tech.pegasys.peeps.signer.SignerConfiguration;
+import tech.pegasys.peeps.util.AddressConverter;
+import tech.pegasys.peeps.util.Await;
+
+import java.time.Duration;
+import java.util.List;
+
+import org.apache.tuweni.crypto.SECP256K1.KeyPair;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.web3j.tx.gas.DefaultGasProvider;
 
 public class QbftSmartContractValidatorTest extends NetworkTest {
 
-  private Web3Provider alphaNode;
-  private Web3Provider bravoNode;
-  private Web3Provider charlieNode;
-  private Web3Provider deltaNode;
-  private final SignerConfiguration signer = FixedSignerConfigs.ALPHA;
+    private Web3Provider alphaNode;
+    private Web3Provider bravoNode;
+    private Web3Provider charlieNode;
+    private Web3Provider deltaNode;
+    private final SignerConfiguration signer = FixedSignerConfigs.ALPHA;
 
-  @Override
-  protected void setUpNetwork(final Network network) {
-    alphaNode = network.addNode("alpha", KeyPair.random());
-    bravoNode = network.addNode("bravo", KeyPair.random());
-    charlieNode = network.addNode("charlie", KeyPair.random());
-    deltaNode = network.addNode("delta", KeyPair.random());
+    @Override
+    protected void setUpNetwork(final Network network) {
+        alphaNode = network.addNode("alpha", KeyPair.random());
+        bravoNode = network.addNode("bravo", KeyPair.random());
+        charlieNode = network.addNode("charlie", KeyPair.random());
+        deltaNode = network.addNode("delta", KeyPair.random());
 
-    network.set(ConsensusMechanism.QBFT_SMART_CONTRACT, alphaNode);
-    network.addSigner(signer.name(), signer.resources(), alphaNode);
-  }
+        network.set(ConsensusMechanism.QBFT_SMART_CONTRACT, alphaNode, bravoNode, charlieNode, deltaNode);
+        network.addSigner(signer.name(), signer.resources(), alphaNode);
+    }
 
-  @Test
-  public void consensusAfterMiningMustHappen() {
-    final Address sender = signer.address();
-    final Address receiver = Account.BETA.address();
-    final Wei transferAmount = Wei.valueOf(5000L);
+    @Test
+    public void consensusAfterMiningMustHappen() throws Exception {
 
-    verify().consensusOnValueAt(sender, receiver);
+        final List<String> initialValidators =
+                List.of(
+                        alphaNode.address().toHexString(),
+                        bravoNode.address().toHexString(),
+                        charlieNode.address().toHexString(),
+                        deltaNode.address().toHexString()
+                );
 
-    final Wei senderStartBalance = execute(alphaNode).getBalance(sender);
-    final Wei receiverStartBalance = execute(alphaNode).getBalance(receiver);
+        assertThat(alphaNode.rpc().getBlockNumber()).isLessThan(18);
 
-    final Hash receipt = execute(signer).transferTo(receiver, transferAmount);
+        ValidatorSmartContractAllowList allowList =
+                ValidatorSmartContractAllowList.deploy(
+                                alphaNode.getWeb3j(),
+                                signer.getCredentials(),
+                                new DefaultGasProvider(),
+                                initialValidators)
+                        .send();
 
-    await().consensusOnTransactionReceipt(receipt);
+        // Note: the transition is configured in the genesis file
+        assertThat(allowList.getContractAddress())
+                .isEqualTo("0xb9a219631aed55ebc3d998f17c3840b7ec39c0cc");
+        assertThat(alphaNode.rpc().getBlockNumber()).isLessThan(20);
 
-    verifyOn(alphaNode)
-        .transition(
-            new ValueSent(sender, senderStartBalance, receipt),
-            new ValueReceived(receiver, receiverStartBalance, transferAmount));
+        verify().consensusOnBlockNumberIsAtLeast(21);
 
-    verify().consensusOnValueAt(sender, receiver);
+        allowList.activate(AddressConverter.fromPublicKey(KeyPair.random().publicKey().toHexString()).toHexString()).send();
+        allowList.activate(AddressConverter.fromPublicKey(KeyPair.random().publicKey().toHexString()).toHexString()).send();
 
-  }
+
+        assertThat(allowList.getValidators().send().size()).isEqualTo(6);
+
+        alphaNode.stop();
+        bravoNode.stop();
+
+        final List<Web3Provider> runningNodes = List.of(charlieNode, deltaNode);
+        charlieNode.awaitConnectivity(runningNodes);
+        deltaNode.awaitConnectivity(runningNodes);
+
+        // 2 nodes are up 2 nodes are down and 2 nodes don't exist
+        runningNodes.forEach(this::verifyChainStalled);
+
+        final long stalledBlockNumber = charlieNode.rpc().getBlockNumber();
+
+        alphaNode.start();
+        bravoNode.start();
+
+        final List<Web3Provider> allNodes = List.of(alphaNode, bravoNode, charlieNode, deltaNode);
+        charlieNode.awaitConnectivity(allNodes);
+        deltaNode.awaitConnectivity(allNodes);
+
+        verify().consensusOnBlockNumberIsAtLeast(stalledBlockNumber + 1);
+
+    }
+
+    private void verifyChainStalled(final Web3Provider web3Provider) {
+        Await.await(
+                () -> {
+                    final long startBlockNumber = web3Provider.rpc().getBlockNumber();
+                    Thread.sleep(Duration.of(BftConfig.DEFAULT_BLOCK_PERIOD_SECONDS * 2, SECONDS).toMillis());
+                    final long currentBlockNumber = web3Provider.rpc().getBlockNumber();
+                    Assertions.assertThat(currentBlockNumber).isEqualTo(startBlockNumber);
+                },
+                "Node %s has not stalled",
+                web3Provider.getNodeId());
+    }
 }

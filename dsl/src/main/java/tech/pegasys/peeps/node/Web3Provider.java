@@ -47,6 +47,8 @@ import org.apache.logging.log4j.Logger;
 import org.apache.tuweni.bytes.Bytes;
 import org.apache.tuweni.eth.Address;
 import org.testcontainers.containers.GenericContainer;
+import org.web3j.protocol.Web3j;
+import org.web3j.protocol.http.HttpService;
 
 public abstract class Web3Provider implements NetworkMember {
 
@@ -67,6 +69,7 @@ public abstract class Web3Provider implements NetworkMember {
 
   private String nodeId;
   private String enodeId;
+  private Web3j web3j;
 
   public Web3Provider(final Web3ProviderConfiguration config, final GenericContainer<?> container) {
     this.container = container;
@@ -100,6 +103,14 @@ public abstract class Web3Provider implements NetworkMember {
           container.getContainerId(),
           container.getContainerIpAddress(),
           container.getMappedPort(CONTAINER_HTTP_RPC_PORT));
+
+      web3j =
+          Web3j.build(
+              new HttpService(
+                  "http://"
+                      + container.getContainerIpAddress()
+                      + ":"
+                      + container.getMappedPort(CONTAINER_HTTP_RPC_PORT)));
 
       final NodeInfo info = signerRpcResponse.nodeInfo();
       nodeId = info.getId();
@@ -162,6 +173,10 @@ public abstract class Web3Provider implements NetworkMember {
 
   public Address address() {
     return AddressConverter.fromPublicKey(pubKey);
+  }
+
+  public Web3j getWeb3j() {
+    return web3j;
   }
 
   public void awaitConnectivity(final Collection<Web3Provider> peers) {

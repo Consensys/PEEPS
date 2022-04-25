@@ -32,7 +32,6 @@ public class GenesisConfigQbft extends GenesisConfig {
     return consensusConfig;
   }
 
-
   @JsonGetter("transitions")
   public BesuTransitions getTransitions() {
     return transitions;
@@ -40,6 +39,6 @@ public class GenesisConfigQbft extends GenesisConfig {
 
   @Override
   public void setSmartContractTransition(final int blockNumber, final String address) {
-    transitions.add(new Transition(blockNumber, address));
+    transitions.add(new SmartContractValidatorTransition(blockNumber, address));
   }
 }
