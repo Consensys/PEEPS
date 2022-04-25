@@ -20,6 +20,7 @@ import com.fasterxml.jackson.annotation.JsonGetter;
 public class GenesisConfigQbft extends GenesisConfig {
 
   private final BftConfig consensusConfig;
+  public BesuTransitions transitions = new BesuTransitions();
 
   public GenesisConfigQbft(final long chainId, final BftConfig consensusConfig) {
     super(chainId);
@@ -29,5 +30,16 @@ public class GenesisConfigQbft extends GenesisConfig {
   @JsonGetter("qbft")
   public BftConfig getConsensusConfig() {
     return consensusConfig;
+  }
+
+
+  @JsonGetter("transitions")
+  public BesuTransitions getTransitions() {
+    return transitions;
+  }
+
+  @Override
+  public void setSmartContractTransition(final int blockNumber, final String address) {
+    transitions.add(new Transition(blockNumber, address));
   }
 }

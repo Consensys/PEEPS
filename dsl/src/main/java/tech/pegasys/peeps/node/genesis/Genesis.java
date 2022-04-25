@@ -12,6 +12,7 @@
  */
 package tech.pegasys.peeps.node.genesis;
 
+import tech.pegasys.peeps.node.genesis.transitions.Transitions;
 import tech.pegasys.peeps.node.model.GenesisAddress;
 
 import java.util.Map;

@@ -26,6 +26,8 @@ public abstract class GenesisConfig {
     this.chainId = chainId;
   }
 
+  public abstract void setSmartContractTransition(final int blockNumber, final String address);
+
   @JsonGetter("chainId")
   public long getChainId() {
     return chainId;

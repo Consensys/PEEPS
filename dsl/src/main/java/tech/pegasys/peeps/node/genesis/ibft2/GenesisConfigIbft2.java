@@ -30,4 +30,9 @@ public class GenesisConfigIbft2 extends GenesisConfig {
   public BftConfig getConsensusConfig() {
     return consensusConfig;
   }
+
+  @Override
+  public void setSmartContractTransition(final int blockNumber, final String address) {
+    throw new RuntimeException("Can not use transitions with IBFT2");
+  }
 }

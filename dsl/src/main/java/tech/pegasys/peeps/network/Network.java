@@ -47,6 +47,7 @@ import tech.pegasys.peeps.node.genesis.ibft2.GenesisConfigIbft2;
 import tech.pegasys.peeps.node.genesis.ibft2.GenesisExtraDataIbft2;
 import tech.pegasys.peeps.node.genesis.qbft.GenesisConfigQbft;
 import tech.pegasys.peeps.node.genesis.qbft.GenesisExtraDataQbft;
+import tech.pegasys.peeps.node.genesis.qbft.GoQuorumQbftConfig;
 import tech.pegasys.peeps.node.model.GenesisAddress;
 import tech.pegasys.peeps.node.model.Hash;
 import tech.pegasys.peeps.node.model.PrivacyTransactionReceipt;
@@ -479,6 +480,16 @@ public class Network implements Closeable {
                     genesisConfig =
                         new GoQuorumIbftConfig(chainId, GoQuorumIbftOptions.createQbft());
                   }
+                  extraData = new GenesisExtraDataQbft(validators);
+                  break;
+                case QBFT_SMART_CONTRACT:
+                  if (e == Web3ProviderType.BESU) {
+                    genesisConfig = new GenesisConfigQbft(chainId, new BftConfig());
+                  } else {
+                    genesisConfig =
+                            new GoQuorumQbftConfig(chainId, new BftConfig());
+                  }
+                  genesisConfig.setSmartContractTransition(5000, "0x0000000000000000000000000000000000007777");
                   extraData = new GenesisExtraDataQbft(validators);
                   break;
                 case ETH_HASH:
