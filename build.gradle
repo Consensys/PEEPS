@@ -86,7 +86,7 @@ allprojects {
       // This path needs to be relative to each project
       target fileTree('.') {
         include '**/*.java'
-        exclude '**/.gradle/**'
+        exclude '**/.gradle/**', '**/build/generated/sources/web3j/**'
       }
       removeUnusedImports()
       googleJavaFormat('1.7')

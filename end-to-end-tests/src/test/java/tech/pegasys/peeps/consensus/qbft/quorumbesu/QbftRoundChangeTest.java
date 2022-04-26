@@ -24,7 +24,6 @@ import tech.pegasys.peeps.node.genesis.bft.BftConfig;
 import tech.pegasys.peeps.util.Await;
 
 import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import org.apache.tuweni.crypto.SECP256K1.KeyPair;

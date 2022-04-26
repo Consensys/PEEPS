@@ -50,5 +50,4 @@ public class BftConfig {
   public int getRequestTimeoutSeconds() {
     return requestTimeoutSeconds;
   }
-
 }

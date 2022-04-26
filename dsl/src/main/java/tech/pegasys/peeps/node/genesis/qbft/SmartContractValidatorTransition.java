@@ -34,8 +34,7 @@ public class SmartContractValidatorTransition implements Transition {
   }
 
   @JsonGetter("validatorselectionmode")
-  public String getValidatorSelectionMode(){
+  public String getValidatorSelectionMode() {
     return "contract";
   }
-
 }
