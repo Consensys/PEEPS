@@ -13,6 +13,7 @@
 package tech.pegasys.peeps.node.genesis.qbft;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
+import tech.pegasys.peeps.node.genesis.transitions.Transition;
 
 public class SmartContractValidatorTransition implements Transition {
   private final int blockNumber;

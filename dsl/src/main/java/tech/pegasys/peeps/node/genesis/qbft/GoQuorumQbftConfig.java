@@ -19,10 +19,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
+import tech.pegasys.peeps.node.genesis.transitions.Transition;
 
 public class GoQuorumQbftConfig extends GenesisConfig {
   private final BftConfig consensusConfig;
-  private final List<SmartContractValidatorTransition> transitions = new ArrayList<>();
+  private final List<Transition> transitions = new ArrayList<>();
 
   public GoQuorumQbftConfig(final long chainId, final BftConfig consensusConfig) {
     super(chainId);
@@ -35,7 +36,7 @@ public class GoQuorumQbftConfig extends GenesisConfig {
   }
 
   @JsonGetter("transitions")
-  public List<SmartContractValidatorTransition> getTransitions() {
+  public List<Transition> getTransitions() {
     return transitions;
   }
 

@@ -16,6 +16,7 @@ import tech.pegasys.peeps.node.genesis.GenesisConfig;
 import tech.pegasys.peeps.node.genesis.bft.BftConfig;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
+import tech.pegasys.peeps.node.genesis.transitions.BesuTransitions;
 
 public class GenesisConfigQbft extends GenesisConfig {
 
