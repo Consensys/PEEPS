@@ -41,7 +41,7 @@ public class GoQuorumQbftConfig extends GenesisConfig {
   }
 
   @Override
-  public void setSmartContractTransition(final int blockNumber, final String address) {
+  public void setValidatorContractValidatorTransaction(final int blockNumber, final String address) {
     transitions.add(new SmartContractValidatorTransition(blockNumber, address));
   }
 }

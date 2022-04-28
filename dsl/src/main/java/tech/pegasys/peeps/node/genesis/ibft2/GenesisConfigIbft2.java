@@ -32,7 +32,7 @@ public class GenesisConfigIbft2 extends GenesisConfig {
   }
 
   @Override
-  public void setSmartContractTransition(final int blockNumber, final String address) {
+  public void setValidatorContractValidatorTransaction(final int blockNumber, final String address) {
     throw new RuntimeException("Can not use transitions with IBFT2");
   }
 }

@@ -488,7 +488,7 @@ public class Network implements Closeable {
                   } else {
                     genesisConfig = new GoQuorumQbftConfig(chainId, new BftConfig());
                   }
-                  genesisConfig.setSmartContractTransition(
+                  genesisConfig.setValidatorContractValidatorTransaction(
                       20, "0xb9a219631aed55ebc3d998f17c3840b7ec39c0cc");
                   extraData = new GenesisExtraDataQbft(validators);
                   break;
