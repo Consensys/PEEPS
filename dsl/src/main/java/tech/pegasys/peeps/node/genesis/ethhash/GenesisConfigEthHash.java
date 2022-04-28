@@ -31,7 +31,8 @@ public class GenesisConfigEthHash extends GenesisConfig {
   }
 
   @Override
-  public void setValidatorContractValidatorTransaction(final int blockNumber, final String address) {
+  public void setValidatorContractValidatorTransaction(
+      final int blockNumber, final String address) {
     throw new RuntimeException("Can not use transitions with EthHash");
   }
 }

@@ -14,12 +14,12 @@ package tech.pegasys.peeps.node.genesis.qbft;
 
 import tech.pegasys.peeps.node.genesis.GenesisConfig;
 import tech.pegasys.peeps.node.genesis.bft.BftConfig;
+import tech.pegasys.peeps.node.genesis.transitions.Transition;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
-import tech.pegasys.peeps.node.genesis.transitions.Transition;
 
 public class GoQuorumQbftConfig extends GenesisConfig {
   private final BftConfig consensusConfig;
@@ -41,7 +41,8 @@ public class GoQuorumQbftConfig extends GenesisConfig {
   }
 
   @Override
-  public void setValidatorContractValidatorTransaction(final int blockNumber, final String address) {
+  public void setValidatorContractValidatorTransaction(
+      final int blockNumber, final String address) {
     transitions.add(new SmartContractValidatorTransition(blockNumber, address));
   }
 }

@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
-import tech.pegasys.peeps.node.genesis.transitions.Transition;
 
 public class BesuTransitions {
   private final List<Transition> transitions = new ArrayList<>();

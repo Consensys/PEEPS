@@ -14,9 +14,9 @@ package tech.pegasys.peeps.node.genesis.qbft;
 
 import tech.pegasys.peeps.node.genesis.GenesisConfig;
 import tech.pegasys.peeps.node.genesis.bft.BftConfig;
+import tech.pegasys.peeps.node.genesis.transitions.BesuTransitions;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
-import tech.pegasys.peeps.node.genesis.transitions.BesuTransitions;
 
 public class GenesisConfigQbft extends GenesisConfig {
 
@@ -39,7 +39,8 @@ public class GenesisConfigQbft extends GenesisConfig {
   }
 
   @Override
-  public void setValidatorContractValidatorTransaction(final int blockNumber, final String address) {
+  public void setValidatorContractValidatorTransaction(
+      final int blockNumber, final String address) {
     transitions.add(new SmartContractValidatorTransition(blockNumber, address));
   }
 }
