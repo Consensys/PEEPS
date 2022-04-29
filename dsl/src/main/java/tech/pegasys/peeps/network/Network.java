@@ -75,6 +75,7 @@ import tech.pegasys.peeps.signer.rpc.SignerRpcSenderKnown;
 import tech.pegasys.peeps.util.PathGenerator;
 
 import java.io.Closeable;
+import java.math.BigInteger;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -482,14 +483,12 @@ public class Network implements Closeable {
                   }
                   extraData = new GenesisExtraDataQbft(validators);
                   break;
-                case QBFT_SMART_CONTRACT:
+                case QBFT_TRANSITIONS:
                   if (e == Web3ProviderType.BESU) {
                     genesisConfig = new GenesisConfigQbft(chainId, new BftConfig());
                   } else {
                     genesisConfig = new GoQuorumQbftConfig(chainId, new BftConfig());
                   }
-                  genesisConfig.setValidatorContractValidatorTransaction(
-                      20, "0xb9a219631aed55ebc3d998f17c3840b7ec39c0cc");
                   extraData = new GenesisExtraDataQbft(validators);
                   break;
                 case ETH_HASH:
@@ -524,5 +523,18 @@ public class Network implements Closeable {
         .distinct()
         .map(PrivateTransactionManager::getPeerNetworkAddress)
         .collect(Collectors.toList());
+  }
+
+  public void setValidatorContractValidatorTransaction(
+      final BigInteger blockNumber, final String contractAddress) {
+    nodes
+        .parallelStream()
+        .forEach(
+            node -> node.setQBFTValidatorSmartContractTransition(blockNumber, contractAddress));
+  }
+
+  public void restart() {
+    everyMember(NetworkMember::stop);
+    everyMember(NetworkMember::start);
   }
 }

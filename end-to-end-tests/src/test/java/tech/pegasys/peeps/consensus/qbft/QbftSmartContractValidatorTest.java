@@ -28,8 +28,10 @@ import tech.pegasys.peeps.signer.SignerConfiguration;
 import tech.pegasys.peeps.util.AddressConverter;
 import tech.pegasys.peeps.util.Await;
 
+import java.math.BigInteger;
 import java.time.Duration;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.tuweni.crypto.SECP256K1.KeyPair;
 import org.assertj.core.api.Assertions;
@@ -51,50 +53,65 @@ public class QbftSmartContractValidatorTest extends NetworkTest {
     charlieNode = network.addNode("charlie", KeyPair.random());
     deltaNode = network.addNode("delta", KeyPair.random());
 
-    network.set(
-        ConsensusMechanism.QBFT_SMART_CONTRACT, alphaNode, bravoNode, charlieNode, deltaNode);
+    network.set(ConsensusMechanism.QBFT_TRANSITIONS, alphaNode, bravoNode, charlieNode, deltaNode);
     network.addSigner(signer.name(), signer.resources(), alphaNode);
   }
 
   @Test
   public void consensusAfterSmartContractTransitionMustHappen() throws Exception {
 
-    final List<String> initialValidators =
-        List.of(
-            alphaNode.address().toHexString(),
-            bravoNode.address().toHexString(),
-            charlieNode.address().toHexString(),
-            deltaNode.address().toHexString());
+    final List<Web3Provider> validatorNodes = List.of(alphaNode, bravoNode, charlieNode, deltaNode);
 
     assertThat(alphaNode.rpc().getBlockNumber()).isLessThan(18);
 
-    ValidatorSmartContractAllowList allowList =
+    ValidatorSmartContractAllowList allowListDeploy =
         ValidatorSmartContractAllowList.deploy(
                 alphaNode.getWeb3j(),
                 signer.getCredentials(),
                 new StaticGasProvider(ZERO, GAS_LIMIT),
-                initialValidators)
+                validatorNodes.stream()
+                    .map(x -> x.address().toHexString())
+                    .collect(Collectors.toList()))
             .send();
 
-    // Note: the transition is configured in the genesis file
-    assertThat(allowList.getContractAddress())
-        .isEqualTo("0xb9a219631aed55ebc3d998f17c3840b7ec39c0cc");
-    assertThat(alphaNode.rpc().getBlockNumber()).isLessThan(20);
+    BigInteger currentBlock = allowListDeploy.getTransactionReceipt().get().getBlockNumber();
+    BigInteger transitionBlock = currentBlock.add(BigInteger.TEN);
 
-    verify().consensusOnBlockNumberIsAtLeast(21);
+    network.setValidatorContractValidatorTransaction(
+        transitionBlock, allowListDeploy.getContractAddress());
 
-    allowList
+    validatorNodes.forEach(
+        node -> {
+          node.stop();
+          node.start();
+          verify().consensusOnBlockNumberIsAtLeast(currentBlock.longValue());
+        });
+
+    verify().consensusOnBlockNumberIsAtLeast(transitionBlock.longValue());
+
+    alphaNode.rpc().qbftGetValidatorsByBlockBlockNumber(transitionBlock.toString());
+
+    ValidatorSmartContractAllowList allowListUpdate =
+        ValidatorSmartContractAllowList.load(
+            allowListDeploy.getContractAddress(),
+            alphaNode.getWeb3j(),
+            signer.getCredentials(),
+            new StaticGasProvider(ZERO, GAS_LIMIT));
+
+    assertThat(allowListUpdate.getValidators().send().size()).isEqualTo(4);
+
+    allowListUpdate
         .activate(
             AddressConverter.fromPublicKey(KeyPair.random().publicKey().toHexString())
                 .toHexString())
         .send();
-    allowList
+    allowListUpdate
         .activate(
             AddressConverter.fromPublicKey(KeyPair.random().publicKey().toHexString())
                 .toHexString())
         .send();
 
-    assertThat(allowList.getValidators().send().size()).isEqualTo(6);
+    assertThat(allowListUpdate.getValidators().send().size()).isEqualTo(6);
 
     alphaNode.stop();
     bravoNode.stop();

@@ -32,6 +32,7 @@ import tech.pegasys.peeps.signer.rpc.SignerRpcMandatoryResponse;
 import tech.pegasys.peeps.util.AddressConverter;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermissions;
@@ -286,4 +287,7 @@ public abstract class Web3Provider implements NetworkMember {
     }
     return tempFile;
   }
+
+  public abstract void setQBFTValidatorSmartContractTransition(
+      final BigInteger blockNumber, final String contractAddress);
 }

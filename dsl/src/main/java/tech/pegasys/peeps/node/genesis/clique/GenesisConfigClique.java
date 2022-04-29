@@ -29,10 +29,4 @@ public class GenesisConfigClique extends GenesisConfig {
   public CliqueConfig getConsensusConfig() {
     return consensusConfig;
   }
-
-  @Override
-  public void setValidatorContractValidatorTransaction(
-      final int blockNumber, final String address) {
-    throw new RuntimeException("Can not use transitions with Clique");
-  }
 }

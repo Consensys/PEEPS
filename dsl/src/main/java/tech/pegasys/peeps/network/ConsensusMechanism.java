@@ -17,6 +17,6 @@ public enum ConsensusMechanism {
   IBFT2,
   CLIQUE,
   QBFT,
-  QBFT_SMART_CONTRACT,
+  QBFT_TRANSITIONS,
   IBFT
 }
