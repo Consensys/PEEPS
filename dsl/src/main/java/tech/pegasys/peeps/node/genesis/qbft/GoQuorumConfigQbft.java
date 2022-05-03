@@ -21,11 +21,11 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 
-public class GoQuorumQbftConfig extends GenesisConfig {
+public class GoQuorumConfigQbft extends GenesisConfig {
   private final BftConfig consensusConfig;
   private final List<Transition> transitions = new ArrayList<>();
 
-  public GoQuorumQbftConfig(final long chainId, final BftConfig consensusConfig) {
+  public GoQuorumConfigQbft(final long chainId, final BftConfig consensusConfig) {
     super(chainId);
     this.consensusConfig = consensusConfig;
   }
