@@ -478,15 +478,6 @@ public class Network implements Closeable {
                   if (e == Web3ProviderType.BESU) {
                     genesisConfig = new GenesisConfigQbft(chainId, new BftConfig());
                   } else {
-                    genesisConfig =
-                        new GoQuorumIbftConfig(chainId, GoQuorumIbftOptions.createQbft());
-                  }
-                  extraData = new GenesisExtraDataQbft(validators);
-                  break;
-                case QBFT_TRANSITIONS:
-                  if (e == Web3ProviderType.BESU) {
-                    genesisConfig = new GenesisConfigQbft(chainId, new BftConfig());
-                  } else {
                     genesisConfig = new GoQuorumConfigQbft(chainId, new BftConfig());
                   }
                   extraData = new GenesisExtraDataQbft(validators);

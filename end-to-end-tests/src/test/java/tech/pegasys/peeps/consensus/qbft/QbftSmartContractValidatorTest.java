@@ -23,8 +23,8 @@ import tech.pegasys.peeps.contract.ValidatorSmartContractAllowList;
 import tech.pegasys.peeps.network.ConsensusMechanism;
 import tech.pegasys.peeps.network.Network;
 import tech.pegasys.peeps.node.Web3Provider;
+import tech.pegasys.peeps.node.Web3ProviderType;
 import tech.pegasys.peeps.node.genesis.bft.BftConfig;
-import tech.pegasys.peeps.signer.SignerConfiguration;
 import tech.pegasys.peeps.util.AddressConverter;
 import tech.pegasys.peeps.util.Await;
 
@@ -44,30 +44,34 @@ public class QbftSmartContractValidatorTest extends NetworkTest {
   private Web3Provider bravoNode;
   private Web3Provider charlieNode;
   private Web3Provider deltaNode;
-  private final SignerConfiguration signer = FixedSignerConfigs.ALPHA;
 
   @Override
   protected void setUpNetwork(final Network network) {
-    alphaNode = network.addNode("alpha", KeyPair.random());
-    bravoNode = network.addNode("bravo", KeyPair.random());
-    charlieNode = network.addNode("charlie", KeyPair.random());
-    deltaNode = network.addNode("delta", KeyPair.random());
+    alphaNode =
+        network.addNode("alpha", KeyPair.random(), Web3ProviderType.BESU, FixedSignerConfigs.ALPHA);
+    bravoNode =
+        network.addNode(
+            "bravo", KeyPair.random(), Web3ProviderType.GOQUORUM, FixedSignerConfigs.BETA);
+    charlieNode =
+        network.addNode(
+            "charlie", KeyPair.random(), Web3ProviderType.BESU, FixedSignerConfigs.CHARLIE);
+    deltaNode =
+        network.addNode(
+            "delta", KeyPair.random(), Web3ProviderType.GOQUORUM, FixedSignerConfigs.DELTA);
 
-    network.set(ConsensusMechanism.QBFT_TRANSITIONS, alphaNode, bravoNode, charlieNode, deltaNode);
-    network.addSigner(signer.name(), signer.resources(), alphaNode);
+    network.set(ConsensusMechanism.QBFT, alphaNode, bravoNode, charlieNode, deltaNode);
   }
 
   @Test
   public void consensusAfterSmartContractTransitionMustHappen() throws Exception {
+    verify().consensusOnBlockNumberIsAtLeast(1);
 
     final List<Web3Provider> validatorNodes = List.of(alphaNode, bravoNode, charlieNode, deltaNode);
-
-    assertThat(alphaNode.rpc().getBlockNumber()).isLessThan(18);
 
     ValidatorSmartContractAllowList allowListDeploy =
         ValidatorSmartContractAllowList.deploy(
                 alphaNode.getWeb3j(),
-                signer.getCredentials(),
+                FixedSignerConfigs.ALPHA.getCredentials(),
                 new StaticGasProvider(ZERO, GAS_LIMIT),
                 validatorNodes.stream()
                     .map(x -> x.address().toHexString())
@@ -89,13 +93,11 @@ public class QbftSmartContractValidatorTest extends NetworkTest {
 
     verify().consensusOnBlockNumberIsAtLeast(transitionBlock.longValue());
 
-    alphaNode.rpc().qbftGetValidatorsByBlockBlockNumber(transitionBlock.toString());
-
     ValidatorSmartContractAllowList allowListUpdate =
         ValidatorSmartContractAllowList.load(
             allowListDeploy.getContractAddress(),
             alphaNode.getWeb3j(),
-            signer.getCredentials(),
+            FixedSignerConfigs.ALPHA.getCredentials(),
             new StaticGasProvider(ZERO, GAS_LIMIT));
 
     assertThat(allowListUpdate.getValidators().send().size()).isEqualTo(4);
