@@ -19,7 +19,6 @@ import tech.pegasys.peeps.util.DockerLogs;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -35,14 +34,13 @@ import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
 import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.MountableFile;
 
 public class GoQuorum extends Web3Provider {
 
   private static final Logger LOG = LogManager.getLogger();
 
-  private static final String IMAGE_NAME = "quorumengineering/quorum:tony";
+  private static final String IMAGE_NAME = "quorumengineering/quorum:develop";
   private static final String CONTAINER_GENESIS_FILE = "/etc/genesis.json";
   private static final String CONTAINER_STATIC_NODES_FILE = "/eth/geth/static-nodes.json";
   private static final String CONTAINER_NODE_PRIVATE_KEY_FILE = "/etc/keys/node.priv";
@@ -80,7 +78,7 @@ public class GoQuorum extends Web3Provider {
             + "\" init "
             + CONTAINER_GENESIS_FILE
             + " && "
-            + " echo '##### GoQuorum INITIALISED #####' && ";
+            + " echo '##### GoQuorum INITIALISED #####\n\n' && ";
 
     addNodePrivateKey(config, commandLineOptions, container);
     //    if (config.isPrivacyEnabled()) {
@@ -107,12 +105,8 @@ public class GoQuorum extends Web3Provider {
       final BigInteger blockNumber, final String contractAddress) {
 
     try {
-      Path tempFile = Files.createTempFile("genesis", ".json");
-
-      container.copyFileFromContainer(CONTAINER_GENESIS_FILE, tempFile.toAbsolutePath().toString());
-
       final ObjectMapper mapper = new ObjectMapper();
-      JsonNode jsonNode = mapper.readTree(tempFile.toFile());
+      JsonNode jsonNode = mapper.readTree(genesisFile);
 
       ArrayNode transitions = ((ArrayNode) jsonNode.path("config").path("transitions"));
 
@@ -122,9 +116,7 @@ public class GoQuorum extends Web3Provider {
       transition.put("validatorcontractaddress", contractAddress);
       transitions.add(transition);
 
-      container.copyFileToContainer(
-          Transferable.of(jsonNode.toString().getBytes(StandardCharsets.UTF_8)),
-          CONTAINER_GENESIS_FILE);
+      mapper.writeValue(genesisFile, jsonNode);
     } catch (IOException e) {
       LOG.error(e);
     }

@@ -21,7 +21,6 @@ import tech.pegasys.peeps.util.DockerLogs;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
@@ -38,7 +37,6 @@ import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.MountableFile;
 
 public class Besu extends Web3Provider {
@@ -96,12 +94,9 @@ public class Besu extends Web3Provider {
       final BigInteger blockNumber, final String contractAddress) {
 
     try {
-      Path tempFile = Files.createTempFile("genesis", ".json");
-
-      container.copyFileFromContainer(CONTAINER_GENESIS_FILE, tempFile.toAbsolutePath().toString());
 
       final ObjectMapper mapper = new ObjectMapper();
-      JsonNode jsonNode = mapper.readTree(tempFile.toFile());
+      JsonNode jsonNode = mapper.readTree(genesisFile);
 
       ArrayNode transitions =
           ((ArrayNode) jsonNode.path("config").path("transitions").path("qbft"));
@@ -110,13 +105,12 @@ public class Besu extends Web3Provider {
       transition.put("block", blockNumber);
       transition.put("validatorselectionmode", "contract");
       transition.put("validatorcontractaddress", contractAddress);
+
       transitions.add(transition);
 
-      ((ObjectNode) jsonNode.get("config").get("transitions")).set("qbft", transition);
+      ((ObjectNode) jsonNode.get("config").get("transitions")).set("qbft", transitions);
 
-      container.copyFileToContainer(
-          Transferable.of(jsonNode.toString().getBytes(StandardCharsets.UTF_8)),
-          CONTAINER_GENESIS_FILE);
+      mapper.writeValue(genesisFile, jsonNode);
     } catch (IOException e) {
       LOG.error(e);
     }
