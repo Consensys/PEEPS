@@ -168,7 +168,9 @@ public class Network implements Closeable {
 
     this.genesisConfigurations.putAll(
         createGenesis(
-            consensus, Account.of(Account.ALPHA, Account.BETA, Account.GAMMA), validators));
+            consensus,
+            Account.of(Account.ALPHA, Account.BETA, Account.GAMMA, Account.CHARLIE),
+            validators));
   }
 
   public Web3Provider addNode(final String nodeIdentifier, final KeyPair nodeKeys) {

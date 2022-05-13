@@ -31,17 +31,17 @@ public class FixedSignerConfigs {
           "signer/account/funded/wallet_b.pass",
           Account.BETA.credentials());
 
-  public static final SignerConfiguration CHARLIE =
+  public static final SignerConfiguration GAMMA =
       new SignerConfiguration(
-          "charlie",
+          "gamma",
           "signer/account/funded/wallet_c.v3",
           "signer/account/funded/wallet_c.pass",
-          Account.CHARLIE.credentials());
+          Account.GAMMA.credentials());
 
-  public static final SignerConfiguration DELTA =
+  public static final SignerConfiguration CHARLIE =
       new SignerConfiguration(
           "charlie",
           "signer/account/funded/wallet_d.v3",
           "signer/account/funded/wallet_d.pass",
-          Account.DELTA.credentials());
+          Account.CHARLIE.credentials());
 }

@@ -41,32 +41,31 @@ import org.web3j.tx.gas.StaticGasProvider;
 public class QbftSmartContractValidatorTest extends NetworkTest {
 
   private Web3Provider alphaNode;
-  private Web3Provider bravoNode;
+  private Web3Provider betaNode;
+  private Web3Provider gammaNode;
   private Web3Provider charlieNode;
-  private Web3Provider deltaNode;
 
   @Override
   protected void setUpNetwork(final Network network) {
     alphaNode =
         network.addNode("alpha", KeyPair.random(), Web3ProviderType.BESU, FixedSignerConfigs.ALPHA);
-    bravoNode =
+    betaNode =
         network.addNode(
-            "bravo", KeyPair.random(), Web3ProviderType.GOQUORUM, FixedSignerConfigs.BETA);
+            "beta", KeyPair.random(), Web3ProviderType.GOQUORUM, FixedSignerConfigs.BETA);
+    gammaNode =
+        network.addNode("gamma", KeyPair.random(), Web3ProviderType.BESU, FixedSignerConfigs.GAMMA);
     charlieNode =
         network.addNode(
-            "charlie", KeyPair.random(), Web3ProviderType.BESU, FixedSignerConfigs.CHARLIE);
-    deltaNode =
-        network.addNode(
-            "delta", KeyPair.random(), Web3ProviderType.GOQUORUM, FixedSignerConfigs.DELTA);
+            "charlie", KeyPair.random(), Web3ProviderType.GOQUORUM, FixedSignerConfigs.CHARLIE);
 
-    network.set(ConsensusMechanism.QBFT, alphaNode, bravoNode, charlieNode, deltaNode);
+    network.set(ConsensusMechanism.QBFT, alphaNode, betaNode, gammaNode, charlieNode);
   }
 
   @Test
   public void consensusAfterSmartContractTransitionMustHappen() throws Exception {
     verify().consensusOnBlockNumberIsAtLeast(1);
 
-    final List<Web3Provider> validatorNodes = List.of(alphaNode, bravoNode, charlieNode, deltaNode);
+    final List<Web3Provider> validatorNodes = List.of(alphaNode, betaNode, gammaNode, charlieNode);
 
     ValidatorSmartContractAllowList allowListDeploy =
         ValidatorSmartContractAllowList.deploy(
@@ -116,19 +115,19 @@ public class QbftSmartContractValidatorTest extends NetworkTest {
     assertThat(allowListUpdate.getValidators().send().size()).isEqualTo(6);
 
     alphaNode.stop();
-    bravoNode.stop();
+    betaNode.stop();
 
-    final List<Web3Provider> runningNodes = List.of(charlieNode, deltaNode);
+    final List<Web3Provider> runningNodes = List.of(gammaNode, charlieNode);
 
     // 2 nodes are up 2 nodes are down and 2 nodes don't exist
     runningNodes.forEach(this::verifyChainStalled);
 
-    final long stalledBlockNumber = charlieNode.rpc().getBlockNumber();
+    final long stalledBlockNumber = gammaNode.rpc().getBlockNumber();
 
     alphaNode.start();
-    bravoNode.start();
+    betaNode.start();
 
-    final List<Web3Provider> allNodes = List.of(alphaNode, bravoNode, charlieNode, deltaNode);
+    final List<Web3Provider> allNodes = List.of(alphaNode, betaNode, gammaNode, charlieNode);
     allNodes.forEach(node -> node.awaitConnectivity(allNodes));
 
     verify().consensusOnBlockNumberIsAtLeast(stalledBlockNumber + 1);
