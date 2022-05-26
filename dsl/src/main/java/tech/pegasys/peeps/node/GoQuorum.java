@@ -142,7 +142,7 @@ public class GoQuorum extends Web3Provider {
         "--http.api",
         "admin,debug,web3,eth,txpool,personal,clique,miner,net,istanbul",
         "--ws",
-        "--log.debug",
+//        "--log.debug", // TODO: put back when [Upgrade] Go-Ethereum release v1.10.2 #1391 is merged
         "--nodiscover",
         "--istanbul.blockperiod",
         Integer.toString(blockPeriodSeconds),
