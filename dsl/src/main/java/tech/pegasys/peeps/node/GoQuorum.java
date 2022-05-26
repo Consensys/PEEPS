@@ -142,7 +142,7 @@ public class GoQuorum extends Web3Provider {
         "--http.api",
         "admin,debug,web3,eth,txpool,personal,clique,miner,net,istanbul",
         "--ws",
-        "--debug",
+        "--log.debug",
         "--nodiscover",
         "--istanbul.blockperiod",
         Integer.toString(blockPeriodSeconds),
