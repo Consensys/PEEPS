@@ -105,7 +105,7 @@ public abstract class RpcClient {
               if (HTTP_OK_STATUSES.contains(result.statusCode())) {
                 result.bodyHandler(
                     body -> {
-                      log.info(
+                      log.trace(
                           "Container {}, relative URL: {}, request: {}, response: {}",
                           containerId,
                           relativeUri,

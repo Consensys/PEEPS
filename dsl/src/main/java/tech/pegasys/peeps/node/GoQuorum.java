@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -49,7 +50,8 @@ public class GoQuorum extends Web3Provider {
   private static final String CONTAINER_PASSWORD_FILE = KEYSTORE_DIR + "password";
 
   public GoQuorum(final Web3ProviderConfiguration config) {
-    super(config, new GenericContainer<>(IMAGE_NAME));
+    super(config, new GenericContainer<>(IMAGE_NAME)
+            .withImagePullPolicy(new LocalAgeBasedPullPolicy(Duration.ofHours(1))));
 
     final List<String> commandLineOptions = standardCommandLineOptions();
     addCorsOrigins(config, commandLineOptions);
@@ -85,7 +87,9 @@ public class GoQuorum extends Web3Provider {
     //      addPrivacy(config, commandLineOptions, dockerContainer);
     //    }
 
-    final String goCommandLine = initCmd + "geth " + String.join(" ", commandLineOptions);
+    final String goCommandLine =
+        initCmd + "exec geth " + String.join(" ", commandLineOptions) + " 2>&1\n";
+
     LOG.info("GoQuorum command line: {}", goCommandLine);
 
     entryPoint.add(goCommandLine);
@@ -135,7 +139,7 @@ public class GoQuorum extends Web3Provider {
     return Lists.newArrayList(
         "--allow-insecure-unlock",
         "--verbosity",
-        "5",
+        "3",
         "--syncmode",
         "full",
         "--mine",

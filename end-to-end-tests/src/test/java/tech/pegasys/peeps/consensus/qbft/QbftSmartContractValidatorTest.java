@@ -48,12 +48,12 @@ public class QbftSmartContractValidatorTest extends NetworkTest {
   @Override
   protected void setUpNetwork(final Network network) {
     alphaNode =
-        network.addNode("alpha", KeyPair.random(), Web3ProviderType.BESU, FixedSignerConfigs.ALPHA);
+        network.addNode("alpha", KeyPair.random(), Web3ProviderType.GOQUORUM, FixedSignerConfigs.ALPHA);
     betaNode =
         network.addNode(
             "beta", KeyPair.random(), Web3ProviderType.GOQUORUM, FixedSignerConfigs.BETA);
     gammaNode =
-        network.addNode("gamma", KeyPair.random(), Web3ProviderType.BESU, FixedSignerConfigs.GAMMA);
+        network.addNode("gamma", KeyPair.random(), Web3ProviderType.GOQUORUM, FixedSignerConfigs.GAMMA);
     charlieNode =
         network.addNode(
             "charlie", KeyPair.random(), Web3ProviderType.GOQUORUM, FixedSignerConfigs.CHARLIE);
