@@ -50,7 +50,9 @@ public class GoQuorum extends Web3Provider {
   private static final String CONTAINER_PASSWORD_FILE = KEYSTORE_DIR + "password";
 
   public GoQuorum(final Web3ProviderConfiguration config) {
-    super(config, new GenericContainer<>(IMAGE_NAME)
+    super(
+        config,
+        new GenericContainer<>(IMAGE_NAME)
             .withImagePullPolicy(new LocalAgeBasedPullPolicy(Duration.ofHours(1))));
 
     final List<String> commandLineOptions = standardCommandLineOptions();

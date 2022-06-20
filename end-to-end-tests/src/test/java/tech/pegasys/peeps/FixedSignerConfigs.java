@@ -38,10 +38,10 @@ public class FixedSignerConfigs {
           "signer/account/funded/wallet_c.pass",
           Account.GAMMA.credentials());
 
-  public static final SignerConfiguration CHARLIE =
+  public static final SignerConfiguration DELTA =
       new SignerConfiguration(
-          "charlie",
+          "delta",
           "signer/account/funded/wallet_d.v3",
           "signer/account/funded/wallet_d.pass",
-          Account.CHARLIE.credentials());
+          Account.DELTA.credentials());
 }

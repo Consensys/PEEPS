@@ -169,7 +169,7 @@ public class Network implements Closeable {
     this.genesisConfigurations.putAll(
         createGenesis(
             consensus,
-            Account.of(Account.ALPHA, Account.BETA, Account.GAMMA, Account.CHARLIE),
+            Account.of(Account.ALPHA, Account.BETA, Account.GAMMA, Account.DELTA),
             validators));
   }
 

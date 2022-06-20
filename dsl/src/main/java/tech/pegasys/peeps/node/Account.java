@@ -37,15 +37,17 @@ public enum Account {
    */
   BETA(
       "627306090abaB3A6e1400e9345bC60c78a8BEf57",
-      "c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3"),
-
+      "8f2a55949038a9610f50fb23b5883af3b4ecb3c3bb792cbcefbd1542c692be63"),
+  /*
+   * publicKey: "fe3b557e8fb62b89f4916b721be55ceb828dbd73"
+   * privateKey: "8f2a55949038a9610f50fb23b5883af3b4ecb3c3bb792cbcefbd1542c692be63"
+   */
   GAMMA(
-      "b2f44e50b93acc3dc1ca21a9a30fc87759944e32",
-      "76d6d62119f72a96d8461b5b6049331bd633626847bb7413b71880afeb8656ce"),
-  CHARLIE(
+      "fe3b557e8fb62b89f4916b721be55ceb828dbd73",
+      "8f2a55949038a9610f50fb23b5883af3b4ecb3c3bb792cbcefbd1542c692be63"),
+  DELTA(
       "e6bab007421a837500df3124e53557bf85b6b319",
       "9eb388ff9aaea5dd4646bed06a684d3b33015678c49349dff48c6088c5838f09");
-
   private static final String DEFAULT_BALANCE = "0xad78ebc5ac6200000";
 
   private final GenesisAddress genesisAddres;

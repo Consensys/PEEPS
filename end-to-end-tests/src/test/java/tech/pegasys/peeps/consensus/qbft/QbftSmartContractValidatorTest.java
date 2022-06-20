@@ -43,29 +43,31 @@ public class QbftSmartContractValidatorTest extends NetworkTest {
   private Web3Provider alphaNode;
   private Web3Provider betaNode;
   private Web3Provider gammaNode;
-  private Web3Provider charlieNode;
+  private Web3Provider deltaNode;
 
   @Override
   protected void setUpNetwork(final Network network) {
     alphaNode =
-        network.addNode("alpha", KeyPair.random(), Web3ProviderType.GOQUORUM, FixedSignerConfigs.ALPHA);
+        network.addNode(
+            "alpha", KeyPair.random(), Web3ProviderType.GOQUORUM, FixedSignerConfigs.ALPHA);
     betaNode =
         network.addNode(
             "beta", KeyPair.random(), Web3ProviderType.GOQUORUM, FixedSignerConfigs.BETA);
     gammaNode =
-        network.addNode("gamma", KeyPair.random(), Web3ProviderType.GOQUORUM, FixedSignerConfigs.GAMMA);
-    charlieNode =
         network.addNode(
-            "charlie", KeyPair.random(), Web3ProviderType.GOQUORUM, FixedSignerConfigs.CHARLIE);
+            "gamma", KeyPair.random(), Web3ProviderType.GOQUORUM, FixedSignerConfigs.GAMMA);
+    deltaNode =
+        network.addNode(
+            "delta", KeyPair.random(), Web3ProviderType.GOQUORUM, FixedSignerConfigs.DELTA);
 
-    network.set(ConsensusMechanism.QBFT, alphaNode, betaNode, gammaNode, charlieNode);
+    network.set(ConsensusMechanism.QBFT, alphaNode, betaNode, gammaNode, deltaNode);
   }
 
   @Test
   public void consensusAfterSmartContractTransitionMustHappen() throws Exception {
     verify().consensusOnBlockNumberIsAtLeast(1);
 
-    final List<Web3Provider> validatorNodes = List.of(alphaNode, betaNode, gammaNode, charlieNode);
+    final List<Web3Provider> validatorNodes = List.of(alphaNode, betaNode, gammaNode, deltaNode);
 
     ValidatorSmartContractAllowList allowListDeploy =
         ValidatorSmartContractAllowList.deploy(
@@ -117,7 +119,7 @@ public class QbftSmartContractValidatorTest extends NetworkTest {
     alphaNode.stop();
     betaNode.stop();
 
-    final List<Web3Provider> runningNodes = List.of(gammaNode, charlieNode);
+    final List<Web3Provider> runningNodes = List.of(gammaNode, deltaNode);
 
     // 2 nodes are up 2 nodes are down and 2 nodes don't exist
     runningNodes.forEach(this::verifyChainStalled);
@@ -127,7 +129,7 @@ public class QbftSmartContractValidatorTest extends NetworkTest {
     alphaNode.start();
     betaNode.start();
 
-    final List<Web3Provider> allNodes = List.of(alphaNode, betaNode, gammaNode, charlieNode);
+    final List<Web3Provider> allNodes = List.of(alphaNode, betaNode, gammaNode, deltaNode);
     allNodes.forEach(node -> node.awaitConnectivity(allNodes));
 
     verify().consensusOnBlockNumberIsAtLeast(stalledBlockNumber + 1);
