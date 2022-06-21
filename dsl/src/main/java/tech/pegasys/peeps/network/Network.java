@@ -520,10 +520,8 @@ public class Network implements Closeable {
 
   public void setValidatorContractValidatorTransaction(
       final BigInteger blockNumber, final String contractAddress) {
-    nodes
-        .parallelStream()
-        .forEach(
-            node -> node.setQBFTValidatorSmartContractTransition(blockNumber, contractAddress));
+    nodes.forEach(
+        node -> node.setQBFTValidatorSmartContractTransition(blockNumber, contractAddress));
   }
 
   public void restart() {

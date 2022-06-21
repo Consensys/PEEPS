@@ -116,11 +116,13 @@ public class GoQuorum extends Web3Provider {
 
       ArrayNode transitions = ((ArrayNode) jsonNode.path("config").path("transitions"));
 
-      ObjectNode transition = mapper.createObjectNode();
-      transition.put("block", blockNumber);
-      transition.put("validatorselectionmode", "contract");
-      transition.put("validatorcontractaddress", contractAddress);
-      transitions.add(transition);
+      if (transitions.isEmpty()) {
+        ObjectNode transition = mapper.createObjectNode();
+        transition.put("block", blockNumber);
+        transition.put("validatorselectionmode", "contract");
+        transition.put("validatorcontractaddress", contractAddress);
+        transitions.add(transition);
+      }
 
       mapper.writeValue(genesisFile, jsonNode);
     } catch (IOException e) {

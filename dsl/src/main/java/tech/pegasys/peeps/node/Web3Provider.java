@@ -75,7 +75,7 @@ public abstract class Web3Provider implements NetworkMember {
   private Web3j web3j;
 
   public Web3Provider(final Web3ProviderConfiguration config, final GenericContainer<?> container) {
-    this.container = container;
+    this.container = container.withLabel("name", config.getIdentity());
     this.jsonRpcClient =
         new JsonRpcClient(config.getVertx(), Duration.ofSeconds(10), LOG, dockerLogs());
     final SignerRpcClient signerRpcClient = new SignerRpcClient(jsonRpcClient, qbftRpc(config));

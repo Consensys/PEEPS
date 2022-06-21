@@ -46,7 +46,7 @@ public class Besu extends Web3Provider {
   private static final String AM_I_ALIVE_ENDPOINT = "/liveness";
   private static final int ALIVE_STATUS_CODE = 200;
 
-  private static final String BESU_IMAGE = "hyperledger/besu:develop";
+  private static final String BESU_IMAGE = "hyperledger/besu:22.7.RC1-SNAPSHOT-openjdk-11";
   private static final String CONTAINER_GENESIS_FILE = "/etc/besu/genesis.json";
   private static final String CONTAINER_STATIC_NODES_FILE = "/opt/besu/static-nodes.json";
   private static final String CONTAINER_PRIVACY_PUBLIC_KEY_FILE =
@@ -101,12 +101,13 @@ public class Besu extends Web3Provider {
       ArrayNode transitions =
           ((ArrayNode) jsonNode.path("config").path("transitions").path("qbft"));
 
-      ObjectNode transition = mapper.createObjectNode();
-      transition.put("block", blockNumber);
-      transition.put("validatorselectionmode", "contract");
-      transition.put("validatorcontractaddress", contractAddress);
-
-      transitions.add(transition);
+      if (transitions.isEmpty()) {
+        ObjectNode transition = mapper.createObjectNode();
+        transition.put("block", blockNumber);
+        transition.put("validatorselectionmode", "contract");
+        transition.put("validatorcontractaddress", contractAddress);
+        transitions.add(transition);
+      }
 
       ((ObjectNode) jsonNode.get("config").get("transitions")).set("qbft", transitions);
 
