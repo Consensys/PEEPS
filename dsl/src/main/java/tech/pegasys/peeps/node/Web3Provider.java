@@ -78,7 +78,8 @@ public abstract class Web3Provider implements NetworkMember {
     this.container = container.withLabel("name", config.getIdentity());
     this.jsonRpcClient =
         new JsonRpcClient(config.getVertx(), Duration.ofSeconds(10), LOG, dockerLogs());
-    final SignerRpcClient signerRpcClient = new SignerRpcClient(jsonRpcClient, qbftRpc(config));
+    final SignerRpcClient signerRpcClient =
+        new SignerRpcClient(jsonRpcClient, qbftRpc(config), config.getMinGasPrice());
     this.signerRpcResponse = new SignerRpcMandatoryResponse(signerRpcClient);
     this.ipAddress = config.getIpAddress();
 
