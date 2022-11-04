@@ -469,6 +469,10 @@ public class Network implements Closeable {
         expectedValidators);
   }
 
+  public void verifyGasRewardsAreTransferredToValidator(final Hash receipt) {
+    nodes.forEach(node -> node.verifyGasRewardsAreTransferredToValidator(receipt));
+  }
+
   // TODO these Mediator method could be refactored elsewhere?
   public NodeVerify verify(final Web3Provider node) {
     return new NodeVerify(node);

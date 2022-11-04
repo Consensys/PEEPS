@@ -12,8 +12,6 @@
  */
 package tech.pegasys.peeps.consensus.qbft.quorumbesu;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import tech.pegasys.peeps.FixedSignerConfigs;
 import tech.pegasys.peeps.NetworkTest;
 import tech.pegasys.peeps.network.ConsensusMechanism;
@@ -25,14 +23,17 @@ import tech.pegasys.peeps.node.verification.ValueReceived;
 import tech.pegasys.peeps.node.verification.ValueSent;
 import tech.pegasys.peeps.signer.SignerConfiguration;
 
-import java.util.List;
-
 import org.apache.tuweni.crypto.SECP256K1.KeyPair;
 import org.apache.tuweni.eth.Address;
 import org.apache.tuweni.units.ethereum.Wei;
 import org.junit.jupiter.api.Test;
 
 public class QbftWithGasAndBlockRewardTest extends NetworkTest {
+  int blockRewardTransitionBlock = 20;
+  int miningBeneficiaryTransitionBlock = 30;
+
+  int someBlocks = 10;
+
   private final Wei gasPrice = Wei.valueOf(1);
 
   private final Wei blockReward = Wei.valueOf(1);
@@ -54,8 +55,8 @@ public class QbftWithGasAndBlockRewardTest extends NetworkTest {
     quorumNode1 = network.addNode("quorum1", KeyPair.random(), Web3ProviderType.GOQUORUM, gasPrice);
     quorumNode2 = network.addNode("quorum2", KeyPair.random(), Web3ProviderType.GOQUORUM, gasPrice);
 
-    network.addBlockRewardTransition(20, blockReward);
-    network.addMiningBeneficiaryTransition(40, miningBeneficiary);
+    network.addBlockRewardTransition(blockRewardTransitionBlock, blockReward);
+    network.addMiningBeneficiaryTransition(miningBeneficiaryTransitionBlock, miningBeneficiary);
 
     network.set(ConsensusMechanism.QBFT, besuNode1, besuNode2, quorumNode1, quorumNode2);
 
@@ -83,51 +84,25 @@ public class QbftWithGasAndBlockRewardTest extends NetworkTest {
         .transition(
             new ValueSent(sender, senderStartBalance, receipt),
             new ValueReceived(receiver, receiverStartBalance, transferAmount));
-
-    var validatorBalances =
-        List.of(
-            execute(besuNode1).getBalance(besuNode1.address()),
-            execute(besuNode1).getBalance(besuNode2.address()),
-            execute(besuNode1).getBalance(quorumNode1.address()),
-            execute(besuNode1).getBalance(quorumNode2.address()));
-
-    assertThat(validatorBalances)
-        .containsOnly(Wei.valueOf(21000), Wei.valueOf(0), Wei.valueOf(0), Wei.valueOf(0));
-
     verify().consensusOnValueAt(sender, receiver);
+    verify().gasRewardsAreTransferredToValidator(receipt);
 
-    verify().consensusOnBlockNumberIsAtLeast(30);
+    verify().consensusOnBlockNumberIsAtLeast(blockRewardTransitionBlock + someBlocks);
+    verifyOn(besuNode2)
+        .blockRewardsAreTransferredToValidators(
+            blockRewardTransitionBlock, blockRewardTransitionBlock + someBlocks, blockReward);
 
-    validatorBalances =
-        List.of(
-            execute(besuNode1).getBalance(besuNode1.address()),
-            execute(besuNode1).getBalance(besuNode2.address()),
-            execute(besuNode1).getBalance(quorumNode1.address()),
-            execute(besuNode1).getBalance(quorumNode2.address()));
-
-    assertThat(validatorBalances.stream().allMatch(x -> x.toLong() > 1)).isTrue();
-
-    verify().consensusOnBlockNumberIsAtLeast(40);
-
-    validatorBalances =
-        List.of(
-            execute(besuNode1).getBalance(besuNode1.address()),
-            execute(besuNode1).getBalance(besuNode2.address()),
-            execute(besuNode1).getBalance(quorumNode1.address()),
-            execute(besuNode1).getBalance(quorumNode2.address()));
+    verify().consensusOnBlockNumberIsAtLeast(miningBeneficiaryTransitionBlock + someBlocks);
+    verifyOn(besuNode1)
+        .blockRewardsAreTransferredToMiningBeneficiary(
+            miningBeneficiaryTransitionBlock,
+            miningBeneficiaryTransitionBlock + someBlocks,
+            blockReward,
+            miningBeneficiary);
 
     receipt = execute(signer).transferTo(receiver, transferAmount);
     await().consensusOnTransactionReceipt(receipt);
-
-    var validatorBalancesAfterMiningBeneficiaryTransition =
-        List.of(
-            execute(besuNode1).getBalance(besuNode1.address()),
-            execute(besuNode1).getBalance(besuNode2.address()),
-            execute(besuNode1).getBalance(quorumNode1.address()),
-            execute(besuNode1).getBalance(quorumNode2.address()));
-
-    assertThat(validatorBalances).isEqualTo(validatorBalancesAfterMiningBeneficiaryTransition);
-
-    assertThat(execute(besuNode1).getBalance(miningBeneficiary).toLong()).isGreaterThan(21000);
+    verifyOn(besuNode1)
+        .gasRewardsAreTransferredToMiningBeneficiary(receipt, miningBeneficiary, blockReward);
   }
 }
