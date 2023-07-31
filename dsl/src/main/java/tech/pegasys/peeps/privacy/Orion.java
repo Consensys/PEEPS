@@ -26,6 +26,7 @@ public class Orion extends PrivateTransactionManager {
     addPrivateKeys(config, CONTAINER_WORKING_DIRECTORY_PREFIX, container);
     addPublicKeys(config, CONTAINER_WORKING_DIRECTORY_PREFIX, container);
     addConfigurationFile(config, container);
+    container.addExposedPort(8888);
     container.withCommand(CONTAINER_CONFIG_FILE).waitingFor(liveliness());
   }
 
