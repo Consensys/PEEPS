@@ -41,8 +41,8 @@ import org.testcontainers.utility.MountableFile;
 public abstract class PrivateTransactionManager implements NetworkMember {
   private static final Logger LOG = LogManager.getLogger();
 
-  private static final int CONTAINER_PEER_TO_PEER_PORT = 8080;
-  private static final int CONTAINER_HTTP_RPC_PORT = 8888;
+  protected static final int CONTAINER_PEER_TO_PEER_PORT = 8080;
+  protected static final int CONTAINER_HTTP_RPC_PORT = 8888;
   private static final int ALIVE_STATUS_CODE = 200;
   private static final String AM_I_ALIVE_ENDPOINT = "/upcheck";
   protected static final String CONTAINER_CONFIG_FILE = "/etc/transaction_manager.conf";
