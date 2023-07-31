@@ -71,6 +71,7 @@ public class EthSigner implements NetworkMember {
     addContainerNetwork(config, container);
     addContainerIpAddress(config, container);
     addFileBasedSigner(config, commandLineOptions, container);
+    container.addExposedPorts(CONTAINER_HTTP_RPC_PORT);
 
     LOG.info("EthSigner command line: {}", commandLineOptions);
 

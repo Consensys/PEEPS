@@ -64,6 +64,7 @@ public class GoQuorum extends Web3Provider {
     commandLineOptions.addAll(List.of("--datadir", "\"" + DATA_DIR + "\""));
     commandLineOptions.addAll(List.of("--networkid", "15"));
     commandLineOptions.addAll(List.of("--identity", config.getIdentity()));
+    container.addExposedPorts(8545, 8546, 30303);
 
     // Note: this copy occurs on container start (not now, as the genesis file is empty at this
     // stage)

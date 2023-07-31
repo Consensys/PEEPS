@@ -71,6 +71,7 @@ public class Besu extends Web3Provider {
     addGenesisFile(config, commandLineOptions, container);
     addStaticNodesFile(config, container);
     commandLineOptions.addAll(List.of("--network-id", "15"));
+    container.addExposedPorts(8545, 8546, 30303);
 
     if (config.isPrivacyEnabled()) {
       addPrivacy(config, commandLineOptions, container);
