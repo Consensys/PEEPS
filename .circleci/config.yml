@@ -112,3 +112,13 @@ jobs:
       - store_artifacts:
           path: end-to-end-tests/build/reports
           destination: end-to-end-tests-reports
+
+workflows:
+  version: 2
+
+  default:
+    jobs:
+      - build
+      - endToEndTests:
+          requires:
+            - build
